@@ -55,14 +55,41 @@ ssize_t pca9554_write(struct file *file, const char __user *buff, size_t len, lo
 }
 
 int __init init_module(void) {
-
+	char datas[4];
+	int i = 0;
+	char buf[100];
+	printk("init du module I2C: ");
+	if(xeno_i2c_init() == 0){
+		printk("[success]\n");
+	}else{
+		printk("[error]\n");
+	}
 	/* A compléter ... */
+
+	printk("configuration de la slave address: ");
+	if(xeno_i2c_ioctl(I2C_SLAVE, 0x0040) == 0){
+		printk("[success]\n");
+	}else{
+		printk("[error]\n");
+	}
+
+	xeno_i2c_ioctl(0x0000, 0x0000);
+
+
+	xeno_i2c_read(datas, 4);
+
+	for(i= 0; i < 4; i++){
+		sprintf(buf, "datas[%d] = 0x%X\n", i, datas[i]);
+		printk(buf);
+	}
 
 	return 0;
 }
 
 void __exit cleanup_module(void) {
 
+	printk("Cleanup du module I2C\n");
+	xeno_i2c_exit();
 	/* A compléter ... */
 
 }

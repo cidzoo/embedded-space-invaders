@@ -22,10 +22,10 @@ obj-m = rt-app.o pca9554.o
 rt-app-objs := xeno-ts.o xeno-ts-lib.o xeno-i2c.o rt-app-m.o lcdlib.o
 pca9554-objs := pca9554-m.o xeno-i2c.o
 
-KDIR	= ../../src/linux-2.6.14-imx21-xenomai
+KDIR	= /home/redsuser/src/linux-2.6.14-imx21-xenomai
 
 PWD		= $(shell pwd)
-EXTRA_CFLAGS = -Wall -I../../src/linux-2.6.14-imx21-xenomai/include -I../../src/linux-2.6.14-imx21-xenomai/include/xenomai 
+EXTRA_CFLAGS = -Wall -I/home/redsuser/src/linux-2.6.14-imx21-xenomai/include -I/home/redsuser/src/linux-2.6.14-imx21-xenomai/include/xenomai 
 
 all: default i2ctest
 
