@@ -4,21 +4,34 @@
  *  Created on: Dec 21, 2011
  *      Author: romain
  */
+#include "global.h"
 
 /* Functions for collisions and shots */
 void fire_weapon(Weapon w){
 	uint16_t startX, startY;
-	//Control that the weapon selected can be used
-	if(w->ready){
+	//Control that the selected weapon CAN be used
+	if(w->cooldown == 0){
 
-		//Grap the position of the spaceship's gun's top
-		startX = ss->x + ss->width/2;
-		startY = ss->y-1;
+		switch(w->weaponType){
+		case BOMB:
+			//TODO get global invaders hitbox
+			break;
+		default:
+			//Grab the position of the spaceship's gun's top
+			startX = ss->x + ss->width/2;
+			startY = ss->y-1;
+		}
+
 
 		//Fire the weapon (create the bullet)
 		Bullet b;
 
-		switch(w->type){
+		switch(w->weaponType){
+		case BOMB:
+			b->x = startX-2/2; // width/2
+			b->y = startY-4; //-height
+			b->width = 2;
+			b->height = 4;
 		case GUN:
 			b->x = startX-2/2; // width/2
 			b->y = startY-4; //-height
