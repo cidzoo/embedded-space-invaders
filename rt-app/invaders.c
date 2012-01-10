@@ -35,7 +35,7 @@
 
 
 
-	 for (i=0;i<7;i++){
+	 for (i=0;i<nbInvaders;i++){
 		 listInvaders[i].hp=hp_invader;
 		 listInvaders[i].height=height_invader;
 		 listInvaders[i].width=width_invader;
@@ -43,10 +43,8 @@
 		 if((nbInvaders-nbMaxInvadersPerLine)<nbMaxInvadersPerLine)
 			 wave_row++;
 
-
-
-		 listInvaders[i].x
-		 listInvaders[i].y
+		 listInvaders[i].x= space_between_invader+(i*space_between_invader)+(i*width_invader);
+		 listInvaders[i].y= 50 + ((wave_row-1)*(height_invader+50));
 	 }
 
 
@@ -67,9 +65,4 @@
 
  }
 
- void wave_shot(Wave *wave, Bullet *listBullet ){
 
-
- }
-
- void

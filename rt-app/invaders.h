@@ -8,11 +8,11 @@
 #ifndef INVADERS_H_
 #define INVADERS_H_
 
- void init_invaders (Wave *listEnemies );
+void init_invaders (Wave *listEnemies );
 
+void move_invaders(Invader *listInvaders);
 
-
-
+void get_invaders_hitbox(*dimension);
 
 
 
