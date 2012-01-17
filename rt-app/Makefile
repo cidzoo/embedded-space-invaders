@@ -19,19 +19,16 @@ TOOL_PREFIX	:= arm-unknown-linux-gnu
 CC = $(TOOL_PREFIX)-gcc
 
 obj-m = rt-app.o pca9554.o 
-rt-app-objs := xeno-ts.o xeno-ts-lib.o xeno-i2c.o rt-app-m.o lcdlib.o
+rt-app-objs := xeno-ts.o xeno-ts-lib.o xeno-i2c.o rt-app-m.o lcdlib.o global.o invaders_task.o fb_task.o io_task.o hit_task.o chip_task.o
 pca9554-objs := pca9554-m.o xeno-i2c.o
 
 KDIR	= /home/redsuser/src/linux-2.6.14-imx21-xenomai
 
 PWD		= $(shell pwd)
-EXTRA_CFLAGS = -Wall -I/home/redsuser/src/linux-2.6.14-imx21-xenomai/include -I/home/redsuser/src/linux-2.6.14-imx21-xenomai/include/xenomai 
+EXTRA_CFLAGS = -Wall -I/home/redsuser/src/linux-2.6.14-imx21-xenomai/include -I/home/redsuser/src/linux-2.6.14-imx21-xenomai/include/xenomai -D__KERNEL__
 
-all: default i2ctest usertest
+all: default i2ctest
 
-usertest: usertest.c
-	$(CC) -static usertest.c -o usertest
-	
 i2ctest: i2ctest.c
 	$(CC) -static i2ctest.c -o i2ctest
 
