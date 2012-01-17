@@ -1,0 +1,38 @@
+# Ignore all generated files :
+*.[oa]
+*.tmp*
+*.log
+*.elf
+*.cmd
+*.dis
+*.sym
+*.bin
+
+# Backup files
+*~
+*.swp
+*.old
+*.orig
+# Unit tests test files
+*.creat
+
+# Hidden files
+.*
+!.metadata/.plugins/org.eclipse.debug.core/.launches/example.launch 
+!.metadata/.plugins/org.eclipse.debug.core/.launches/helloworld_qemu.launch 
+!.metadata/.plugins/org.eclipse.debug.core/.launches/Start QEMU.launch 
+!fs/.mountpoint
+!example/.cproject
+!example/.project
+!helloworld_qemu/.cproject
+!helloworld_qemu/.project
+!helloworld_uMon/.cproject
+!helloworld_uMon/.project
+!helloworld_linux/.cproject
+!helloworld_linux/.project
+!macros/.cproject
+!macros/.project
+
+# except the followings:
+# Don't ignore the ignore file ;-)
+!.gitignore
