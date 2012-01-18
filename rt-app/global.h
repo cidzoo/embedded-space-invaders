@@ -29,7 +29,7 @@
 #define TASK_FB_PRIO  50
 #define TASK_IO_PRIO  50
 #define TASK_HIT_PRIO 40
-#define TASK_INVADERS_PRIO	60
+#define TASK_INVADERS_PRIO	50
 #define TASK_SHIP_PRIO 50
 
 /* Difficulty */

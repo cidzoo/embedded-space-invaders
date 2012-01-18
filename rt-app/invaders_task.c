@@ -17,10 +17,10 @@ invader_t invaders[NB_INVADERS];
  * Variables privées
  */
 RT_MUTEX invaders_task_mutex;
-static uint8_t invaders_task_mutex_created = 0;
+uint8_t invaders_task_mutex_created = 0;
 
 RT_TASK invaders_task_handle;
-static uint8_t invaders_task_created = 0;
+uint8_t invaders_task_created = 0;
 
 static int moving_invader = 10;
 static int wave_row=1;
@@ -43,9 +43,6 @@ int invaders_task_start(){
 		printk("rt-app: Task INVADERS create mutex succeed\n");
 	}else{
 		printk("rt-app: Task INVADERS create mutex failed\n");
-		if(err == -EEXIST){
-			printk("rt-app: Task INVADERS mutex EEXIST\n");
-		}
 		goto fail;
 	}
 
@@ -84,37 +81,31 @@ void invaders_task_cleanup_task(){
 }
 
 void invaders_task_cleanup_objects(){
-	int err;
 	if(invaders_task_mutex_created){
 		printk("rt-app: Task INVADERS cleanup objects\n");
 		invaders_task_mutex_created = 0;
-		err = rt_mutex_delete(&invaders_task_mutex);
-		if(err != 0){
-			printk("rt-app: Task INVADERS cleanup objects: ERR = %d", err);
-		}
+		rt_mutex_delete(&invaders_task_mutex);
 	}
 }
 
 static void invaders_task(void *cookie){
 	int i;
-	rt_task_set_periodic(NULL, TM_NOW, 100000000);
+	rt_task_set_periodic(NULL, TM_NOW, 500000000);
 
-	//invaders_lock();
+	invaders_lock();
 	invaders_init();
-	//invaders_unlock();
+	invaders_unlock();
 
 	for (;;) {
 		rt_task_wait_period(NULL);
 
-		//invaders_lock();
-
-		for(i = 0; i < 10; i++){
+		invaders_lock();
+		for(i = 0; i < NB_INVADERS; i++){
 			invaders[i].hitbox.x++;
 		}
+		invaders_unlock();
 
-		//invaders_unlock();
 		//invaders_move();
-		/** todo */
 	}
 }
 
@@ -187,11 +178,9 @@ static void invaders_task(void *cookie){
 	 if (dimension.x <= 0)
 		 moving_invader *= -1;
 
-	 invaders_lock();
 	 for (i=0;i<NB_INVADERS;i++){
 		 	invaders[i].hitbox.x += moving_invader;
 	 }
-	 invaders_unlock();
  }
 
 
@@ -262,8 +251,7 @@ int invaders_lock(){
 
 int invaders_unlock(){
 	if(invaders_task_mutex_created){
-		rt_mutex_unlock(&invaders_task_mutex);
-		return 0;
+		return rt_mutex_unlock(&invaders_task_mutex);
 	}
 	return -1;
 }
@@ -272,10 +260,6 @@ void invaders_refresh(void){
 #include "vga_lookup.h"
 	invader_t invader_loc[NB_INVADERS];
 	int i;
-
-	invaders_lock();
-	memcpy(invader_loc, invaders, sizeof(invader_loc));
-	invaders_unlock();
 
 	for(i = 0; i < NB_INVADERS; i++){
 		fb_rect_fill(invader_loc[i].hitbox.y,

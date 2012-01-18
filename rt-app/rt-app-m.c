@@ -24,7 +24,7 @@
 #include "hit_task.h"
 #include "ship_task.h"
 
-static RT_INTR isrDesc;
+RT_INTR isrDesc;
 
 
 static int space_invader(void)
@@ -48,21 +48,21 @@ static int space_invader(void)
 		goto fail;
 	}
 
-	/*if(hit_task_start() != 0){
+	if(hit_task_start() != 0){
 		goto fail;
 	}
 
 	if(io_task_start() != 0){
 		goto fail;
-	}*/
+	}
 
 	if(fb_task_start() != 0){
 		goto fail;
 	}
 
-	/*if(ship_task_start() != 0){
+	if(ship_task_start() != 0){
 		goto fail;
-	}*/
+	}
 
 	return 0;
 

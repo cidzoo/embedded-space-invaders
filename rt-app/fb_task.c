@@ -59,7 +59,6 @@ void fb_task_cleanup_task(){
 }
 
 void fb_task_cleanup_objects(){
-	printk("rt-app: Task FB cleanup objects\n");
 }
 
 static void fb_task(void *cookie){
@@ -86,11 +85,13 @@ static void fb_task(void *cookie){
 		//hit_refresh();
 		//ship_refresh();
 
-		//invaders_lock();
+		invaders_lock();
 		memcpy(invader_loc, invaders, sizeof(invader_loc));
-		//invaders_unlock();
+		invaders_unlock();
 
-		for(i = 0; i < 3; i++){
+		fb_rect_fill(0, 319, 0, 239, LU_BRT_BLUE);
+
+		for(i = 0; i < 2; i++){
 			fb_rect_fill(invader_loc[i].hitbox.y,
 						 invader_loc[i].hitbox.y + invader_loc[i].hitbox.height,
 						 invader_loc[i].hitbox.x,
