@@ -10,8 +10,6 @@
 wave_t *current_wave;
 spaceship_t *ss;
 
-
-
 //List of the bullets
 bullet_t *bullets[NB_MAX_BULLETS] = {NULL};
 

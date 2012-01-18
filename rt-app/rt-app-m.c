@@ -22,6 +22,7 @@
 #include "fb_task.h"
 #include "io_task.h"
 #include "hit_task.h"
+#include "ship_task.h"
 
 static RT_INTR isrDesc;
 
@@ -56,6 +57,10 @@ static int space_invader(void)
 	}
 
 	if(fb_task_start() != 0){
+		goto fail;
+	}
+
+	if(ship_task_start() != 0){
 		goto fail;
 	}
 
@@ -142,6 +147,7 @@ void __exit cleanup_module(void) {
 	fb_task_cleanup();
 	io_task_cleanup();
 	hit_task_cleanup();
+	ship_task_cleanup();
 
 	rt_intr_delete(&isrDesc);
 

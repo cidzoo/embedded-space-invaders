@@ -7,7 +7,10 @@
 #include "fb_task.h"
 #include "vga_lookup.h"
 #include "lcdlib.h"
+
 #include "invaders_task.h"
+#include "ship_task.h"
+#include "hit_task.h"
 
 /**
  * Variables privées
@@ -63,7 +66,10 @@ static void fb_task(void *cookie){
 	for (;;) {
 		rt_task_wait_period(NULL);
 
-		invaders_lock();
+		invaders_refresh();
+		hit_refresh();
+		ship_refresh();
+		/*invaders_lock();
 		memcpy(invader_loc, invaders, sizeof(invader_loc));
 		invaders_unlock();
 
@@ -73,7 +79,7 @@ static void fb_task(void *cookie){
 						 invader_loc[i].hitbox.x,
 						 invader_loc[i].hitbox.x + invader_loc[i].hitbox.width,
 						 LU_BLACK);
-		}
+		}*/
 	}
 }
 

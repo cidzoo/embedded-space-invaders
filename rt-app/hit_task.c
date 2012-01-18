@@ -118,3 +118,7 @@ static uint8_t hit_test(hitbox_t a, hitbox_t b){
 	return -1;
 
 }//hit_test()
+
+void hit_refresh(void){
+
+}
