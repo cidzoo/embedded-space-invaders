@@ -19,10 +19,10 @@ spaceship_t ship;
 /**
  * Variables privées
  */
-static RT_MUTEX ship_task_mutex;
+RT_MUTEX ship_task_mutex;
 static uint8_t ship_task_mutex_created = 0;
 
-static RT_TASK ship_task_handle;
+RT_TASK ship_task_handle;
 static uint8_t ship_task_created = 0;
 
 /**
@@ -66,19 +66,24 @@ int ship_task_start(){
 	}
 	return 0;
 fail:
-	ship_task_cleanup();
+	ship_task_cleanup_task();
+	ship_task_cleanup_objects();
 	return -1;
 }
 
-void ship_task_cleanup(){
+void ship_task_cleanup_task(){
 	if(ship_task_created){
 		ship_task_created = 0;
 		rt_task_delete(&ship_task_handle);
 	}
-	if(ship_task_mutex_created){
+}
+
+void ship_task_cleanup_objects(){
+	rt_mutex_delete(&ship_task_mutex);
+	/*if(ship_task_mutex_created){
 		ship_task_mutex_created = 0;
 		rt_mutex_delete(&ship_task_mutex);
-	}
+	}*/
 }
 
 static void ship_task(void *cookie){

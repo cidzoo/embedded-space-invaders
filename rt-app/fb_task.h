@@ -11,7 +11,8 @@
 #include "global.h"
 
 extern int fb_task_start(void);
-extern void fb_task_cleanup(void);
+extern void fb_task_cleanup_task(void);
+extern void fb_task_cleanup_objects(void);
 
 
 #endif /* TASK_FB_H_ */

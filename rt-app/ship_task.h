@@ -11,7 +11,8 @@
 #include "global.h"
 
 extern int ship_task_start(void);
-extern void ship_task_cleanup(void);
+extern void ship_task_cleanup_task(void);
+extern void ship_task_cleanup_objects(void);
 
 extern int ship_lock(void);
 extern int ship_unlock(void);

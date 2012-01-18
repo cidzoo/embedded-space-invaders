@@ -10,7 +10,7 @@
 /**
  * Variables privées
  */
-static RT_TASK hit_task_handle;
+RT_TASK hit_task_handle;
 static uint8_t hit_task_created = 0;
 
 /**
@@ -41,15 +41,19 @@ int hit_task_start(){
 	}
 	return 0;
 fail:
-	hit_task_cleanup();
+	hit_task_cleanup_task();
+	hit_task_cleanup_objects();
 	return -1;
 }
 
-void hit_task_cleanup(){
+void hit_task_cleanup_task(){
 	if(hit_task_created){
 		hit_task_created = 0;
 		rt_task_delete(&hit_task_handle);
 	}
+}
+
+void hit_task_cleanup_objects(){
 }
 
 void hit_task(void *cookie){

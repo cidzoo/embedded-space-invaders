@@ -48,21 +48,21 @@ static int space_invader(void)
 		goto fail;
 	}
 
-	if(hit_task_start() != 0){
+	/*if(hit_task_start() != 0){
 		goto fail;
 	}
 
 	if(io_task_start() != 0){
 		goto fail;
-	}
+	}*/
 
 	if(fb_task_start() != 0){
 		goto fail;
 	}
 
-	if(ship_task_start() != 0){
+	/*if(ship_task_start() != 0){
 		goto fail;
-	}
+	}*/
 
 	return 0;
 
@@ -143,11 +143,19 @@ fail_intr:
 
 void __exit cleanup_module(void) {
 
-	invaders_task_cleanup();
-	fb_task_cleanup();
-	io_task_cleanup();
-	hit_task_cleanup();
-	ship_task_cleanup();
+	// Cleanup tasks
+	invaders_task_cleanup_task();
+	fb_task_cleanup_task();
+	io_task_cleanup_task();
+	hit_task_cleanup_task();
+	ship_task_cleanup_task();
+
+	// Cleanup objects
+	invaders_task_cleanup_objects();
+	fb_task_cleanup_objects();
+	io_task_cleanup_objects();
+	hit_task_cleanup_objects();
+	ship_task_cleanup_objects();
 
 	rt_intr_delete(&isrDesc);
 

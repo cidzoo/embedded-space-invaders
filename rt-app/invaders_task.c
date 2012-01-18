@@ -16,10 +16,10 @@ invader_t invaders[NB_INVADERS];
 /**
  * Variables privées
  */
-static RT_MUTEX invaders_task_mutex;
+RT_MUTEX invaders_task_mutex;
 static uint8_t invaders_task_mutex_created = 0;
 
-static RT_TASK invaders_task_handle;
+RT_TASK invaders_task_handle;
 static uint8_t invaders_task_created = 0;
 
 static int moving_invader = 10;
@@ -43,6 +43,9 @@ int invaders_task_start(){
 		printk("rt-app: Task INVADERS create mutex succeed\n");
 	}else{
 		printk("rt-app: Task INVADERS create mutex failed\n");
+		if(err == -EEXIST){
+			printk("rt-app: Task INVADERS mutex EEXIST\n");
+		}
 		goto fail;
 	}
 
@@ -64,37 +67,53 @@ int invaders_task_start(){
 		printk("rt-app: Task INVADERS creation failed\n");
 		goto fail;
 	}
-	invaders_init();
 	return 0;
 fail:
-	invaders_task_cleanup();
+	invaders_task_cleanup_task();
+	invaders_task_cleanup_objects();
+
 	return -1;
 }
 
-void invaders_task_cleanup(){
+void invaders_task_cleanup_task(){
 	if(invaders_task_created){
+		printk("rt-app: Task INVADERS cleanup task\n");
 		invaders_task_created = 0;
 		rt_task_delete(&invaders_task_handle);
 	}
+}
+
+void invaders_task_cleanup_objects(){
+	int err;
 	if(invaders_task_mutex_created){
+		printk("rt-app: Task INVADERS cleanup objects\n");
 		invaders_task_mutex_created = 0;
-		rt_mutex_delete(&invaders_task_mutex);
+		err = rt_mutex_delete(&invaders_task_mutex);
+		if(err != 0){
+			printk("rt-app: Task INVADERS cleanup objects: ERR = %d", err);
+		}
 	}
 }
 
 static void invaders_task(void *cookie){
-	rt_task_set_periodic(NULL, TM_NOW, 10000000);
+	int i;
+	rt_task_set_periodic(NULL, TM_NOW, 100000000);
 
-	invaders_lock();
+	//invaders_lock();
 	invaders_init();
-	invaders_unlock();
+	//invaders_unlock();
 
 	for (;;) {
 		rt_task_wait_period(NULL);
 
-		invaders_lock();
-		invaders_move();
-		invaders_unlock();
+		//invaders_lock();
+
+		for(i = 0; i < 10; i++){
+			invaders[i].hitbox.x++;
+		}
+
+		//invaders_unlock();
+		//invaders_move();
 		/** todo */
 	}
 }
@@ -141,10 +160,23 @@ static void invaders_task(void *cookie){
 		 }
 	 }
 
+	invaders[0].hitbox.x = 20;
+	invaders[0].hitbox.y = 20;
+	invaders[0].hitbox.width = 20;
+	invaders[0].hitbox.height = 20;
+
+	invaders[1].hitbox.x = 50;
+	invaders[1].hitbox.y = 20;
+	invaders[1].hitbox.width = 20;
+	invaders[1].hitbox.height = 20;
+
+	invaders[2].hitbox.x = 80;
+	invaders[2].hitbox.y = 20;
+	invaders[2].hitbox.width = 20;
+	invaders[2].hitbox.height = 20;
  }
 
  void invaders_move(){
-
 	 int i;
 	 hitbox_t dimension;
 
@@ -155,11 +187,11 @@ static void invaders_task(void *cookie){
 	 if (dimension.x <= 0)
 		 moving_invader *= -1;
 
+	 invaders_lock();
 	 for (i=0;i<NB_INVADERS;i++){
 		 	invaders[i].hitbox.x += moving_invader;
 	 }
-
-
+	 invaders_unlock();
  }
 
 
