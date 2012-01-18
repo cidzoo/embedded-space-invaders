@@ -101,6 +101,7 @@ static void invaders_task(void *cookie){
 
  void invaders_init(){
 
+	 /*
 	 int i;
 	 int nb_max_invaders_per_line=0;
 	 int id_invader=0;
@@ -139,7 +140,28 @@ static void invaders_task(void *cookie){
 
 			 id_invader++;
 		 }
+	 }*/
+
+	 int i;
+
+	 for (i=0;i<4;i++){
+			 invaders[i].hp=HP_INVADER;
+			 invaders[i].hitbox.height=HEIGT_INVADER;
+			 invaders[i].hitbox.width=WIDTH_INVADER;
+
+			 invaders[i].hitbox.x = (SPACE_BETWEEN_INVADER)+(i*(SPACE_BETWEEN_INVADER+WIDTH_INVADER));
+			 invaders[i].hitbox.y = 30;
 	 }
+
+	 for (i=0;i<3;i++){
+			 invaders[i].hp=HP_INVADER;
+			 invaders[i].hitbox.height=HEIGT_INVADER;
+			 invaders[i].hitbox.width=WIDTH_INVADER;
+
+			 invaders[i].hitbox.x = (SPACE_BETWEEN_INVADER+(WIDTH_INVADER/2))+(i*(SPACE_BETWEEN_INVADER+WIDTH_INVADER));
+			 invaders[i].hitbox.y = 60;
+	 }
+
 
  }
 
