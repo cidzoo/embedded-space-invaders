@@ -14,6 +14,9 @@ extern int hit_task_start(void);
 extern void hit_task_cleanup_task(void);
 extern void hit_task_cleanup_objects(void);
 
+extern int invaders_lock(void);
+extern int invaders_unlock(void);
+
 extern void hit_refresh(void);
 
 #endif /* HIT_TASK_H_ */
