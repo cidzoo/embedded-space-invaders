@@ -169,3 +169,7 @@ int ship_unlock(){
 	}
 	return -1;
 }
+
+void ship_refresh(void){
+
+}

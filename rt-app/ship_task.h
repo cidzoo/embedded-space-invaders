@@ -16,4 +16,6 @@ extern void ship_task_cleanup(void);
 extern int ship_lock(void);
 extern int ship_unlock(void);
 
+extern void ship_refresh(void);
+
 #endif /* SHIP_TASK_H_ */

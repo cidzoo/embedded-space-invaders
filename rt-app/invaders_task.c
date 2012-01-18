@@ -236,6 +236,24 @@ int invaders_unlock(){
 	return -1;
 }
 
+void invaders_refresh(void){
+#include "vga_lookup.h"
+	invader_t invader_loc[NB_INVADERS];
+	int i;
+
+	invaders_lock();
+	memcpy(invader_loc, invaders, sizeof(invader_loc));
+	invaders_unlock();
+
+	for(i = 0; i < NB_INVADERS; i++){
+		fb_rect_fill(invader_loc[i].hitbox.y,
+					 invader_loc[i].hitbox.y + invader_loc[i].hitbox.height,
+					 invader_loc[i].hitbox.x,
+					 invader_loc[i].hitbox.x + invader_loc[i].hitbox.width,
+					 LU_BLACK);
+	}
+}
+
 
 
 

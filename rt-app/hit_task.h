@@ -13,4 +13,6 @@
 extern int hit_task_start(void);
 extern void hit_task_cleanup(void);
 
+extern void hit_refresh(void);
+
 #endif /* HIT_TASK_H_ */

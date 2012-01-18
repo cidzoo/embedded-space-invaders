@@ -24,4 +24,6 @@ extern void invaders_task_cleanup(void);
 extern int invaders_lock(void);
 extern int invaders_unlock(void);
 
+extern void invaders_refresh(void);
+
 #endif /*ENEMIES_H_*/
