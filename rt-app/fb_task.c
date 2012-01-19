@@ -98,6 +98,10 @@ static void fb_task(void *cookie){
 						 invader_loc[i].hitbox.x + invader_loc[i].hitbox.width,
 						 LU_BLACK);
 		}
+
+		rt_task_set_priority(NULL, 90);
+		fb_display();
+		rt_task_set_priority(NULL, 50);
 	}
 }
 
