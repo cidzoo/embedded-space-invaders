@@ -28,7 +28,7 @@
 
 #define TASK_FB_PRIO  50
 #define TASK_IO_PRIO  50
-#define TASK_HIT_PRIO 40
+#define TASK_HIT_PRIO 20
 #define TASK_INVADERS_PRIO	50
 #define TASK_SHIP_PRIO 50
 
@@ -68,7 +68,7 @@ typedef struct{
 	int16_t current_speed_x; // -x : 0 : x
 }spaceship_t;
 
-extern spaceship_t *ss;
+extern spaceship_t ss;
 
 /* Weapons */
 typedef enum{BOMB, GUN, RAIL, ROCKET, WAVE} weapontype_t;
@@ -88,6 +88,7 @@ extern weapon_t weapons[5];
 
 
 /* Bullets */
+//TODO : si le temps supprimer le pointeur weapon et mettre un weapon_type à la place
 typedef struct{
 	weapon_t *weapon;
 	hitbox_t hitbox;
@@ -96,14 +97,14 @@ typedef struct{
 
 
 //List of the bullets
-extern bullet_t *bullets[NB_MAX_BULLETS];
+extern bullet_t bullets[NB_MAX_BULLETS];
 
 //List of the bombs
-extern bullet_t *bombs[NB_MAX_BOMBS];
+extern bullet_t bombs[NB_MAX_BOMBS];
 
 /* Prototypes */
-extern int add_bullet(bullet_t *b);
-extern int remove_bullet(bullet_t *b);
+extern int add_bullet(bullet_t b);
+extern void remove_bullet(int id);
 extern void level_up(void);
 
 #endif /* __GLOBAL_H__ */

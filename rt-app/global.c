@@ -7,14 +7,19 @@
 
 #include "global.h"
 
+<<<<<<< HEAD
+wave_t *current_wave;
+spaceship_t ss;
+=======
 wave_t current_wave = {0,1};
 spaceship_t *ss;
+>>>>>>> f5aff8c1e90801f1c0f4c50679819744e4fa1183
 
 //List of the bullets
-bullet_t *bullets[NB_MAX_BULLETS] = {NULL};
+bullet_t bullets[NB_MAX_BULLETS];
 
 //List of the bombs
-bullet_t *bombs[NB_MAX_BOMBS] = {NULL};
+bullet_t bombs[NB_MAX_BOMBS];
 
 //Array of all weapons
 weapon_t weapons[5] = {
@@ -41,26 +46,20 @@ void level_up(){
 }
 
 /* Functions to manipulate the list of bullet */
-int add_bullet(bullet_t *b){
+int add_bullet(bullet_t b){
 	int i=0;
 	//find the first empty slot and place the bullet there
+	//TODO : gérer le cas ou le tableau est plein
 	for(i=0;i<NB_MAX_BULLETS;i++){
-		if(bullets[i] == NULL){
+		if(bullets[i].weapon == NULL){
 			bullets[i] = b;
+
 			return 0;
 		}
 	}
 	return -1;
 }
 
-int remove_bullet(bullet_t *b){
-	int i=0;
-	//find the bullet to delete
-	for(i=0;i<NB_MAX_BULLETS;i++){
-		if(bullets[i] == b){
-			bullets[i] = NULL;
-			return 0;
-		}
-	}
-	return -1;
+void remove_bullet(int id){
+	bullets[id].weapon = NULL;
 }
