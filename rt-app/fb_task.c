@@ -94,7 +94,7 @@ static void fb_task(void *cookie){
 
 		fb_rect_fill(0, 319, 0, 239, LU_BRT_BLUE);
 
-		for(i = 0; i < 2; i++){
+		for(i = 0; i < NB_INVADERS; i++){
 			fb_rect_fill(invader_loc[i].hitbox.y,
 						 invader_loc[i].hitbox.y + invader_loc[i].hitbox.height,
 						 invader_loc[i].hitbox.x,
