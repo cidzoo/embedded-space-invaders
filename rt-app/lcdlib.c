@@ -12,6 +12,7 @@
 #include "lcdfont.h"
 #include <linux/fb.h>
 
+unsigned char fb_mem_tmp[154080];
 unsigned char *fb_mem = NULL;
 static unsigned int Xn = 7391; /* Initial random seed */
 
@@ -50,7 +51,12 @@ unsigned int get_random(void) {
 }
 
 void fb_set_pixel(int y, int x, int couleur) {
-  *((unsigned short int*)(fb_mem + 2*x + y*480)) = couleur;
+  //*((unsigned short int*)(fb_mem + 2*x + y*480)) = couleur;
+	*((unsigned short int*)(fb_mem_tmp + 2*x + y*480)) = couleur;
+}
+
+void fb_display(){
+	memcpy(fb_mem, fb_mem_tmp, 154080);
 }
 
 void fb_rect_fill(int y_min, int y_max, int x_min, int x_max, int couleur) {

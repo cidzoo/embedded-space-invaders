@@ -83,11 +83,11 @@ static void fb_task(void *cookie){
 	for (;;) {
 		rt_task_wait_period(NULL);
 
-		invaders_refresh();
+		//invaders_refresh();
 
 		//hit_refresh();
 		//ship_refresh();
-		/*
+
 		invaders_lock();
 		memcpy(invader_loc, invaders, sizeof(invader_loc));
 		invaders_unlock();
@@ -100,7 +100,11 @@ static void fb_task(void *cookie){
 						 invader_loc[i].hitbox.x,
 						 invader_loc[i].hitbox.x + invader_loc[i].hitbox.width,
 						 LU_BLACK);
-		}*/
+		}
+
+		rt_task_set_priority(NULL, 90);
+		fb_display();
+		rt_task_set_priority(NULL, 50);
 	}
 }
 

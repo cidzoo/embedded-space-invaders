@@ -32,6 +32,8 @@ unsigned int get_random(void);
  */
 void fb_init(void);
 
+void fb_display(void);
+
 /**
  * Fill the rectangle delimited by y_min, y_max, x_min and x_max with
  * the given color.
