@@ -112,7 +112,7 @@ static void ship_task(void *cookie){
 		// Tester une pression sur l'ecran
 		if(sample.pressure > 0){
 			if(sample.y >= 200){
-				if(sample.x < 120){
+				if(sample.x < (ship_loc.hitbox.x + ship_loc.hitbox.width/2 - 2)){
 					if(dir == -1){
 						acc += 1;
 					}else{
@@ -120,7 +120,7 @@ static void ship_task(void *cookie){
 					}
 					dir = -1;
 					x -= acc;
-				}else{
+				}else if(sample.x > (ship_loc.hitbox.x + ship_loc.hitbox.width/2 + 2)){
 					if(dir == 1){
 						acc += 1;
 					}else{

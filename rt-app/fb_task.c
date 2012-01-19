@@ -141,9 +141,9 @@ static void fb_task(void *cookie){
 					 ship_loc.hitbox.x + ship_loc.hitbox.width,
 					 LU_BRT_YELLOW);
 
-		//rt_task_set_priority(NULL, 90);
-		//fb_display();
-		//rt_task_set_priority(NULL, 50);
+		rt_task_set_priority(NULL, 90);
+		fb_display();
+		rt_task_set_priority(NULL, 50);
 	}
 }
 

@@ -51,12 +51,12 @@ unsigned int get_random(void) {
 }
 
 void fb_set_pixel(int y, int x, int couleur) {
-	*((unsigned short int*)(fb_mem + 2*x + y*480)) = couleur;
-	//*((unsigned short int*)(fb_mem_tmp + 2*x + y*480)) = couleur;
+	//*((unsigned short int*)(fb_mem + 2*x + y*480)) = couleur;
+	*((unsigned short int*)(fb_mem_tmp + 2*x + y*480)) = couleur;
 }
 
 void fb_display(){
-	//memcpy(fb_mem, fb_mem_tmp, 154080);
+	memcpy(fb_mem, fb_mem_tmp, 153600);
 }
 
 void fb_rect_fill(int y_min, int y_max, int x_min, int x_max, int couleur) {

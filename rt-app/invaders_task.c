@@ -13,6 +13,7 @@
  */
 invader_t invaders[NB_INVADERS];
 
+
 /**
  * Variables privées
  */
@@ -22,10 +23,10 @@ uint8_t invaders_task_mutex_created = 0;
 RT_TASK invaders_task_handle;
 uint8_t invaders_task_created = 0;
 
-static int moving_invader = 10;
 static int wave_row=1;
 static int nb_invaders_per_line[NB_INVADERS];
 static int moving_right = 1;
+static int level_finish = 0;
 
 /**
  * Fonctions privées
@@ -91,18 +92,36 @@ void invaders_task_cleanup_objects(){
 
 static void invaders_task(void *cookie){
 	int i;
-	rt_task_set_periodic(NULL, TM_NOW, 100000000);
+	int wait = 0;
 
+	rt_task_set_periodic(NULL, TM_NOW, 100000000);
 	invaders_lock();
 	invaders_init();
 	invaders_unlock();
 
+
+
 	for (;;) {
 		rt_task_wait_period(NULL);
+
+		if (level_finish){
+			level_up();
+			level_finish=0;
+			invaders_lock();
+			invaders_init();
+			invaders_unlock();
+		}
 
 		invaders_lock();
 		invaders_move();
 		invaders_unlock();
+		if(wait == 20){
+			for (i=0;i<NB_INVADERS;i++){
+				invaders[i].hp-=1;
+			}
+			wait =0;
+		}
+		wait++;
 
 	}
 }
@@ -188,28 +207,40 @@ static void invaders_task(void *cookie){
 	 int i;
 
 	 hitbox_t dimension;
+	 int invader_dead=0;
 
 	 invaders_get_wave_box(&dimension);
+
 
 	 for (i=0; i<NB_INVADERS;i++){
 
 		 if (moving_right){
-			 if ((dimension.x + dimension.width) < LCD_MAX_X){
-				 invaders[i].hitbox.x += moving_invader;
+			 if ((dimension.x + dimension.width + current_wave.invader_speed) < LCD_MAX_X){
+				 invaders[i].hitbox.x += current_wave.invader_speed;
 			 }
 			 else
 				 moving_right = 0;
 
 		 }
 		 else{
-			 if (dimension.x > 0){
-				 invaders[i].hitbox.x -= moving_invader;
+			 if (dimension.x> current_wave.invader_speed){
+				 invaders[i].hitbox.x -= current_wave.invader_speed;
 			 }
 			 else
 				 moving_right = 1;
 		 }
 
+		 //Count the number of invader dead
+		 if (invaders[i].hp<=0)
+			 invader_dead++;
+
 	 }
+
+
+
+	 // test if level finish
+	 if (invader_dead == NB_INVADERS)
+		 level_finish = 1;
 
  }
 
@@ -254,8 +285,8 @@ static void invaders_task(void *cookie){
 
 	 wave_hitbox->x  = temp.x;
 	 wave_hitbox->y  = temp.y;
-	 wave_hitbox->width = temp.width - temp.x;
-	 wave_hitbox->height = temp.height - temp.y;
+	 wave_hitbox->width = temp.width - temp.x + WIDTH_INVADER;
+	 wave_hitbox->height = temp.height - temp.y + HEIGT_INVADER;
 
 
 }
@@ -296,6 +327,9 @@ void invaders_refresh(void){
 					 LU_BLACK);
 
 	}
+
+
+
 
 
 
