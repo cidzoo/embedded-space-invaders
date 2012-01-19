@@ -81,7 +81,7 @@ void io_task(void *cookie)
 			if(old_val_sw[i] != new_val_sw[i]){
 
 				if(new_val_sw[i] == 1){
-					printk("sw[%d] pressed\n", i);
+					//printk("sw[%d] pressed\n", i);
 					// On s'occupe des leds
 					io_data.io_num = i;
 					io_data.io_type = io_led;
@@ -89,9 +89,9 @@ void io_task(void *cookie)
 					pca9554_set(&io_data);
 					//pca9554_write(&tmp_file, NULL, 1, NULL);
 					//write(fd_led[i], &new_val_sw[i], 1);
-					printk("led[%d] turned on\n", i);
+					//printk("led[%d] turned on\n", i);
 				}else{
-					printk(KERN_INFO "sw[%d] released\n", i);
+					//printk(KERN_INFO "sw[%d] released\n", i);
 					// On s'occupe des leds
 					io_data.io_num = i;
 					io_data.io_type = io_led;
@@ -99,7 +99,7 @@ void io_task(void *cookie)
 					pca9554_set(&io_data);
 					//pca9554_write(&tmp_file, NULL, 1, NULL);
 					//write(fd_led[i], &new_val_sw[i], 1);
-					printk("led[%d] turned off\n", i);
+					//printk("led[%d] turned off\n", i);
 				}
 				modif = 1;
 			}

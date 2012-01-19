@@ -18,6 +18,31 @@
 RT_TASK fb_task_handle;
 static uint8_t fb_task_created = 0;
 
+#define FC	LU_WHITE
+#define BC	LU_BLACK
+
+void draw_invader(unsigned int x, unsigned int y);
+
+static unsigned short int invader_bmp[16][16] = {
+	{FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC},
+	{BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC},
+	{FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC},
+	{BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC},
+	{FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC},
+	{BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC},
+	{FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC},
+	{BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC},
+	{FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC},
+	{BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC},
+	{FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC},
+	{BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC},
+	{FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC},
+	{BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC},
+	{FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC},
+	{BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC},
+};
+
+
 /**
  * Fonctions privées
  */
@@ -64,9 +89,10 @@ void fb_task_cleanup_objects(){
 static void fb_task(void *cookie){
 	int  i;
 	invader_t invader_loc[NB_INVADERS];
+	spaceship_t ship_loc;
 
 	rt_task_set_periodic(NULL, TM_NOW, 40000000);
-	fb_rect_fill(0, 319, 0, 239, LU_BRT_BLUE);
+	//fb_rect_fill(0, 319, 0, 239, LU_BRT_BLUE);
 /*
 	invader_loc[0].hitbox.x = 20;
 	invader_loc[0].hitbox.y = 20;
@@ -92,19 +118,41 @@ static void fb_task(void *cookie){
 		memcpy(invader_loc, invaders, sizeof(invader_loc));
 		invaders_unlock();
 
+		ship_lock();
+		memcpy(&ship_loc, &ship, sizeof(ship_loc));
+		ship_unlock();
+
 		fb_rect_fill(0, 319, 0, 239, LU_BRT_BLUE);
 
-		for(i = 0; i < 2; i++){
-			fb_rect_fill(invader_loc[i].hitbox.y,
+		// On dessine les invaders
+		for(i = 0; i < NB_INVADERS; i++){
+			/*fb_rect_fill(invader_loc[i].hitbox.y,
 						 invader_loc[i].hitbox.y + invader_loc[i].hitbox.height,
 						 invader_loc[i].hitbox.x,
 						 invader_loc[i].hitbox.x + invader_loc[i].hitbox.width,
-						 LU_BLACK);
+						 LU_BLACK);*/
+			draw_invader(invader_loc[i].hitbox.y, invader_loc[i].hitbox.x);
 		}
 
-		rt_task_set_priority(NULL, 90);
-		fb_display();
-		rt_task_set_priority(NULL, 50);
+		// On dessine le vaisseau
+		fb_rect_fill(ship_loc.hitbox.y,
+					 ship_loc.hitbox.y + ship_loc.hitbox.height,
+					 ship_loc.hitbox.x,
+					 ship_loc.hitbox.x + ship_loc.hitbox.width,
+					 LU_BRT_YELLOW);
+
+		//rt_task_set_priority(NULL, 90);
+		//fb_display();
+		//rt_task_set_priority(NULL, 50);
+	}
+}
+
+void draw_invader(unsigned int y, unsigned int x){
+	int i, j;
+	for(i = 0; i < 16; i++){
+		for(j = 0; j < 16; j++){
+			fb_set_pixel(y + i, x + j, invader_bmp[i][j]);
+		}
 	}
 }
 
