@@ -119,7 +119,7 @@ static void invaders_task(void *cookie){
 			for (i=0;i<NB_INVADERS;i++){
 				invaders[i].hp-=1;
 			}
-			wait =0;
+			wait=0;
 		}
 		wait++;
 

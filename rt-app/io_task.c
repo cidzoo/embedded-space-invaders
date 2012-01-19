@@ -87,6 +87,7 @@ void io_task(void *cookie)
 					io_data.io_type = io_led;
 					io_data.value = 1;
 					pca9554_set(&io_data);
+
 					//pca9554_write(&tmp_file, NULL, 1, NULL);
 					//write(fd_led[i], &new_val_sw[i], 1);
 					//printk("led[%d] turned on\n", i);

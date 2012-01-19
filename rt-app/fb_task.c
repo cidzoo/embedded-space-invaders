@@ -131,7 +131,9 @@ static void fb_task(void *cookie){
 						 invader_loc[i].hitbox.x,
 						 invader_loc[i].hitbox.x + invader_loc[i].hitbox.width,
 						 LU_BLACK);*/
-			draw_invader(invader_loc[i].hitbox.y, invader_loc[i].hitbox.x);
+			if(invader_loc[i].hp > 0){
+				draw_invader(invader_loc[i].hitbox.y, invader_loc[i].hitbox.x);
+			}
 		}
 
 		// On dessine le vaisseau
