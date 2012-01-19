@@ -67,7 +67,7 @@ static void fb_task(void *cookie){
 
 	rt_task_set_periodic(NULL, TM_NOW, 40000000);
 	fb_rect_fill(0, 319, 0, 239, LU_BRT_BLUE);
-
+/*
 	invader_loc[0].hitbox.x = 20;
 	invader_loc[0].hitbox.y = 20;
 	invader_loc[0].hitbox.width = 20;
@@ -77,11 +77,14 @@ static void fb_task(void *cookie){
 	invader_loc[1].hitbox.y = 20;
 	invader_loc[1].hitbox.width = 20;
 	invader_loc[1].hitbox.height = 20;
+*/
+
 
 	for (;;) {
 		rt_task_wait_period(NULL);
 
 		//invaders_refresh();
+
 		//hit_refresh();
 		//ship_refresh();
 

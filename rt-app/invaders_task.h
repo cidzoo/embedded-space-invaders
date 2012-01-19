@@ -10,8 +10,8 @@
 
 #include "global.h"
 
-#define WIDTH_INVADER 	35
-#define HEIGT_INVADER	35
+#define WIDTH_INVADER 	15
+#define HEIGT_INVADER	15
 #define HP_INVADER		10
 #define SPACE_BETWEEN_INVADER	20
 
