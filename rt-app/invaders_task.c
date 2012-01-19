@@ -115,14 +115,6 @@ static void invaders_task(void *cookie){
 		invaders_lock();
 		invaders_move();
 		invaders_unlock();
-		if(wait == 20){
-			for (i=0;i<NB_INVADERS;i++){
-				invaders[i].hp-=1;
-			}
-			wait=0;
-		}
-		wait++;
-
 	}
 }
 

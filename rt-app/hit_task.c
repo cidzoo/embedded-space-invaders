@@ -108,7 +108,7 @@ void hit_task(void *cookie){
 	for (;;) {
 		rt_task_wait_period(NULL);
 		if(tempo == 100){
-			fire_weapon(GUN);
+			fire_weapon(ROCKET);
 			tempo = 0;
 		}
 		tempo++;
@@ -121,13 +121,10 @@ void hit_task(void *cookie){
 				invader = &invaders[j];
 				bullet = &bullets[i];
 
-				//control if the bullet it touching the invader
+				//test if applicable
 				if(invader->hp>0 && bullet->weapon != NULL){
-
-					//TODO : test normalement : == 0, controler la fct hit_test car
-					//renvoie toujours 0
+					//control if the bullet it touching the invader
 					if(hit_test(invader->hitbox, bullet->hitbox) == 0){
-						printk("hit!!\n");
 						//if so : damage the invader
 						for (k=0;k < bullet->weapon->damage;k++){
 							invader->hp--;
