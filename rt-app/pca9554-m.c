@@ -96,6 +96,8 @@ ssize_t pca9554_read(struct file *file, char __user *buff, size_t len, loff_t *o
 		if(val >= 0 && val <= 7){
 			switch(pca_data->io_type){
 			case io_led:
+				// Si les, on reogranise l'ordre
+				val = 3 - val;
 				type = io_led;
 				break;
 			case io_switch:
@@ -174,6 +176,8 @@ ssize_t pca9554_write(struct file *file, const char __user *buff, size_t len, lo
 		if(val >= 0 && val <= 7){
 			switch(pca_data->io_type){
 			case io_led:
+				// Si led, on reorganise l'ordre des leds
+				val = 3 - val;
 				type = io_led;
 				break;
 			case io_switch:

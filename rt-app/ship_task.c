@@ -25,12 +25,14 @@ static uint8_t ship_task_mutex_created = 0;
 RT_TASK ship_task_handle;
 static uint8_t ship_task_created = 0;
 
+struct ts_sample sample;	// Utilise pour recuperer les information du TS
+
 /**
  * Fonctions privées
  */
 static void ship_task(void *cookie);
 static void ship_init(void);
-static void ship_move(int x, int y);
+static void ship_move(int x);
 static void ship_display (void);
 static int ship_comp_to_zone_vess(void);
 
@@ -38,14 +40,14 @@ static int ship_comp_to_zone_vess(void);
 int ship_task_start(){
 	int err;
 
-		err = rt_mutex_create(&ship_task_mutex, "task_ship_mutex");
-		if(err == 0){
-			ship_task_mutex_created = 1;
-			printk("rt-app: Task SHIP create mutex succeed\n");
-		}else{
-			printk("rt-app: Task SHIP create mutex failed\n");
-			goto fail;
-		}
+	err = rt_mutex_create(&ship_task_mutex, "task_ship_mutex");
+	if(err == 0){
+		ship_task_mutex_created = 1;
+		printk("rt-app: Task SHIP create mutex succeed\n");
+	}else{
+		printk("rt-app: Task SHIP create mutex failed\n");
+		goto fail;
+	}
 	err = rt_task_create(&ship_task_handle,
 	                     "task_ship",
 	                      TASK_STKSZ,
@@ -87,12 +89,64 @@ void ship_task_cleanup_objects(){
 }
 
 static void ship_task(void *cookie){
+	spaceship_t ship_loc;
+	int acc = 0;
+	int dir = 0;
+	int x;
 
-	rt_task_set_periodic(NULL, TM_NOW, 10000000);
-
+	rt_task_set_periodic(NULL, TM_NOW, 30000000);
+	ship_lock();
 	ship_init();
+	memcpy(&ship_loc, &ship, sizeof(ship_loc));
+	x = ship_loc.hitbox.x;
+	ship_unlock();
+
+	sample.tv.tv_sec = 0;
+	sample.tv.tv_usec = 100;
 
 	for (;;) {
+		// Lecture de l'etat du touchscreen
+		xeno_ts_read(&sample, 1, O_NONBLOCK);
+
+		//ship_lock();
+		// Tester une pression sur l'ecran
+		if(sample.pressure > 0){
+			if(sample.y >= 200){
+				if(sample.x < (ship_loc.hitbox.x + ship_loc.hitbox.width/2 - 2)){
+					if(dir == -1){
+						acc += 1;
+					}else{
+						acc = 0;
+					}
+					dir = -1;
+					x -= acc;
+				}else if(sample.x > (ship_loc.hitbox.x + ship_loc.hitbox.width/2 + 2)){
+					if(dir == 1){
+						acc += 1;
+					}else{
+						acc = 0;
+					}
+					dir = 1;
+					x += acc;
+				}
+				if(x < 0){
+					x = 0;
+					acc = 0;
+					dir = 0;
+				}else if(x > LCD_MAX_X-1 - ship_loc.hitbox.width){
+					x = LCD_MAX_X - 1 - ship_loc.hitbox.width;
+					acc = 0;
+					dir = 0;
+				}
+			}
+		}
+
+		//ship_unlock();
+		ship_lock();
+		ship_loc.hitbox.x = x;
+		memcpy(&ship, &ship_loc, sizeof(ship_loc));
+		ship_unlock();
+
 		rt_task_wait_period(NULL);
 	}
 }
@@ -109,13 +163,12 @@ static void ship_init(){
 	ship_unlock();
 }
 
-static void ship_move(int x, int y){
+static void ship_move(int x){
 
 	fb_rect_fill(ship.hitbox.y, ship.hitbox.y + ship.hitbox.height,
-			ship.hitbox.x, ship.hitbox.x+ship.hitbox.height, LU_BLACK);
+			ship.hitbox.x, ship.hitbox.x+ship.hitbox.height, LU_BRT_BLUE);
 
-	ship.hitbox.x= x;
-	ship.hitbox.y= y;
+	ship.hitbox.x = x;
 }
 
 static void ship_display (){

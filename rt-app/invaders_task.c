@@ -13,6 +13,7 @@
  */
 invader_t invaders[NB_INVADERS];
 
+
 /**
  * Variables privées
  */
@@ -22,9 +23,10 @@ uint8_t invaders_task_mutex_created = 0;
 RT_TASK invaders_task_handle;
 uint8_t invaders_task_created = 0;
 
-static int moving_invader = 10;
 static int wave_row=1;
 static int nb_invaders_per_line[NB_INVADERS];
+static int moving_right = 1;
+static int level_finish = 0;
 
 /**
  * Fonctions privées
@@ -90,27 +92,43 @@ void invaders_task_cleanup_objects(){
 
 static void invaders_task(void *cookie){
 	int i;
-	rt_task_set_periodic(NULL, TM_NOW, 500000000);
+	int wait = 0;
 
+	rt_task_set_periodic(NULL, TM_NOW, 100000000);
 	invaders_lock();
 	invaders_init();
 	invaders_unlock();
 
+
+
 	for (;;) {
 		rt_task_wait_period(NULL);
 
-		invaders_lock();
-		for(i = 0; i < NB_INVADERS; i++){
-			invaders[i].hitbox.x++;
+		if (level_finish){
+			level_up();
+			level_finish=0;
+			invaders_lock();
+			invaders_init();
+			invaders_unlock();
 		}
-		invaders_unlock();
 
-		//invaders_move();
+		invaders_lock();
+		invaders_move();
+		invaders_unlock();
+		if(wait == 20){
+			for (i=0;i<NB_INVADERS;i++){
+				invaders[i].hp-=1;
+			}
+			wait =0;
+		}
+		wait++;
+
 	}
 }
 
  void invaders_init(){
 
+	 /*
 	 int i;
 	 int nb_max_invaders_per_line=0;
 	 int id_invader=0;
@@ -149,97 +167,128 @@ static void invaders_task(void *cookie){
 
 			 id_invader++;
 		 }
+	 }*/
+
+
+
+	 int i;
+
+
+	 for (i=0;i<7;i++){
+	 			 invaders[i].hp=HP_INVADER;
+	 			 invaders[i].hitbox.height=HEIGT_INVADER;
+	 			 invaders[i].hitbox.width=WIDTH_INVADER;
 	 }
 
-	invaders[0].hitbox.x = 20;
-	invaders[0].hitbox.y = 20;
-	invaders[0].hitbox.width = 20;
-	invaders[0].hitbox.height = 20;
+	 for (i=0;i<4;i++){
+			 invaders[i].hp=HP_INVADER;
+			 invaders[i].hitbox.height=HEIGT_INVADER;
+			 invaders[i].hitbox.width=WIDTH_INVADER;
 
-	invaders[1].hitbox.x = 50;
-	invaders[1].hitbox.y = 20;
-	invaders[1].hitbox.width = 20;
-	invaders[1].hitbox.height = 20;
+			 invaders[i].hitbox.x = (3*SPACE_BETWEEN_INVADER)+(i*(SPACE_BETWEEN_INVADER+WIDTH_INVADER));
+			 invaders[i].hitbox.y = 30;
+	 }
 
-	invaders[2].hitbox.x = 80;
-	invaders[2].hitbox.y = 20;
-	invaders[2].hitbox.width = 20;
-	invaders[2].hitbox.height = 20;
+
+	 for (i=0;i<3;i++){
+			 invaders[i+4].hp=HP_INVADER;
+			 invaders[i+4].hitbox.height=HEIGT_INVADER;
+			 invaders[i+4].hitbox.width=WIDTH_INVADER;
+
+			 invaders[i+4].hitbox.x = (3*SPACE_BETWEEN_INVADER+(WIDTH_INVADER))+(i*(SPACE_BETWEEN_INVADER+WIDTH_INVADER));
+			 invaders[i+4].hitbox.y = 60;
+	 }
+
+
+
  }
 
  void invaders_move(){
 	 int i;
+
 	 hitbox_t dimension;
+	 int invader_dead=0;
 
 	 invaders_get_wave_box(&dimension);
 
-	 if ((dimension.x + dimension.width) >= LCD_MAX_X)
-		 moving_invader *= 1;
-	 if (dimension.x <= 0)
-		 moving_invader *= -1;
 
-	 for (i=0;i<NB_INVADERS;i++){
-		 	invaders[i].hitbox.x += moving_invader;
+	 for (i=0; i<NB_INVADERS;i++){
+
+		 if (moving_right){
+			 if ((dimension.x + dimension.width + current_wave.invader_speed) < LCD_MAX_X){
+				 invaders[i].hitbox.x += current_wave.invader_speed;
+			 }
+			 else
+				 moving_right = 0;
+
+		 }
+		 else{
+			 if (dimension.x> current_wave.invader_speed){
+				 invaders[i].hitbox.x -= current_wave.invader_speed;
+			 }
+			 else
+				 moving_right = 1;
+		 }
+
+		 //Count the number of invader dead
+		 if (invaders[i].hp<=0)
+			 invader_dead++;
+
 	 }
- }
 
+
+
+	 // test if level finish
+	 if (invader_dead == NB_INVADERS)
+		 level_finish = 1;
+
+ }
 
  //return  hitboxes from wave
  void invaders_get_wave_box(hitbox_t *wave_hitbox){
 
 	 int i;
 
-	 coord_t top_left,top_right,bot_left,bot_right;
-	 top_left.x=LCD_MAX_X;
-	 top_left.y=0;
-	 top_right.x=0;
-	 top_right.y=0;
-	 bot_left.x=LCD_MAX_X;
-	 bot_left.y=LCD_MAX_Y;
-	 bot_right.x=0;
-	 bot_right.y=LCD_MAX_Y;
+	 hitbox_t temp;
 
+	 temp.x=LCD_MAX_X;
+	 temp.y=LCD_MAX_Y;
+	 temp.height=0;
+	 temp.width=0;
 
 
 
 	 //Detection hitbox top
 	 for (i=0;i<NB_INVADERS;i++){
 
-		 if ((invaders[i].hitbox.x < top_left.x)&&(invaders[i].hp<=0)){
-			 top_left.x=invaders[i].hitbox.x;
-			 top_left.y=invaders[i].hitbox.y;
+
+		 //Detection x
+		 if ((invaders[i].hitbox.x < temp.x)&&(invaders[i].hp>0)){
+			 temp.x=invaders[i].hitbox.x;
 		 }
 
-		 else if ((invaders[i].hitbox.x > top_right.x)&&(invaders[i].hp<=0)){
-			 top_right.x=invaders[i].hitbox.x;
-			 top_right.y=invaders[i].hitbox.y;
+		 //Detection y
+		 if ((invaders[i].hitbox.y < temp.y)&&(invaders[i].hp>0)){
+			 temp.y=invaders[i].hitbox.x;
 		 }
 
+		 //Detection width
+		 if ((invaders[i].hitbox.x > temp.width)&&(invaders[i].hp>0)){
+			 temp.width=invaders[i].hitbox.x;
+		 }
+		 //Detection height
+		 if ((invaders[i].hitbox.y > temp.height)&&(invaders[i].hp>0)){
+			 temp.height=invaders[i].hitbox.y;
+		 }
 	 }
 
-	 //Detection hitbox bot
-	 for (i=NB_INVADERS;i>0;i--){
 
-		 if ((invaders[i].hitbox.x < bot_left.x)&&(invaders[i].hp<=0)){
-			 bot_left.x=invaders[i].hitbox.x;
-			 bot_left.y=invaders[i].hitbox.y;
-		 }
+	 wave_hitbox->x  = temp.x;
+	 wave_hitbox->y  = temp.y;
+	 wave_hitbox->width = temp.width - temp.x + WIDTH_INVADER;
+	 wave_hitbox->height = temp.height - temp.y + HEIGT_INVADER;
 
-		 else if ((invaders[i].hitbox.x > bot_right.x)&&(invaders[i].hp<=0)){
-			 bot_right.x=invaders[i].hitbox.x;
-			 bot_right.y=invaders[i].hitbox.y;
-		 }
 
-	 }
-
-	 wave_hitbox->x  = top_left.x;
-	 wave_hitbox->y  = top_left.y;
-	 wave_hitbox->x = top_right.x;
-	 wave_hitbox->y = top_right.y;
-	 wave_hitbox->x  = bot_left.x;
-	 wave_hitbox->y  = bot_left.y;
-	 wave_hitbox->x = bot_right.x;
-	 wave_hitbox->y = bot_right.y;
 }
 
 int invaders_lock(){
@@ -261,17 +310,31 @@ void invaders_refresh(void){
 	invader_t invader_loc[NB_INVADERS];
 	int i;
 
+	fb_rect_fill(0, 319, 0, 239, LU_BRT_BLUE);
+
+
+	invaders_lock();
+	memcpy(invader_loc, invaders, sizeof(invader_t)*NB_INVADERS);
+	invaders_unlock();
+
+
 	for(i = 0; i < NB_INVADERS; i++){
+
 		fb_rect_fill(invader_loc[i].hitbox.y,
 					 invader_loc[i].hitbox.y + invader_loc[i].hitbox.height,
 					 invader_loc[i].hitbox.x,
 					 invader_loc[i].hitbox.x + invader_loc[i].hitbox.width,
 					 LU_BLACK);
+
 	}
+
+
+
+
+
+
+
 }
-
-
-
 
 
 

@@ -10,6 +10,9 @@
 
 #include "global.h"
 
+//List of the invaders
+extern spaceship_t ship;
+
 extern int ship_task_start(void);
 extern void ship_task_cleanup_task(void);
 extern void ship_task_cleanup_objects(void);

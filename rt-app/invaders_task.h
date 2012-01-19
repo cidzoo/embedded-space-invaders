@@ -10,13 +10,14 @@
 
 #include "global.h"
 
-#define WIDTH_INVADER 	35
-#define HEIGT_INVADER	35
+#define WIDTH_INVADER 	16
+#define HEIGT_INVADER	16
 #define HP_INVADER		10
 #define SPACE_BETWEEN_INVADER	20
 
 //List of the invaders
 extern invader_t invaders[NB_INVADERS];
+
 
 extern int invaders_task_start(void);
 extern void invaders_task_cleanup_task(void);

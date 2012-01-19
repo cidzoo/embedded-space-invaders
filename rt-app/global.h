@@ -56,11 +56,10 @@ typedef struct{
 /* Waves */
 typedef struct{
 	uint8_t level;
-	invader_t invaders[NB_INVADERS];
 	uint16_t invader_speed;
 }wave_t;
 
-extern wave_t *current_wave;
+extern wave_t current_wave;
 
 /* Spaceship */
 typedef struct{

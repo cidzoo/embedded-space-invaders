@@ -7,8 +7,13 @@
 
 #include "global.h"
 
+<<<<<<< HEAD
 wave_t *current_wave;
 spaceship_t ss;
+=======
+wave_t current_wave = {0,1};
+spaceship_t *ss;
+>>>>>>> f5aff8c1e90801f1c0f4c50679819744e4fa1183
 
 //List of the bullets
 bullet_t bullets[NB_MAX_BULLETS];
@@ -31,10 +36,11 @@ difficulty_t difficulty = NORMAL;
 
 //To call each time the current invaders wave is finished to init a new one
 void level_up(){
-	static uint8_t lvl = 0;
+	//static uint8_t lvl = 0;
 
-	current_wave->level = ++lvl;
-	current_wave->invader_speed += 2*difficulty;
+	//current_wave->level = ++lvl;
+	current_wave.level++;
+	current_wave.invader_speed += 2*difficulty;
 
 	//init_invaders(current_wave->invaders);
 }
