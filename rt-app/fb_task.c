@@ -68,11 +68,13 @@ static void fb_task(void *cookie){
 	rt_task_set_periodic(NULL, TM_NOW, 40000000);
 	fb_rect_fill(0, 319, 0, 239, LU_BRT_BLUE);
 
+	invader_loc[0].hp = 3;
 	invader_loc[0].hitbox.x = 20;
 	invader_loc[0].hitbox.y = 20;
 	invader_loc[0].hitbox.width = 20;
 	invader_loc[0].hitbox.height = 20;
 
+	invader_loc[1].hp = 3;
 	invader_loc[1].hitbox.x = 50;
 	invader_loc[1].hitbox.y = 20;
 	invader_loc[1].hitbox.width = 20;
@@ -82,21 +84,23 @@ static void fb_task(void *cookie){
 		rt_task_wait_period(NULL);
 
 		//invaders_refresh();
-		//hit_refresh();
+		hit_refresh();
 		//ship_refresh();
 
 		invaders_lock();
-		memcpy(invader_loc, invaders, sizeof(invader_loc));
+		//memcpy(invader_loc, invaders, sizeof(invader_loc));
 		invaders_unlock();
 
 		fb_rect_fill(0, 319, 0, 239, LU_BRT_BLUE);
 
 		for(i = 0; i < 2; i++){
-			fb_rect_fill(invader_loc[i].hitbox.y,
-						 invader_loc[i].hitbox.y + invader_loc[i].hitbox.height,
-						 invader_loc[i].hitbox.x,
-						 invader_loc[i].hitbox.x + invader_loc[i].hitbox.width,
-						 LU_BLACK);
+			if(invader_loc[i].hp > 0){
+				fb_rect_fill(invader_loc[i].hitbox.y,
+							 invader_loc[i].hitbox.y + invader_loc[i].hitbox.height,
+							 invader_loc[i].hitbox.x,
+							 invader_loc[i].hitbox.x + invader_loc[i].hitbox.width,
+							 LU_BLACK);
+			}
 		}
 	}
 }
