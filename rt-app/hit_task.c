@@ -127,7 +127,7 @@ void hit_task(void *cookie){
 					//TODO : test normalement : == 0, controler la fct hit_test car
 					//renvoie toujours 0
 					if(hit_test(invader->hitbox, bullet->hitbox) == 0){
-						printk("hit!!\n");
+
 						//if so : damage the invader
 						for (k=0;k < bullet->weapon->damage;k++){
 							invader->hp--;
@@ -237,24 +237,3 @@ static int hit_test(hitbox_t a, hitbox_t b){
 	return -1;
 
 }//hit_test()
-
-void hit_refresh(void){
-	int i;
-//	bullet_t bullets_loc[NB_MAX_BULLETS];
-
-	for(i = 0; i < NB_MAX_BULLETS; i++){
-		if (bullets[i].weapon != NULL){
-
-			if(bullets[i].hitbox.y-1 == 0){
-				remove_bullet(i);
-			}
-			bullets[i].hitbox.y--;
-
-			fb_rect_fill(bullets[i].hitbox.y,
-					bullets[i].hitbox.y + bullets[i].hitbox.height,
-					bullets[i].hitbox.x,
-					bullets[i].hitbox.x + bullets[i].hitbox.width,
-						 LU_RED);
-		}
-	}
-}

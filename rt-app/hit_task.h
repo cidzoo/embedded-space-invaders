@@ -26,6 +26,4 @@ extern int hit_unlock(void);
 
 extern void fire_weapon(weapontype_t w);
 
-extern void hit_refresh(void);
-
 #endif /* HIT_TASK_H_ */
