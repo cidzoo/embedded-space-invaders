@@ -64,7 +64,6 @@ int invaders_task_start(){
 		printk("rt-app: Task INVADERS creation failed\n");
 		goto fail;
 	}
-	invaders_init();
 	return 0;
 fail:
 	invaders_task_cleanup();
@@ -142,6 +141,8 @@ static void invaders_task(void *cookie){
 		 }
 	 }*/
 
+
+	 /*
 	 int i;
 
 	 for (i=0;i<4;i++){
@@ -154,14 +155,41 @@ static void invaders_task(void *cookie){
 	 }
 
 	 for (i=0;i<3;i++){
-			 invaders[i].hp=HP_INVADER;
-			 invaders[i].hitbox.height=HEIGT_INVADER;
-			 invaders[i].hitbox.width=WIDTH_INVADER;
+			 invaders[i+4].hp=HP_INVADER;
+			 invaders[i+4].hitbox.height=HEIGT_INVADER;
+			 invaders[i+4].hitbox.width=WIDTH_INVADER;
 
-			 invaders[i].hitbox.x = (SPACE_BETWEEN_INVADER+(WIDTH_INVADER/2))+(i*(SPACE_BETWEEN_INVADER+WIDTH_INVADER));
-			 invaders[i].hitbox.y = 60;
+			 invaders[i+4].hitbox.x = (SPACE_BETWEEN_INVADER+(WIDTH_INVADER/2))+(i*(SPACE_BETWEEN_INVADER+WIDTH_INVADER));
+			 invaders[i+4].hitbox.y = 60;
+	 }
+	*/
+	 int i;
+	 for (i=0;i<4;i++){
+	 			 invaders[i].hp=HP_INVADER;
+	 			 invaders[i].hitbox.height=HEIGT_INVADER;
+	 			 invaders[i].hitbox.width=WIDTH_INVADER;
 	 }
 
+	 invaders[0].hitbox.x= 40;
+	 invaders[0].hitbox.y= 40;
+
+	 invaders[1].hitbox.x= 40 + SPACE_BETWEEN_INVADER + WIDTH_INVADER;
+	 invaders[1].hitbox.y= 40;
+
+	 invaders[2].hitbox.x= 40 + 2*SPACE_BETWEEN_INVADER + 2*WIDTH_INVADER;
+	 invaders[2].hitbox.y= 40;
+
+	 invaders[3].hitbox.x= 40 + 3*SPACE_BETWEEN_INVADER + 3*WIDTH_INVADER;
+	 invaders[3].hitbox.y= 40;
+
+	 invaders[4].hitbox.x= 50 + SPACE_BETWEEN_INVADER + WIDTH_INVADER;
+	 invaders[4].hitbox.y= 100;
+
+	 invaders[5].hitbox.x= 50 + 2*SPACE_BETWEEN_INVADER + 2*WIDTH_INVADER;
+	 invaders[5].hitbox.y= 100;
+
+	 invaders[6].hitbox.x= 50 + 3*SPACE_BETWEEN_INVADER + 3*WIDTH_INVADER;
+	 invaders[6].hitbox.y= 100;
 
  }
 
@@ -263,8 +291,10 @@ void invaders_refresh(void){
 	invader_t invader_loc[NB_INVADERS];
 	int i;
 
+	//invaders_init();
+
 	invaders_lock();
-	memcpy(invader_loc, invaders, sizeof(invader_loc));
+	memcpy(invader_loc, invaders, sizeof(invader_t)*NB_INVADERS);
 	invaders_unlock();
 
 	for(i = 0; i < NB_INVADERS; i++){
