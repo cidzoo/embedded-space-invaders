@@ -10,6 +10,13 @@
 
 #include "global.h"
 
+
+//List of the bullets
+extern bullet_t bullets[NB_MAX_BULLETS];
+
+//List of the bombs
+extern bullet_t bombs[NB_MAX_BOMBS];
+
 extern int hit_task_start(void);
 extern void hit_task_cleanup_task(void);
 extern void hit_task_cleanup_objects(void);

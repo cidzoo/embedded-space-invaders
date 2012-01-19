@@ -61,15 +61,6 @@ typedef struct{
 
 extern wave_t current_wave;
 
-/* Spaceship */
-typedef struct{
-	uint8_t hp;
-	hitbox_t hitbox;
-	int16_t current_speed_x; // -x : 0 : x
-}spaceship_t;
-
-extern spaceship_t ss;
-
 /* Weapons */
 typedef enum{BOMB, GUN, RAIL, ROCKET, WAVE} weapontype_t;
 typedef enum{ONE=1, TWO=2, THREE=3, MAX=10}damage_t;

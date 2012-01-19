@@ -10,6 +10,13 @@
 
 #include "global.h"
 
+/* Spaceship */
+typedef struct{
+	uint8_t hp;
+	hitbox_t hitbox;
+	int16_t current_speed_x; // -x : 0 : x
+}spaceship_t;
+
 //List of the invaders
 extern spaceship_t ship;
 

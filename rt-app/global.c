@@ -7,19 +7,8 @@
 
 #include "global.h"
 
-<<<<<<< HEAD
-wave_t *current_wave;
-spaceship_t ss;
-=======
 wave_t current_wave = {0,1};
-spaceship_t *ss;
->>>>>>> f5aff8c1e90801f1c0f4c50679819744e4fa1183
 
-//List of the bullets
-bullet_t bullets[NB_MAX_BULLETS];
-
-//List of the bombs
-bullet_t bombs[NB_MAX_BOMBS];
 
 //Array of all weapons
 weapon_t weapons[5] = {

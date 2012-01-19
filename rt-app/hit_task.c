@@ -6,9 +6,17 @@
  */
 #include "hit_task.h"
 #include "invaders_task.h"
+#include "ship_task.h"
 
 #include "lcdlib.h"
 #include "vga_lookup.h"
+
+
+//List of the bullets
+bullet_t bullets[NB_MAX_BULLETS];
+
+//List of the bombs
+bullet_t bombs[NB_MAX_BOMBS];
 
 /**
  * Variables privées
@@ -82,13 +90,19 @@ void hit_task(void *cookie){
 	bullet_t *bullet;
 	int i, j, k, tempo =0;
 
+	spaceship_t ship_loc;
+
 	rt_task_set_periodic(NULL, TM_NOW, 10000000);
 
-	ss.hitbox.height = 20;
-	ss.hitbox.width = 20;
-	ss.hitbox.x = 100;
-	ss.hitbox.y = 290;
-	ss.hp = 3;
+	ship_lock();
+	memcpy(&ship_loc, &ship, sizeof(ship_loc));
+	ship_unlock();
+
+	ship_loc.hitbox.height = 20;
+	ship_loc.hitbox.width = 20;
+	ship_loc.hitbox.x = 100;
+	ship_loc.hitbox.y = 290;
+	ship_loc.hp = 3;
 
 
 	for (;;) {
@@ -136,8 +150,8 @@ void hit_task(void *cookie){
 			}//for each invaders
 			//control that the spaceship is not been touched by a invader's bomb
 //			if(bullet->weapon != NULL){
-//				if( hit_test(ss.hitbox, bullet->hitbox) ){
-//					ss.hp--;
+//				if( hit_test(ship.hitbox, bullet->hitbox) ){
+//					ship.hp--;
 //					remove_bullet(*bullet);
 //				}
 //			}
@@ -160,8 +174,8 @@ void fire_weapon(weapontype_t w){
 			break;
 		default:
 			//Grab the position of the spaceship's gun's middle top
-			start_x = ss.hitbox.x + ss.hitbox.width/2;
-			start_y = ss.hitbox.y-1;
+			start_x = ship.hitbox.x + ship.hitbox.width/2;
+			start_y = ship.hitbox.y-1;
 			break;
 		}
 
@@ -243,10 +257,4 @@ void hit_refresh(void){
 						 LU_RED);
 		}
 	}
-
-	fb_rect_fill(ss.hitbox.y,
-			ss.hitbox.y + ss.hitbox.height,
-			ss.hitbox.x,
-			ss.hitbox.x + ss.hitbox.width,
-				 LU_GREEN);
 }
