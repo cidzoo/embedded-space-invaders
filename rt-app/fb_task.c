@@ -23,6 +23,8 @@ static uint8_t fb_task_created = 0;
 
 void draw_invader(unsigned int x, unsigned int y);
 
+static void hit_refresh(void);
+
 static unsigned short int invader_bmp[16][16] = {
 	{FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC},
 	{BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC},
@@ -123,24 +125,8 @@ static void fb_task(void *cookie){
 					 LU_BRT_YELLOW);
 
 		// On dessine les bullets
-		int i;
-		//	bullet_t bullets_loc[NB_MAX_BULLETS];
+		hit_refresh();
 
-		for(i = 0; i < NB_MAX_BULLETS; i++){
-			if (bullets[i].weapon != NULL){
-
-				if(bullets[i].hitbox.y-1 == 0){
-					remove_bullet(i);
-				}
-				bullets[i].hitbox.y--;
-
-				fb_rect_fill(bullets[i].hitbox.y,
-						bullets[i].hitbox.y + bullets[i].hitbox.height,
-						bullets[i].hitbox.x,
-						bullets[i].hitbox.x + bullets[i].hitbox.width,
-							 LU_RED);
-			}
-		}
 
 		rt_task_set_priority(NULL, 90);
 		fb_display();
@@ -157,3 +143,24 @@ void draw_invader(unsigned int y, unsigned int x){
 	}
 }
 
+static void hit_refresh(void){
+	// On dessine les bullets
+	int i;
+	//	bullet_t bullets_loc[NB_MAX_BULLETS];
+
+	for(i = 0; i < NB_MAX_BULLETS; i++){
+		if (bullets[i].weapon != NULL){
+			if(bullets[i].hitbox.y-1 == 0){
+				remove_bullet(i);
+			}
+			bullets[i].hitbox.y--;
+
+			fb_rect_fill(bullets[i].hitbox.y,
+						bullets[i].hitbox.y + bullets[i].hitbox.height,
+						bullets[i].hitbox.x,
+						bullets[i].hitbox.x + bullets[i].hitbox.width,
+						LU_RED);
+		}
+	}
+
+}

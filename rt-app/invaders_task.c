@@ -91,15 +91,11 @@ void invaders_task_cleanup_objects(){
 }
 
 static void invaders_task(void *cookie){
-	int i;
-	int wait = 0;
 
 	rt_task_set_periodic(NULL, TM_NOW, 100000000);
 	invaders_lock();
 	invaders_init();
 	invaders_unlock();
-
-
 
 	for (;;) {
 		rt_task_wait_period(NULL);
@@ -248,11 +244,8 @@ static void invaders_task(void *cookie){
 	 temp.height=0;
 	 temp.width=0;
 
-
-
 	 //Detection hitbox top
 	 for (i=0;i<NB_INVADERS;i++){
-
 
 		 //Detection x
 		 if ((invaders[i].hitbox.x < temp.x)&&(invaders[i].hp>0)){
@@ -297,36 +290,30 @@ int invaders_unlock(){
 	return -1;
 }
 
+/*
 void invaders_refresh(void){
 #include "vga_lookup.h"
-	invader_t invader_loc[NB_INVADERS];
-	int i;
+invader_t invader_loc[NB_INVADERS];
+int i;
 
-	fb_rect_fill(0, 319, 0, 239, LU_BRT_BLUE);
-
-
-	invaders_lock();
-	memcpy(invader_loc, invaders, sizeof(invader_t)*NB_INVADERS);
-	invaders_unlock();
+fb_rect_fill(0, 319, 0, 239, LU_BRT_BLUE);
 
 
-	for(i = 0; i < NB_INVADERS; i++){
-
-		fb_rect_fill(invader_loc[i].hitbox.y,
-					 invader_loc[i].hitbox.y + invader_loc[i].hitbox.height,
-					 invader_loc[i].hitbox.x,
-					 invader_loc[i].hitbox.x + invader_loc[i].hitbox.width,
-					 LU_BLACK);
-
-	}
+invaders_lock();
+memcpy(invader_loc, invaders, sizeof(invader_t)*NB_INVADERS);
+invaders_unlock();
 
 
+for(i = 0; i < NB_INVADERS; i++){
 
-
-
-
+	fb_rect_fill(invader_loc[i].hitbox.y,
+				 invader_loc[i].hitbox.y + invader_loc[i].hitbox.height,
+				 invader_loc[i].hitbox.x,
+				 invader_loc[i].hitbox.x + invader_loc[i].hitbox.width,
+				 LU_BLACK);
 
 }
+*/
 
 
 

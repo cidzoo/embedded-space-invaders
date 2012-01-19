@@ -32,9 +32,9 @@ struct ts_sample sample;	// Utilise pour recuperer les information du TS
  */
 static void ship_task(void *cookie);
 static void ship_init(void);
-static void ship_move(int x);
-static void ship_display (void);
-static int ship_comp_to_zone_vess(void);
+//static void ship_move(int x);
+//static void ship_display (void);
+//static int ship_comp_to_zone_vess(void);
 
 
 int ship_task_start(){
@@ -163,14 +163,7 @@ static void ship_init(){
 	ship_unlock();
 }
 
-static void ship_move(int x){
-
-	fb_rect_fill(ship.hitbox.y, ship.hitbox.y + ship.hitbox.height,
-			ship.hitbox.x, ship.hitbox.x+ship.hitbox.height, LU_BRT_BLUE);
-
-	ship.hitbox.x = x;
-}
-
+/*
 static void ship_display (){
 	int i= 0;
 	// first we draw a pyramid
@@ -204,14 +197,14 @@ static void ship_display (){
 	// draw a rectangle
 	fb_rect_fill(ship.hitbox.y +i, ship.hitbox.y + ship.hitbox.height,
 			ship.hitbox.x, ship.hitbox.x+ship.hitbox.height, LU_BLUE);
-}
+}*/
 
 /**
  * return true whether the zone pressed is in the vessel area zone
  */
-static int ship_comp_to_zone_vess(){
+/*static int ship_comp_to_zone_vess(){
 	return 1;//(y >= VESS_Y_MIN) && (y < VESS_X_MAX);
-}
+}*/
 
 int ship_lock(){
 	if(ship_task_mutex_created){
