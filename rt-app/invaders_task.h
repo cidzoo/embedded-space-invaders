@@ -19,7 +19,8 @@
 extern invader_t invaders[NB_INVADERS];
 
 extern int invaders_task_start(void);
-extern void invaders_task_cleanup(void);
+extern void invaders_task_cleanup_task(void);
+extern void invaders_task_cleanup_objects(void);
 
 extern int invaders_lock(void);
 extern int invaders_unlock(void);

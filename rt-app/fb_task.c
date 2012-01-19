@@ -15,7 +15,7 @@
 /**
  * Variables privées
  */
-static RT_TASK fb_task_handle;
+RT_TASK fb_task_handle;
 static uint8_t fb_task_created = 0;
 
 /**
@@ -45,35 +45,56 @@ int fb_task_start(){
 	}
 	return 0;
 fail:
-	fb_task_cleanup();
+	fb_task_cleanup_task();
+	fb_task_cleanup_objects();
 	return -1;
 }
 
-void fb_task_cleanup(){
+void fb_task_cleanup_task(){
 	if(fb_task_created){
+		printk("rt-app: Task FB cleanup task\n");
 		fb_task_created = 0;
 		rt_task_delete(&fb_task_handle);
 	}
+}
+
+void fb_task_cleanup_objects(){
 }
 
 static void fb_task(void *cookie){
 	int  i;
 	invader_t invader_loc[NB_INVADERS];
 
-	rt_task_set_periodic(NULL, TM_NOW, 10000000);
+	rt_task_set_periodic(NULL, TM_NOW, 40000000);
 	fb_rect_fill(0, 319, 0, 239, LU_BRT_BLUE);
+/*
+	invader_loc[0].hitbox.x = 20;
+	invader_loc[0].hitbox.y = 20;
+	invader_loc[0].hitbox.width = 20;
+	invader_loc[0].hitbox.height = 20;
+
+	invader_loc[1].hitbox.x = 50;
+	invader_loc[1].hitbox.y = 20;
+	invader_loc[1].hitbox.width = 20;
+	invader_loc[1].hitbox.height = 20;
+*/
+
 
 	for (;;) {
 		rt_task_wait_period(NULL);
 
 		invaders_refresh();
-		hit_refresh();
-		ship_refresh();
-		/*invaders_lock();
+
+		//hit_refresh();
+		//ship_refresh();
+		/*
+		invaders_lock();
 		memcpy(invader_loc, invaders, sizeof(invader_loc));
 		invaders_unlock();
 
-		for(i = 0; i < NB_INVADERS; i++){
+		fb_rect_fill(0, 319, 0, 239, LU_BRT_BLUE);
+
+		for(i = 0; i < 2; i++){
 			fb_rect_fill(invader_loc[i].hitbox.y,
 						 invader_loc[i].hitbox.y + invader_loc[i].hitbox.height,
 						 invader_loc[i].hitbox.x,

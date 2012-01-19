@@ -24,7 +24,7 @@
 #include "hit_task.h"
 #include "ship_task.h"
 
-static RT_INTR isrDesc;
+RT_INTR isrDesc;
 
 
 static int space_invader(void)
@@ -143,11 +143,19 @@ fail_intr:
 
 void __exit cleanup_module(void) {
 
-	invaders_task_cleanup();
-	fb_task_cleanup();
-	io_task_cleanup();
-	hit_task_cleanup();
-	ship_task_cleanup();
+	// Cleanup tasks
+	invaders_task_cleanup_task();
+	fb_task_cleanup_task();
+	io_task_cleanup_task();
+	hit_task_cleanup_task();
+	ship_task_cleanup_task();
+
+	// Cleanup objects
+	invaders_task_cleanup_objects();
+	fb_task_cleanup_objects();
+	io_task_cleanup_objects();
+	hit_task_cleanup_objects();
+	ship_task_cleanup_objects();
 
 	rt_intr_delete(&isrDesc);
 

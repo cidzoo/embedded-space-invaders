@@ -11,7 +11,11 @@
 #include "global.h"
 
 extern int hit_task_start(void);
-extern void hit_task_cleanup(void);
+extern void hit_task_cleanup_task(void);
+extern void hit_task_cleanup_objects(void);
+
+extern int hit_lock(void);
+extern int hit_unlock(void);
 
 extern void hit_refresh(void);
 

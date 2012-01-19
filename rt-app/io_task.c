@@ -10,7 +10,7 @@
 /**
  * Variables privées
  */
-static RT_TASK io_task_handle;
+RT_TASK io_task_handle;
 static uint8_t io_task_created = 0;
 static struct file tmp_file;
 char tmp_buf;
@@ -44,15 +44,19 @@ int io_task_start(){
 	}
 	return 0;
 fail:
-	io_task_cleanup();
+	io_task_cleanup_task();
+	io_task_cleanup_objects();
 	return -1;
 }
 
-void io_task_cleanup(){
+void io_task_cleanup_task(){
 	if(io_task_created){
 		io_task_created = 0;
 		rt_task_delete(&io_task_handle);
 	}
+}
+
+void io_task_cleanup_objects(){
 }
 
 void io_task(void *cookie)

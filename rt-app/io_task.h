@@ -11,6 +11,7 @@
 #include "global.h"
 
 extern int io_task_start(void);
-extern void io_task_cleanup(void);
+extern void io_task_cleanup_task(void);
+extern void io_task_cleanup_objects(void);
 
 #endif /* IO_TASK_H_ */

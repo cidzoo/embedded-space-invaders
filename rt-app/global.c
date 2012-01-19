@@ -28,20 +28,15 @@ weapon_t weapons[5] = {
 difficulty_t difficulty = NORMAL;
 
 /* Prototypes */
-static double getDifficultyMultiplier(void);
 
 //To call each time the current invaders wave is finished to init a new one
 void level_up(){
 	static uint8_t lvl = 0;
 
 	current_wave->level = ++lvl;
-	current_wave->invader_speed *= getDifficultyMultiplier();
+	current_wave->invader_speed += 2*difficulty;
 
 	//init_invaders(current_wave->invaders);
-}
-
-static double getDifficultyMultiplier(){
-	return 10.0+difficulty;
 }
 
 /* Functions to manipulate the list of bullet */

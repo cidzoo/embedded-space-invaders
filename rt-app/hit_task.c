@@ -10,7 +10,10 @@
 /**
  * Variables privées
  */
-static RT_TASK hit_task_handle;
+RT_MUTEX hit_task_mutex;
+static uint8_t hit_task_mutex_created = 0;
+
+RT_TASK hit_task_handle;
 static uint8_t hit_task_created = 0;
 
 /**
@@ -21,6 +24,16 @@ static uint8_t hit_test(hitbox_t a, hitbox_t b);
 
 int hit_task_start(){
 	int err;
+
+	err = rt_mutex_create(&hit_task_mutex, "task_hit_mutex");
+	if(err == 0){
+		hit_task_mutex_created = 1;
+		printk("rt-app: Task HIT create mutex succeed\n");
+	}else{
+		printk("rt-app: Task HIT create mutex failed\n");
+		goto fail;
+	}
+
 	err = rt_task_create(&hit_task_handle,
 	                     "task_hit",
 	                      TASK_STKSZ,
@@ -41,14 +54,22 @@ int hit_task_start(){
 	}
 	return 0;
 fail:
-	hit_task_cleanup();
+	hit_task_cleanup_task();
+	hit_task_cleanup_objects();
 	return -1;
 }
 
-void hit_task_cleanup(){
+void hit_task_cleanup_task(){
 	if(hit_task_created){
 		hit_task_created = 0;
 		rt_task_delete(&hit_task_handle);
+	}
+}
+
+void hit_task_cleanup_objects(){
+	if(hit_task_mutex_created){
+		hit_task_mutex_created = 0;
+		rt_mutex_delete(&hit_task_mutex);
 	}
 }
 
