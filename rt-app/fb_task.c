@@ -12,7 +12,8 @@
 #include "ship_task.h"
 #include "hit_task.h"
 #include "rt-app-m.h"
-
+#include "vga_lookup.h"
+#include <linux/slab.h>
 /**
  * Variables privées
  */
@@ -65,9 +66,13 @@ void fb_task_cleanup_objects(){
 }
 
 static void fb_task(void *cookie){
+
 	int  i;
 	invader_t invader_loc[NB_INVADERS];
 	spaceship_t ship_loc;
+
+	(void)cookie;
+
 
 	rt_task_set_periodic(NULL, TM_NOW, 50*MS);
 
@@ -118,35 +123,63 @@ static void fb_task(void *cookie){
 
 static void draw_bitmap(hitbox_t hb){
 	int i, j;
+//fb_set_pixel(hb.y + hb.height-i, hb.x + j, (*((*(bmp_wave+i))+j)));
+	uint16_t *bmp[hb.height];
+
+
+	switch(hb.type){
+		case G_SHIP:
+			for(i = 0; i < hb.height; i++){
+				bmp[i] = bmp_ship[i];
+			}
+			break;
+		case G_INVADER:
+			for(i = 0; i < hb.height; i++){
+				bmp[i] = bmp_invader[i];
+			}
+			//bmp = bmp_invader;
+			break;
+		case G_BOMB:
+			for(i = 0; i < hb.height; i++){
+				bmp[i] = bmp_bomb[i];
+			}
+			//bmp = bmp_bomb;
+			break;
+		case G_GUN:
+			for(i = 0; i < hb.height; i++){
+				bmp[i] = bmp_gun[i];
+			}
+			//bmp = bmp_gun;
+			break;
+		case G_RAIL:
+			for(i = 0; i < hb.height; i++){
+				bmp[i] = bmp_rail[i];
+			}
+			//bmp = bmp_rail;
+			break;
+		case G_ROCKET:
+			for(i = 0; i < hb.height; i++){
+				bmp[i] = bmp_rocket[i];
+			}
+			//bmp = bmp_rocket;
+			break;
+		case G_WAVE:
+			for(i = 0; i < hb.height; i++){
+				bmp[i] = bmp_wave[i];
+			}
+			//bmp = bmp_wave;
+			break;
+	}
+
+
 	//printk("%d %d %d %d\n", hb.x, hb.y, hb.width, hb.height);
 	for(i = 0; i < hb.height; i++){
 		for(j = 0; j < hb.width; j++){
-			//printk("%p %p\n", bmp, bmp_ship);
-			//printk("%d\n", *((*(bmp+i))+j));
-			switch(hb.type){
-			case G_SHIP:
-				fb_set_pixel(hb.y + hb.height-i, hb.x + j, (*((*(bmp_ship+i))+j)));
-				break;
-			case G_INVADER:
-				fb_set_pixel(hb.y + hb.height-i, hb.x + j, (*((*(bmp_invader+i))+j)));
-				break;
-			case G_BOMB:
-				fb_set_pixel(hb.y + hb.height-i, hb.x + j, (*((*(bmp_bomb+i))+j)));
-				break;
-			case G_GUN:
-				fb_set_pixel(hb.y + hb.height-i, hb.x + j, (*((*(bmp_gun+i))+j)));
-				break;
-			case G_RAIL:
-				fb_set_pixel(hb.y + hb.height-i, hb.x + j, (*((*(bmp_rail+i))+j)));
-				break;
-			case G_ROCKET:
-				fb_set_pixel(hb.y + hb.height-i, hb.x + j, (*((*(bmp_rocket+i))+j)));
-				break;
-			case G_WAVE:
-				fb_set_pixel(hb.y + hb.height-i, hb.x + j, (*((*(bmp_wave+i))+j)));
-				break;
+			if((*((*(bmp+i))+j)) != LU_BLACK){
+				//printk("%p %p\n", bmp, bmp_ship);
+				//printk("%d\n", *((*(bmp+i))+j));
+				fb_set_pixel(hb.y + hb.height-i, hb.x + j, (*((*(bmp+i))+j)));
 			}
-
 			//fb_set_pixel(hb.y + hb.height-i, hb.x + j, bmp[i][j]);
 		}
 	}

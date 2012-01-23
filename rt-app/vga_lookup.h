@@ -1,3 +1,6 @@
+#ifndef _VGA_LOOKUP_H_
+#define _VGA_LOOKUP_H_
+
 //==========================================================================
 //
 // vga_lookup.h
@@ -14,7 +17,7 @@
 #define BLUE_SUBPIXEL(n)	(n & 0x1f) << 0
 
 // define a simple VGA style 16-color palette
-#define	LU_BLACK		RED_SUBPIXEL(0x00) | GREEN_SUBPIXEL(0x00) | BLUE_SUBPIXEL(0x00)
+#define	LU_BLACK		(RED_SUBPIXEL(0x00) | GREEN_SUBPIXEL(0x00) | BLUE_SUBPIXEL(0x00))
 #define	LU_BLUE			RED_SUBPIXEL(0x0f) | GREEN_SUBPIXEL(0x00) | BLUE_SUBPIXEL(0x00)
 #define	LU_GREEN		RED_SUBPIXEL(0x00) | GREEN_SUBPIXEL(0x0f) | BLUE_SUBPIXEL(0x00)
 #define	LU_CYAN			RED_SUBPIXEL(0x00) | GREEN_SUBPIXEL(0x0f) | BLUE_SUBPIXEL(0x0f)
@@ -31,7 +34,7 @@
 #define	LU_BRT_YELLOW	RED_SUBPIXEL(0x00) | GREEN_SUBPIXEL(0x1f) | BLUE_SUBPIXEL(0x1f)
 #define	LU_BRT_WHITE	RED_SUBPIXEL(0xff) | GREEN_SUBPIXEL(0xff) | BLUE_SUBPIXEL(0xff)
 
-const static unsigned short vga_lookup[] = {
+static const unsigned short vga_lookup[] = {
 LU_BLACK,
 LU_BLUE,
 LU_GREEN,
@@ -49,3 +52,5 @@ LU_BRT_VIOLET,
 LU_BRT_YELLOW,
 LU_BRT_WHITE
 };
+
+#endif /* _VGA_LOOKUP_H_ */

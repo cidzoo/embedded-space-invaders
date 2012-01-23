@@ -35,6 +35,11 @@
 #define TASK_INVADERS_PRIO	50
 #define TASK_SHIP_PRIO 70
 
+#define GAME_ZONE_X_MIN		0
+#define GAME_ZONE_X_MAX		240
+#define GAME_ZONE_Y_MIN		10
+#define GAME_ZONE_Y_MAX		320
+
 #define NB_WEAPONS			5
 
 /* Difficulty */

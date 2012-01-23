@@ -11,6 +11,7 @@
 #include "lcdlib.h"
 #include "lcdfont.h"
 #include <linux/fb.h>
+#include "vga_lookup.h"
 
 //unsigned char fb_mem_tmp[154080];
 

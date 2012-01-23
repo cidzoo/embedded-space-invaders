@@ -13,7 +13,7 @@
 
 //Array of all weapons
 weapon_t weapons[NB_WEAPONS] = {
-	{BOMB, 0, 0, ONE, MEDIUM, 0, 0, 0, 0, 0, 0, 0},
+	{BOMB, 0, 0, ONE, MEDIUM, 0, 0, 0, 0, 0, 0, 0, 0},
 	{GUN, 0, 0, ONE, MEDIUM, 10, 10, 5, 0, 10, 10, 10, 10},
 //	{RAIL, 10, 0, TWO, INSTANT},
 //	{ROCKET, 20, 0, THREE, SLOW},
@@ -97,6 +97,7 @@ void hit_task_cleanup_objects(){
 
 void hit_task(void *cookie){
 
+	(void)cookie;
 	invader_t *invader;
 	bullet_t *bullet;
 	int i, j, k, tempo =0;
