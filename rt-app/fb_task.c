@@ -87,19 +87,15 @@ static void fb_task(void *cookie){
 		memcpy(&ship_loc, &ship, sizeof(ship_loc));
 		ship_unlock();
 
+		// On dessine le header
+		fb_rect_fill(0, 10, 0, 239, LU_GREY);
 		// On dessine le background
-		fb_rect_fill(0, 319, 0, 239, LU_BLACK);
+		fb_rect_fill(10, 319, 0, 239, LU_BLACK);
 
-		// On dessine les invaders
-		for(i = 0; i < NB_INVADERS; i++){
-			if(invader_loc[i].hp > 0){
-				draw_bitmap(invader_loc[i].hitbox);
-			}
-		}
-
-		// On dessine le vaisseau
-		draw_bitmap(ship_loc.hitbox);
-
+		// On print le texte pour la progress bar
+		fb_print_string(LU_BLACK, LU_GREY, "life", 3, 3);
+		// On print la progress bar
+		fb_progress_bar(3, 7, 40, 100, LU_RED, ship_loc.hp, LIFE_SHIP);
 
 		// On dessine les bullets
 		hit_lock();
@@ -115,6 +111,16 @@ static void fb_task(void *cookie){
 			}
 		}
 		hit_unlock();
+
+		// On dessine les invaders
+		for(i = 0; i < NB_INVADERS; i++){
+			if(invader_loc[i].hp > 0){
+				draw_bitmap(invader_loc[i].hitbox);
+			}
+		}
+
+		// On dessine le vaisseau
+		draw_bitmap(ship_loc.hitbox);
 
 		rt_task_set_priority(NULL, 90);
 		fb_display();

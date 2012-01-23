@@ -11,6 +11,7 @@
 #include "lcdlib.h"
 #include "lcdfont.h"
 #include <linux/fb.h>
+#include <linux/kernel.h>
 #include "vga_lookup.h"
 
 //unsigned char fb_mem_tmp[154080];
@@ -19,7 +20,6 @@ void *fb_mem_rt;
 unsigned char *fb_mem = NULL;
 static unsigned int Xn = 7391; /* Initial random seed */
 
-void fb_set_pixel(int y_min,int x_min,int couleur);
 int circleYpos(int cXpos, int radius);
 
 /*
@@ -55,13 +55,70 @@ unsigned int get_random(void) {
 
 void fb_set_pixel(int y, int x, int couleur) {
 	//*((unsigned short int*)(fb_mem + 2*x + y*480)) = couleur;
-	if(x < 240 && y < 320){
+	if(x < LCD_MAX_X && y < LCD_MAX_Y){
 		*((unsigned short int*)(fb_mem_rt + 2*x + y*480)) = couleur;
 	}
 }
 
 void fb_display(){
-	memcpy(fb_mem, fb_mem_rt, 153600);
+	memcpy(fb_mem, fb_mem_rt, LCD_MAX_X * LCD_MAX_Y * 2);
+}
+
+void fb_progress_bar(int y_min, int y_max, int x_min, int x_max, int couleur, int current_value, int total_value){
+	// On dessine le tour
+	fb_rect(y_min, y_max, x_min, x_max, LU_BLACK);
+	// On calcule la largeur effective de la progress bar
+	int effective_width = (x_max - x_min - 4)*current_value/total_value;
+	// On dessine la progress bar
+	fb_rect_fill(y_min + 2, y_max - 2, x_min + 2, x_min + 2 + effective_width);
+}
+
+void fb_line(int x0, int y0, int x1, int y1, int color){
+	int dx, dy, sx, sy, err, e2;
+
+	/* On calcule les deltas en X et en Y entre les 2 points de la ligne */
+	dx = abs(x1 - x0);
+	dy = abs(y1 - y0);
+
+	/* On calcule le sens de tracage et "l'erreur" (erreur=0 -> segment à 45°) */
+	if (x0 < x1)
+		sx = 1;
+	else
+		sx = -1;
+	if (y0 < y1)
+		sy = 1;
+	else
+		sy = -1;
+
+	err = dx - dy;
+
+	/* Boucle de tracage de la ligne */
+	do {
+		fb_set_pixel(x0,y0,color);		// Dessiner un pixel
+
+		e2 = 2 * err;
+		// On corrige la trajectoire en X
+		if (e2 > -dy) {
+			err = err - dy;
+			x0 = x0 + sx;
+		}
+		// On corrige la trajectoire en Y
+		if (e2 < dx) {
+			err = err + dx;
+			y0 = y0 + sy;
+		}
+	} while ((x0 != x1) || (y0 != y1));
+}
+
+void fb_rect(int y_min, int y_max, int x_min, int x_max, int couleur){
+	// On dessine la ligne supérieure
+	fb_line(x_min, y_min, x_max, y_min, couleur);
+	// On dessine la ligne droite
+	fb_line(x_max, y_min, x_max, y_max, couleur);
+	// On dessine la ligne inférieure
+	fb_line(x_max, y_max, x_min, y_max, couleur);
+	// On dessine la ligne gauche
+	fb_line(x_min, y_max, x_min, y_min, couleur);
 }
 
 void fb_rect_fill(int y_min, int y_max, int x_min, int x_max, int couleur) {

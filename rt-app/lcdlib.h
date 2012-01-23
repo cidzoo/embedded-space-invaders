@@ -38,6 +38,32 @@ void fb_init(void);
 
 void fb_display(void);
 
+void fb_progress_bar(int y_min, int y_max, int x_min, int x_max, int couleur, int current_value, int total_value);
+
+/**
+ * Draw the line delimited of the point (x_min:y_min) and (x_max:y_max) with
+ * the given color.
+ *
+ * @param x0 the x coordinate of the first point
+ * @param y0 the y coordinate of the first point
+ * @param x1 the x coordinate of the second point
+ * @param y1 the y coordinate of the second point
+ * @param color the color to use to fill the line
+ */
+void fb_line(int x0, int y0, int x1, int y1, int color);
+
+/**
+ * Draw the borders of the rectangle delimited by y_min, y_max, x_min and x_max with
+ * the given color.
+ *
+ * @param y_min the y coordinate of the upper edge
+ * @param y_max the y coordinate of the lower edge
+ * @param x_min the x coordinate of the left edge
+ * @param x_max the x coordinate of the right edge
+ * @param color the color to use to draw the borders of the rectangle
+ */
+void fb_rect(int y_min, int y_max, int x_min, int x_max, int couleur);
+
 /**
  * Fill the rectangle delimited by y_min, y_max, x_min and x_max with
  * the given color.

@@ -40,6 +40,8 @@
 #define GAME_ZONE_Y_MIN		10
 #define GAME_ZONE_Y_MAX		320
 
+#define LIFE_SHIP			3
+
 #define NB_WEAPONS			5
 
 /* Difficulty */

@@ -156,7 +156,7 @@ static void ship_task(void *cookie){
  */
 static void ship_init(){
 	ship_lock();
-	ship.hp = 3;
+	ship.hp = LIFE_SHIP;
 	ship.hitbox.height=32;
 	ship.hitbox.width=32;
 	ship.hitbox.x= 104;
