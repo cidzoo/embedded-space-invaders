@@ -89,6 +89,7 @@ void invaders_task_cleanup_objects(){
 
 static void invaders_task(void *cookie){
 
+	// On définit la période de la tache
 	rt_task_set_periodic(NULL, TM_NOW, 100000000);
 	invaders_lock();
 	invaders_init();

@@ -76,7 +76,7 @@ static void fb_task(void *cookie){
 
 	(void)cookie;
 
-
+	// On définit la période de la tache
 	rt_task_set_periodic(NULL, TM_NOW, 50*MS);
 
 	for (;;) {

@@ -71,6 +71,7 @@ void io_task(void *cookie)
 	tmp_file.private_data = (void *)&io_data;
 
 	(void)cookie;
+	// On définit la période de la tache
 	rt_task_set_periodic(NULL, TM_NOW, 50*MS);
 
     for (;;) {

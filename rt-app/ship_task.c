@@ -97,6 +97,8 @@ static void ship_task(void *cookie){
 	int x;
 
 	(void)cookie;
+
+	// On définit la période de la tache
 	rt_task_set_periodic(NULL, TM_NOW, 30*MS);
 	ship_lock();
 	ship_init();

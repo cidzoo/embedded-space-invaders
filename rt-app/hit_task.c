@@ -116,6 +116,7 @@ void hit_task(void *cookie){
 	int16_t y;
 
 	(void)cookie;
+	// On définit la période de la tache
 	rt_task_set_periodic(NULL, TM_NOW, 20*MS);
 
 
