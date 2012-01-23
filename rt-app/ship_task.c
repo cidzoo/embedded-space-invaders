@@ -9,6 +9,7 @@
 #include "vga_lookup.h"
 #include "xeno-ts.h"
 #include "lcdlib.h"
+#include "rt-app-m.h"
 
 
 /**
@@ -94,15 +95,12 @@ static void ship_task(void *cookie){
 	int dir = 0;
 	int x;
 
-	rt_task_set_periodic(NULL, TM_NOW, 30000000);
+	rt_task_set_periodic(NULL, TM_NOW, 30*MS);
 	ship_lock();
 	ship_init();
 	memcpy(&ship_loc, &ship, sizeof(ship_loc));
 	x = ship_loc.hitbox.x;
 	ship_unlock();
-
-	sample.tv.tv_sec = 0;
-	sample.tv.tv_usec = 100;
 
 	for (;;) {
 		// Lecture de l'etat du touchscreen
@@ -116,7 +114,7 @@ static void ship_task(void *cookie){
 					if(dir == -1){
 						acc += 1;
 					}else{
-						acc = 0;
+						acc /= 3;
 					}
 					dir = -1;
 					x -= acc;
@@ -124,7 +122,7 @@ static void ship_task(void *cookie){
 					if(dir == 1){
 						acc += 1;
 					}else{
-						acc = 0;
+						acc /= 3;
 					}
 					dir = 1;
 					x += acc;
@@ -156,10 +154,12 @@ static void ship_task(void *cookie){
  */
 static void ship_init(){
 	ship_lock();
-	ship.hitbox.height=20;
-	ship.hitbox.width=15;
-	ship.hitbox.x= 105;
-	ship.hitbox.y= 300;
+	ship.hp = 3;
+	ship.hitbox.height=32;
+	ship.hitbox.width=32;
+	ship.hitbox.x= 104;
+	ship.hitbox.y= 280;
+	ship.hitbox.type = G_SHIP;
 	ship_unlock();
 }
 

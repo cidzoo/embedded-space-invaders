@@ -23,9 +23,6 @@ uint8_t invaders_task_mutex_created = 0;
 RT_TASK invaders_task_handle;
 uint8_t invaders_task_created = 0;
 
-static int wave_row=1;
-static int nb_invaders_per_line[NB_INVADERS];
-static int moving_right = 1;
 static int level_finish = 0;
 
 /**
@@ -115,74 +112,24 @@ static void invaders_task(void *cookie){
 }
 
  void invaders_init(){
-
-	 /*
-	 int i;
-	 int nb_max_invaders_per_line=0;
-	 int id_invader=0;
-
-	 //calculate the max number of invaders per lines
-	 do
-	 {
-		 nb_max_invaders_per_line++;
-	 }while ((LCD_MAX_X-(nb_max_invaders_per_line*WIDTH_INVADER)-(nb_max_invaders_per_line*SPACE_BETWEEN_INVADER))>0);
-
-
-	 for (i=0;i<NB_INVADERS;i++){
-		 invaders[i].hp=HP_INVADER;
-		 invaders[i].hitbox.height=HEIGT_INVADER;
-		 invaders[i].hitbox.width=WIDTH_INVADER;
-
-		 if((NB_INVADERS-nb_max_invaders_per_line)<nb_max_invaders_per_line)
-			 wave_row++;
-
-		 nb_invaders_per_line[wave_row-1]++;
-	 }
-
-	 for (i=0 ; i<wave_row; i++){
-
-		 int j;
-		 for (j=0; j< nb_invaders_per_line[j]; j++){
-
-			 if (nb_invaders_per_line[j] < nb_max_invaders_per_line){
-				 invaders[id_invader].hitbox.x = (SPACE_BETWEEN_INVADER+WIDTH_INVADER)*(j+1);
-				 invaders[id_invader].hitbox.y = (2*SPACE_BETWEEN_INVADER)*(i+1);
-			 }
-			 else{
-				 invaders[id_invader].hitbox.x = (SPACE_BETWEEN_INVADER)+(j*(SPACE_BETWEEN_INVADER+WIDTH_INVADER));
-				 invaders[id_invader].hitbox.y = (2*SPACE_BETWEEN_INVADER)*(i+1);
-			 }
-
-			 id_invader++;
-		 }
-	 }*/
-
-
-
 	 int i;
 
 
 	 for (i=0;i<7;i++){
 	 			 invaders[i].hp=HP_INVADER;
-	 			 invaders[i].hitbox.height=HEIGT_INVADER;
-	 			 invaders[i].hitbox.width=WIDTH_INVADER;
+	 			 invaders[i].hitbox.height=INVADER_HEIGHT;
+	 			 invaders[i].hitbox.width=INVADER_WIDTH;
+	 			 invaders[i].hitbox.type = G_INVADER;
+
 	 }
 
 	 for (i=0;i<4;i++){
-			 invaders[i].hp=HP_INVADER;
-			 invaders[i].hitbox.height=HEIGT_INVADER;
-			 invaders[i].hitbox.width=WIDTH_INVADER;
-
 			 invaders[i].hitbox.x = (3*SPACE_BETWEEN_INVADER)+(i*(SPACE_BETWEEN_INVADER+WIDTH_INVADER));
 			 invaders[i].hitbox.y = 30;
 	 }
 
 
 	 for (i=0;i<3;i++){
-			 invaders[i+4].hp=HP_INVADER;
-			 invaders[i+4].hitbox.height=HEIGT_INVADER;
-			 invaders[i+4].hitbox.width=WIDTH_INVADER;
-
 			 invaders[i+4].hitbox.x = (3*SPACE_BETWEEN_INVADER+(WIDTH_INVADER))+(i*(SPACE_BETWEEN_INVADER+WIDTH_INVADER));
 			 invaders[i+4].hitbox.y = 60;
 	 }
@@ -193,43 +140,41 @@ static void invaders_task(void *cookie){
 
  void invaders_move(){
 	 int i;
-
+	 int x = 0;
+	 static int moving_right = 1;
 	 hitbox_t dimension;
 	 int invader_dead=0;
 
 	 invaders_get_wave_box(&dimension);
 
 
+	 if (moving_right){
+		 if ((dimension.x + dimension.width + current_wave.invader_speed) < LCD_MAX_X){
+			 x = current_wave.invader_speed;
+		 }else{
+			 x = LCD_MAX_X - (dimension.x + dimension.width);
+			 moving_right = 0;
+		 }
+	 }
+	 else{
+		 if (((int32_t)dimension.x - (int32_t)current_wave.invader_speed) > 0){
+			 x = -current_wave.invader_speed;
+		 }else{
+			 x = -dimension.x;
+			 moving_right = 1;
+		 }
+	 }
+
 	 for (i=0; i<NB_INVADERS;i++){
-
-		 if (moving_right){
-			 if ((dimension.x + dimension.width + current_wave.invader_speed) < LCD_MAX_X){
-				 invaders[i].hitbox.x += current_wave.invader_speed;
-			 }
-			 else
-				 moving_right = 0;
-
-		 }
-		 else{
-			 if (dimension.x> current_wave.invader_speed){
-				 invaders[i].hitbox.x -= current_wave.invader_speed;
-			 }
-			 else
-				 moving_right = 1;
-		 }
-
+		 invaders[i].hitbox.x += x;
 		 //Count the number of invader dead
 		 if (invaders[i].hp<=0)
 			 invader_dead++;
-
 	 }
-
-
 
 	 // test if level finish
 	 if (invader_dead == NB_INVADERS)
 		 level_finish = 1;
-
  }
 
  //return  hitboxes from wave
@@ -237,43 +182,35 @@ static void invaders_task(void *cookie){
 
 	 int i;
 
-	 hitbox_t temp;
-
-	 temp.x=LCD_MAX_X;
-	 temp.y=LCD_MAX_Y;
-	 temp.height=0;
-	 temp.width=0;
+	 wave_hitbox->x = LCD_MAX_X;
+	 wave_hitbox->y = LCD_MAX_Y;
+	 wave_hitbox->width = 0;
+	 wave_hitbox->height = 0;
 
 	 //Detection hitbox top
 	 for (i=0;i<NB_INVADERS;i++){
+		 if(invaders[i].hp > 0){
+			 //Detection x
+			 if (invaders[i].hitbox.x < wave_hitbox->x){
+				 wave_hitbox->x = invaders[i].hitbox.x;
+			 }
+			 //Detection y
+			 if (invaders[i].hitbox.y < wave_hitbox->y){
+				 wave_hitbox->y = invaders[i].hitbox.y+1;
+			 }
 
-		 //Detection x
-		 if ((invaders[i].hitbox.x < temp.x)&&(invaders[i].hp>0)){
-			 temp.x=invaders[i].hitbox.x;
-		 }
-
-		 //Detection y
-		 if ((invaders[i].hitbox.y < temp.y)&&(invaders[i].hp>0)){
-			 temp.y=invaders[i].hitbox.x;
-		 }
-
-		 //Detection width
-		 if ((invaders[i].hitbox.x > temp.width)&&(invaders[i].hp>0)){
-			 temp.width=invaders[i].hitbox.x;
-		 }
-		 //Detection height
-		 if ((invaders[i].hitbox.y > temp.height)&&(invaders[i].hp>0)){
-			 temp.height=invaders[i].hitbox.y;
+			 //Detection width
+			 if (invaders[i].hitbox.x+invaders[i].hitbox.width >
+			 	 wave_hitbox->x + wave_hitbox->width){
+				 wave_hitbox->width = (invaders[i].hitbox.x+invaders[i].hitbox.width)-wave_hitbox->x-1;
+			 }
+			 //Detection height
+			 if (invaders[i].hitbox.y+invaders[i].hitbox.height >
+				 wave_hitbox->y + wave_hitbox->height){
+				 wave_hitbox->height = (invaders[i].hitbox.y+invaders[i].hitbox.height)-wave_hitbox->y;
+			 }
 		 }
 	 }
-
-
-	 wave_hitbox->x  = temp.x;
-	 wave_hitbox->y  = temp.y;
-	 wave_hitbox->width = temp.width - temp.x + WIDTH_INVADER;
-	 wave_hitbox->height = temp.height - temp.y + HEIGT_INVADER;
-
-
 }
 
 int invaders_lock(){
@@ -289,31 +226,6 @@ int invaders_unlock(){
 	}
 	return -1;
 }
-
-/*
-void invaders_refresh(void){
-#include "vga_lookup.h"
-invader_t invader_loc[NB_INVADERS];
-int i;
-
-fb_rect_fill(0, 319, 0, 239, LU_BRT_BLUE);
-
-
-invaders_lock();
-memcpy(invader_loc, invaders, sizeof(invader_t)*NB_INVADERS);
-invaders_unlock();
-
-
-for(i = 0; i < NB_INVADERS; i++){
-
-	fb_rect_fill(invader_loc[i].hitbox.y,
-				 invader_loc[i].hitbox.y + invader_loc[i].hitbox.height,
-				 invader_loc[i].hitbox.x,
-				 invader_loc[i].hitbox.x + invader_loc[i].hitbox.width,
-				 LU_BLACK);
-
-}
-*/
 
 
 

@@ -23,9 +23,13 @@
 #include "io_task.h"
 #include "hit_task.h"
 #include "ship_task.h"
+#include "lcdlib.h"
 
 RT_INTR isrDesc;
 
+RT_HEAP heap;
+uint8_t heap_created = 0;
+uint8_t heap_allocated = 0;
 
 static int space_invader(void)
 {
@@ -43,6 +47,26 @@ static int space_invader(void)
 	}
 
 	printk("rt-app: Enabled ISR\n");
+
+	err = rt_heap_create(&heap, "rt_heap", 240*320*2, 0);
+
+	if(err != 0){
+		printk("rt-app: Could not create the rt heap\n");
+		goto fail;
+	}else{
+		heap_created = 1;
+	}
+	printk("rt-app: RT-Heap created\n");
+
+
+	err = rt_heap_alloc(&heap, 240*320*2, TM_NONBLOCK, &fb_mem_rt);
+	if(err != 0){
+		printk("rt-app: Could not allocate the rt heap\n");
+		goto fail;
+	}else{
+		heap_allocated = 1;
+	}
+	printk("rt-app: RT-Heap allocated\n");
 
 	if(invaders_task_start() != 0){
 		goto fail;
@@ -156,6 +180,16 @@ void __exit cleanup_module(void) {
 	io_task_cleanup_objects();
 	hit_task_cleanup_objects();
 	ship_task_cleanup_objects();
+
+	if(heap_allocated){
+		heap_allocated = 0;
+		rt_heap_free(&heap, &fb_mem_rt);
+	}
+
+	if(heap_created){
+		heap_created = 0;
+		rt_heap_delete(&heap);
+	}
 
 	rt_intr_delete(&isrDesc);
 

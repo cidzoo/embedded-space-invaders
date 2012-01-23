@@ -97,12 +97,11 @@ ssize_t pca9554_read(struct file *file, char __user *buff, size_t len, loff_t *o
 			switch(pca_data->io_type){
 			case io_led:
 				// Si les, on reogranise l'ordre
-				val = 3 - val;
 				type = io_led;
 				break;
 			case io_switch:
 				type = io_switch;
-				val += 4;
+				val = 7 - val;
 				break;
 			default:
 				printk(KERN_ERR "PCA9554: bad io type while read accessing\n");
@@ -177,7 +176,6 @@ ssize_t pca9554_write(struct file *file, const char __user *buff, size_t len, lo
 			switch(pca_data->io_type){
 			case io_led:
 				// Si led, on reorganise l'ordre des leds
-				val = 3 - val;
 				type = io_led;
 				break;
 			case io_switch:

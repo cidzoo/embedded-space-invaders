@@ -9,6 +9,8 @@
  * 						functions and definitions, completed code documentation.
  *
  *-----------------------------------------------------------------------------*/
+#ifndef LCDLIB_H_
+#define LCDLIB_H_
 
 #define LCD_MAX_X  240
 #define LCD_MAX_Y  320
@@ -16,6 +18,8 @@
 #define RED(a_red)		(((a_red)   & 0x1f)<<11)
 #define GREEN(a_green)	(((a_green) & 0x3f)<< 5)
 #define BLUE(a_blue)	(((a_blue)  & 0x1f)<< 0)
+
+extern void *fb_mem_rt;
 
 typedef enum {
 	false = 0, true = 1
@@ -103,3 +107,5 @@ void fb_print_char(int fg_color, int bg_color, unsigned char c, int x, int y);
  * @param x the x coordinate of the character
  */
 void fb_print_string(int fg_color, int bg_color, unsigned char *str, int x, int y);
+
+#endif /* LCDLIB_H_ */

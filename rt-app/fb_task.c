@@ -11,6 +11,7 @@
 #include "invaders_task.h"
 #include "ship_task.h"
 #include "hit_task.h"
+#include "rt-app-m.h"
 
 /**
  * Variables privées
@@ -18,36 +19,11 @@
 RT_TASK fb_task_handle;
 static uint8_t fb_task_created = 0;
 
-#define FC	LU_WHITE
-#define BC	LU_BLACK
-
-void draw_invader(unsigned int x, unsigned int y);
-
-static void hit_refresh(void);
-
-static unsigned short int invader_bmp[16][16] = {
-	{FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC},
-	{BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC},
-	{FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC},
-	{BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC},
-	{FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC},
-	{BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC},
-	{FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC},
-	{BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC},
-	{FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC},
-	{BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC},
-	{FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC},
-	{BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC},
-	{FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC},
-	{BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC},
-	{FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC, FC},
-	{BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC, BC},
-};
-
 
 /**
  * Fonctions privées
  */
+static void draw_bitmap(hitbox_t hb);
 static void fb_task(void *cookie);
 
 int fb_task_start(){
@@ -93,9 +69,7 @@ static void fb_task(void *cookie){
 	invader_t invader_loc[NB_INVADERS];
 	spaceship_t ship_loc;
 
-	rt_task_set_periodic(NULL, TM_NOW, 40000000);
-
-
+	rt_task_set_periodic(NULL, TM_NOW, 50*MS);
 
 	for (;;) {
 		rt_task_wait_period(NULL);
@@ -108,24 +82,32 @@ static void fb_task(void *cookie){
 		memcpy(&ship_loc, &ship, sizeof(ship_loc));
 		ship_unlock();
 
-		fb_rect_fill(0, 319, 0, 239, LU_BRT_BLUE);
+		// On dessine le background
+		fb_rect_fill(0, 319, 0, 239, LU_BLACK);
 
 		// On dessine les invaders
 		for(i = 0; i < NB_INVADERS; i++){
 			if(invader_loc[i].hp > 0){
-				draw_invader(invader_loc[i].hitbox.y, invader_loc[i].hitbox.x);
+				draw_bitmap(invader_loc[i].hitbox);
 			}
 		}
 
 		// On dessine le vaisseau
-		fb_rect_fill(ship_loc.hitbox.y,
-					 ship_loc.hitbox.y + ship_loc.hitbox.height,
-					 ship_loc.hitbox.x,
-					 ship_loc.hitbox.x + ship_loc.hitbox.width,
-					 LU_BRT_YELLOW);
+		draw_bitmap(ship_loc.hitbox);
+
 
 		// On dessine les bullets
-		hit_refresh();
+		for(i = 0; i < NB_MAX_BULLETS; i++){
+			if (bullets[i].weapon != NULL){
+				if( (bullets[i].weapon->weapon_type != RAIL) &&
+					(bullets[i].hitbox.y-1 == 0) ){
+					remove_bullet(i);
+				}
+				bullets[i].hitbox.y -= bullets[i].weapon->speed;
+
+				draw_bitmap(bullets[i].hitbox);
+			}
+		}
 
 
 		rt_task_set_priority(NULL, 90);
@@ -134,33 +116,39 @@ static void fb_task(void *cookie){
 	}
 }
 
-void draw_invader(unsigned int y, unsigned int x){
+static void draw_bitmap(hitbox_t hb){
 	int i, j;
-	for(i = 0; i < 16; i++){
-		for(j = 0; j < 16; j++){
-			fb_set_pixel(y + i, x + j, invader_bmp[i][j]);
-		}
-	}
-}
-
-static void hit_refresh(void){
-	// On dessine les bullets
-	int i;
-	//	bullet_t bullets_loc[NB_MAX_BULLETS];
-
-	for(i = 0; i < NB_MAX_BULLETS; i++){
-		if (bullets[i].weapon != NULL){
-			if(bullets[i].hitbox.y-1 == 0){
-				remove_bullet(i);
+	//printk("%d %d %d %d\n", hb.x, hb.y, hb.width, hb.height);
+	for(i = 0; i < hb.height; i++){
+		for(j = 0; j < hb.width; j++){
+			//printk("%p %p\n", bmp, bmp_ship);
+			//printk("%d\n", *((*(bmp+i))+j));
+			switch(hb.type){
+			case G_SHIP:
+				fb_set_pixel(hb.y + hb.height-i, hb.x + j, (*((*(bmp_ship+i))+j)));
+				break;
+			case G_INVADER:
+				fb_set_pixel(hb.y + hb.height-i, hb.x + j, (*((*(bmp_invader+i))+j)));
+				break;
+			case G_BOMB:
+				fb_set_pixel(hb.y + hb.height-i, hb.x + j, (*((*(bmp_bomb+i))+j)));
+				break;
+			case G_GUN:
+				fb_set_pixel(hb.y + hb.height-i, hb.x + j, (*((*(bmp_gun+i))+j)));
+				break;
+			case G_RAIL:
+				fb_set_pixel(hb.y + hb.height-i, hb.x + j, (*((*(bmp_rail+i))+j)));
+				break;
+			case G_ROCKET:
+				fb_set_pixel(hb.y + hb.height-i, hb.x + j, (*((*(bmp_rocket+i))+j)));
+				break;
+			case G_WAVE:
+				fb_set_pixel(hb.y + hb.height-i, hb.x + j, (*((*(bmp_wave+i))+j)));
+				break;
 			}
-			bullets[i].hitbox.y--;
 
-			fb_rect_fill(bullets[i].hitbox.y,
-						bullets[i].hitbox.y + bullets[i].hitbox.height,
-						bullets[i].hitbox.x,
-						bullets[i].hitbox.x + bullets[i].hitbox.width,
-						LU_RED);
+			//fb_set_pixel(hb.y + hb.height-i, hb.x + j, bmp[i][j]);
 		}
 	}
-
 }
+

@@ -6,18 +6,9 @@
  */
 
 #include "global.h"
+#include "hit_task.h"
 
 wave_t current_wave = {0,1};
-
-
-//Array of all weapons
-weapon_t weapons[5] = {
-	{BOMB, 0, 0, ONE, MEDIUM},
-	{GUN, 0, 0, ONE, MEDIUM},
-	{RAIL, 10, 0, TWO, INSTANT},
-	{ROCKET, 20, 0, THREE, SLOW},
-	{WAVE, 120, 0, MAX, FAST}
-};
 
 difficulty_t difficulty = NORMAL;
 
