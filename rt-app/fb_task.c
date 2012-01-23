@@ -102,6 +102,7 @@ static void fb_task(void *cookie){
 
 
 		// On dessine les bullets
+		hit_lock();
 		for(i = 0; i < NB_MAX_BULLETS; i++){
 			if (bullets[i].weapon != NULL){
 				if( (bullets[i].weapon->weapon_type != RAIL) &&
@@ -113,7 +114,7 @@ static void fb_task(void *cookie){
 				draw_bitmap(bullets[i].hitbox);
 			}
 		}
-
+		hit_unlock();
 
 		rt_task_set_priority(NULL, 90);
 		fb_display();

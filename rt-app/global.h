@@ -78,22 +78,28 @@ extern wave_t current_wave;
 /* Weapons */
 typedef enum{BOMB, GUN, RAIL, ROCKET, WAVE} weapontype_t;
 typedef enum{ONE=1, TWO=2, THREE=3, MAX=10}damage_t;
-typedef enum{SLOW=1, MEDIUM=5, FAST=10, INSTANT}speed_t;
+typedef enum{SLOW=3, MEDIUM=11, FAST=15, INSTANT}speed_t;
+
+typedef struct{
+	uint16_t max;
+	uint16_t now;
+	uint16_t last;
+	uint16_t time_total;
+	uint16_t time_current;
+} weapon_timing_charge_t;
+
+typedef struct{
+	uint16_t max;
+	uint16_t ratio;
+	uint16_t now;
+}weapon_timing_led_t;
 
 typedef struct{
 	weapontype_t weapon_type;
-	uint16_t cooldown; 		//time to ready
-	uint8_t temp;			//temperature in % if applicable
 	uint8_t damage;
 	speed_t speed;
-	uint16_t charge_max;
-	uint16_t charge_current;
-	uint16_t charge_time_total;
-	uint16_t charge_time_current;
-	uint16_t charge_last;
-	uint16_t led_charge_max;
-	uint16_t led_charge_ratio;
-	uint16_t led_charge_current;
+	weapon_timing_charge_t timing_charge;
+	weapon_timing_led_t timing_led;
 }weapon_t;
 
 //Array of all weapons

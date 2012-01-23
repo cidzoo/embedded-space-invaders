@@ -90,12 +90,13 @@ void ship_task_cleanup_objects(){
 }
 
 static void ship_task(void *cookie){
-	(void)cookie;
+
 	spaceship_t ship_loc;
 	int acc = 0;
 	int dir = 0;
 	int x;
 
+	(void)cookie;
 	rt_task_set_periodic(NULL, TM_NOW, 30*MS);
 	ship_lock();
 	ship_init();

@@ -65,11 +65,12 @@ void io_task(void *cookie)
 {
 	int i;
 	uint8_t rebond = 0;
-	uint8_t led_next_value[4];
 	uint8_t counter_io = 0;
 	char modif;
 	char old_val_sw[4], new_val_sw[4];
 	tmp_file.private_data = (void *)&io_data;
+
+	(void)cookie;
 	rt_task_set_periodic(NULL, TM_NOW, 50*MS);
 
     for (;;) {
@@ -82,11 +83,11 @@ void io_task(void *cookie)
 			for(i = 0; i < 4; i++){
 
 				// Gestion de la recharge
-				weapons[i+1].charge_time_current++;
-				if(weapons[i+1].charge_time_total == weapons[i+1].charge_time_current){
-					weapons[i+1].charge_time_current = 0;
-					if(weapons[i+1].charge_current < weapons[i+1].charge_max){
-						weapons[i+1].charge_current++;
+				weapons[i+1].timing_charge.time_current++;
+				if(weapons[i+1].timing_charge.time_current >= weapons[i+1].timing_charge.time_total){
+					weapons[i+1].timing_charge.time_current = 0;
+					if(weapons[i+1].timing_charge.now < weapons[i+1].timing_charge.max){
+						weapons[i+1].timing_charge.now++;
 					}
 				}
 
@@ -100,10 +101,9 @@ void io_task(void *cookie)
 					rebond = 0;
 					if(new_val_sw[i] == 1){
 
-						if(weapons[i+1].charge_current > 0){
-							weapons[i+1].charge_current--;
-							weapons[i+1].charge_last = weapons[i+1].charge_current;
-							//printk("last for GUN: %d\n", weapons[i+1].charge_last);
+						if(weapons[i+1].timing_charge.now > 0){
+							weapons[i+1].timing_charge.now--;
+							weapons[i+1].timing_charge.last = weapons[i+1].timing_charge.now;
 							fire_weapon((weapontype_t)(i+1));
 						}
 
@@ -111,9 +111,9 @@ void io_task(void *cookie)
 					old_val_sw[i] = new_val_sw[i];
 				}else if(new_val_sw[i] == 1){
 					if(rebond > 2){
-						if(weapons[i+1].charge_current >= weapons[i+1].charge_last &&
-						   weapons[i+1].charge_current > 0){
-							weapons[i+1].charge_current--;
+						if(weapons[i+1].timing_charge.now > 0 &&
+						   weapons[i+1].timing_charge.now >= weapons[i+1].timing_charge.last){
+							weapons[i+1].timing_charge.now--;
 							fire_weapon((weapontype_t)(i+1));
 						}
 					}else{
@@ -129,21 +129,19 @@ void io_task(void *cookie)
 			io_data.io_num = i;
 			io_data.io_type = io_led;
 			// Si vide, on eteint la led
-			weapons[i+1].led_charge_ratio = (weapons[i+1].led_charge_max*(weapons[i+1].charge_current*100/weapons[i+1].charge_max)/100);
+			weapons[i+1].timing_led.ratio = (weapons[i+1].timing_led.max*(weapons[i+1].timing_charge.now*100/weapons[i+1].timing_charge.max)/100);
 
-			if(weapons[i+1].led_charge_current++ >= (weapons[i+1].led_charge_max - weapons[i+1].led_charge_ratio) ){
+			if(weapons[i+1].timing_led.now++ >= (weapons[i+1].timing_led.max - weapons[i+1].timing_led.ratio) ){
 				io_data.value = 1;
 			}else{
 				io_data.value = 0;
 			}
-			if(weapons[i+1].led_charge_current >= weapons[i+1].led_charge_ratio){
-				weapons[i+1].led_charge_current = 0;
+			if(weapons[i+1].timing_led.now >= weapons[i+1].timing_led.ratio){
+				weapons[i+1].timing_led.now = 0;
 			}
 
-
 			// On définit la led
-			if(i == 0)
-				pca9554_set(&io_data);
+			//pca9554_set(&io_data);
     	}
     }
 }

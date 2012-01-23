@@ -10,17 +10,30 @@
 
 #include "lcdlib.h"
 #include "vga_lookup.h"
+#include "rt-app-m.h"
 
 //Array of all weapons
 weapon_t weapons[NB_WEAPONS] = {
-	{BOMB, 0, 0, ONE, MEDIUM, 0, 0, 0, 0, 0, 0, 0, 0},
-	{GUN, 0, 0, ONE, MEDIUM, 10, 10, 5, 0, 10, 10, 10, 10},
-//	{RAIL, 10, 0, TWO, INSTANT},
-//	{ROCKET, 20, 0, THREE, SLOW},
-//	{WAVE, 120, 0, MAX, FAST}
-	{RAIL, 0, 0, TWO, INSTANT, 20, 20, 5, 0, 20, 20, 20, 20},
-	{ROCKET, 0, 0, THREE, SLOW, 20, 20, 5, 0, 20, 20, 20, 20},
-	{WAVE, 0, 0, MAX, FAST, 20, 20, 5, 0, 20, 20, 20, 20}
+	{BOMB, ONE, MEDIUM,
+		{0, 0, 0, 0, 0},
+		{0, 0, 0},
+	},
+	{GUN, ONE, MEDIUM,
+		{15, 15, 0, 4, 0},
+		{10, 0, 0},
+	},
+	{RAIL, TWO, INSTANT,
+		{1, 0, 0, 50, 0},
+		{10, 0, 0},
+	},
+	{ROCKET, THREE, SLOW,
+		{1, 0, 0, 100, 0},
+		{10, 0, 0},
+	},
+	{WAVE, MAX, FAST,
+		{1, 0, 0, 250, 0},
+		{10, 0, 0},
+	}
 };
 
 //List of the bullets
@@ -97,14 +110,13 @@ void hit_task_cleanup_objects(){
 
 void hit_task(void *cookie){
 
-	(void)cookie;
 	invader_t *invader;
 	bullet_t *bullet;
-	int i, j, k, tempo =0;
-
+	int i, j, k;
 	spaceship_t ship_loc;
 
-	rt_task_set_periodic(NULL, TM_NOW, 10000000);
+	(void)cookie;
+	rt_task_set_periodic(NULL, TM_NOW, 20*MS);
 
 	ship_lock();
 	memcpy(&ship_loc, &ship, sizeof(ship_loc));
@@ -125,7 +137,8 @@ void hit_task(void *cookie){
 		}
 		tempo++;*/
 
-		//for each bullet
+		//for each bullet.
+		hit_lock();
 		for (i=0;i<NB_MAX_BULLETS;i++){
 			//for each invader
 			for (j=0;j<NB_INVADERS;j++){
@@ -167,6 +180,7 @@ void hit_task(void *cookie){
 //			}
 
 		}//for each bullet
+		hit_unlock();
 	}
 	//level_up();
 }
@@ -176,7 +190,7 @@ void fire_weapon(weapontype_t w){
 	bullet_t b;
 
 	//Control that the selected weapon CAN be used
-	if(weapons[w].cooldown == 0){
+
 
 //		if(w == BOMB){
 //			//TODO:Grab the position of the spaceship's gun's
@@ -187,54 +201,52 @@ void fire_weapon(weapontype_t w){
 			start_y = ship.hitbox.y-1;
 //		}
 
-		//Fire the weapon
-		switch(w){
-		case BOMB:
-			b.weapon = &weapons[BOMB];
-			b.hitbox.x = start_x-BOMB_WIDTH/2;
-			b.hitbox.y = start_y-BOMB_HEIGHT;
-			b.hitbox.width = BOMB_WIDTH;
-			b.hitbox.height = BOMB_HEIGHT;
-			b.hitbox.type = G_BOMB;
-			break;
-		case GUN:
-			b.weapon = &weapons[GUN];
-			b.hitbox.x = start_x-GUN_WIDTH/2;
-			b.hitbox.y = start_y-GUN_HEIGHT;
-			b.hitbox.width = GUN_WIDTH;
-			b.hitbox.height = GUN_HEIGHT;
-			b.hitbox.type = G_GUN;
-			break;
-		case RAIL:
-			b.weapon = &weapons[RAIL];
-			b.hitbox.x = start_x-RAIL_WIDTH/2;
-			b.hitbox.y = 0;
-			b.hitbox.width = RAIL_WIDTH;
-			b.hitbox.height = RAIL_HEIGHT-start_y;
-			b.hitbox.type = G_RAIL;
-			break;
-		case ROCKET:
-			b.weapon = &weapons[ROCKET];
-			b.hitbox.x = start_x-ROCKET_WIDTH/2;
-			b.hitbox.y = start_y-ROCKET_HEIGHT;
-			b.hitbox.width = ROCKET_WIDTH;
-			b.hitbox.height = ROCKET_HEIGHT;
-			b.hitbox.type = G_ROCKET;
-			break;
-		case WAVE:
-			b.weapon = &weapons[WAVE];
-			b.hitbox.x = 0;
-			b.hitbox.y = start_y-WAVE_HEIGHT;
-			b.hitbox.width = WAVE_WIDTH;
-			b.hitbox.height = WAVE_HEIGHT;
-			b.hitbox.type = G_WAVE;
-			break;
-		}
+	//Fire the weapon
+	switch(w){
+	case BOMB:
+		b.weapon = &weapons[BOMB];
+		b.hitbox.x = start_x-BOMB_WIDTH/2;
+		b.hitbox.y = start_y-BOMB_HEIGHT;
+		b.hitbox.width = BOMB_WIDTH;
+		b.hitbox.height = BOMB_HEIGHT;
+		b.hitbox.type = G_BOMB;
+		break;
+	case GUN:
+		b.weapon = &weapons[GUN];
+		b.hitbox.x = start_x-GUN_WIDTH/2;
+		b.hitbox.y = start_y-GUN_HEIGHT;
+		b.hitbox.width = GUN_WIDTH;
+		b.hitbox.height = GUN_HEIGHT;
+		b.hitbox.type = G_GUN;
+		break;
+	case RAIL:
+		b.weapon = &weapons[RAIL];
+		b.hitbox.x = start_x-RAIL_WIDTH/2;
+		b.hitbox.y = 0;
+		b.hitbox.width = RAIL_WIDTH;
+		b.hitbox.height = RAIL_HEIGHT-start_y;
+		b.hitbox.type = G_RAIL;
+		break;
+	case ROCKET:
+		b.weapon = &weapons[ROCKET];
+		b.hitbox.x = start_x-ROCKET_WIDTH/2;
+		b.hitbox.y = start_y-ROCKET_HEIGHT;
+		b.hitbox.width = ROCKET_WIDTH;
+		b.hitbox.height = ROCKET_HEIGHT;
+		b.hitbox.type = G_ROCKET;
+		break;
+	case WAVE:
+		b.weapon = &weapons[WAVE];
+		b.hitbox.x = 0;
+		b.hitbox.y = start_y-WAVE_HEIGHT;
+		b.hitbox.width = WAVE_WIDTH;
+		b.hitbox.height = WAVE_HEIGHT;
+		b.hitbox.type = G_WAVE;
+		break;
+	}
 
-		//add it to the list of current bullets
-		add_bullet(b);
-
-	}//end ready
+	//add it to the list of current bullets
+	add_bullet(b);
 
 }//fire_weapon()
 
@@ -249,3 +261,17 @@ static int hit_test(hitbox_t a, hitbox_t b){
 	return -1;
 
 }//hit_test()
+
+int hit_lock(){
+	if(hit_task_mutex_created){
+		return rt_mutex_lock(&hit_task_mutex, TM_INFINITE);
+	}
+	return -1;
+}
+
+int hit_unlock(){
+	if(hit_task_mutex_created){
+		return rt_mutex_unlock(&hit_task_mutex);
+	}
+	return -1;
+}
