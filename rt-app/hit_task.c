@@ -113,32 +113,22 @@ void hit_task(void *cookie){
 	invader_t *invader;
 	bullet_t *bullet;
 	int i, j, k;
-	spaceship_t ship_loc;
+	int16_t y;
 
 	(void)cookie;
 	rt_task_set_periodic(NULL, TM_NOW, 20*MS);
 
-	ship_lock();
-	memcpy(&ship_loc, &ship, sizeof(ship_loc));
-	ship_unlock();
-
-	ship_loc.hitbox.height = 20;
-	ship_loc.hitbox.width = 20;
-	ship_loc.hitbox.x = 100;
-	ship_loc.hitbox.y = 290;
-	ship_loc.hp = 3;
-
 
 	for (;;) {
 		rt_task_wait_period(NULL);
-		/*if(tempo == 100){
-			fire_weapon(GUN);
-			tempo = 0;
-		}
-		tempo++;*/
 
-		//for each bullet.
+		// On verrouille les bullets
 		hit_lock();
+		// On verrouille le vaisseau
+		ship_lock();
+		// On verrouille les invaders
+		invaders_lock();
+		//for each bullet.
 		for (i=0;i<NB_MAX_BULLETS;i++){
 			//for each invader
 			for (j=0;j<NB_INVADERS;j++){
@@ -179,7 +169,21 @@ void hit_task(void *cookie){
 //				}
 //			}
 
+			// On déplace le bullets
+			bullet->hitbox.y -= bullet->weapon->speed;
+			y = bullet->hitbox.y-1;
+			if( (bullet->weapon->weapon_type != RAIL) &&
+				(y <= 0) ){
+				remove_bullet(i);
+			}
+
+
 		}//for each bullet
+		// On deverrouille les invaders
+		invaders_unlock();
+		// On deverrouille le vaisseau
+		ship_unlock();
+		// On deverrouille les bullets
 		hit_unlock();
 	}
 	//level_up();

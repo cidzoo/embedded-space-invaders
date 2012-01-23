@@ -68,7 +68,10 @@ void fb_task_cleanup_objects(){
 static void fb_task(void *cookie){
 
 	int  i;
-	invader_t invader_loc[NB_INVADERS];
+	// Variable locale pour les invaders
+	invader_t invaders_loc[NB_INVADERS];
+	// Variable locale pour les bullets
+	bullet_t bullets_loc[NB_MAX_BULLETS];
 	spaceship_t ship_loc;
 
 	(void)cookie;
@@ -79,13 +82,20 @@ static void fb_task(void *cookie){
 	for (;;) {
 		rt_task_wait_period(NULL);
 
+		// On copie les invaders en local
 		invaders_lock();
-		memcpy(invader_loc, invaders, sizeof(invader_loc));
+		memcpy(invaders_loc, invaders, sizeof(invaders_loc));
 		invaders_unlock();
 
+		// On copie le vaisseau en local
 		ship_lock();
 		memcpy(&ship_loc, &ship, sizeof(ship_loc));
 		ship_unlock();
+
+		// On copie les bullets en local
+		hit_lock();
+		memcpy(bullets_loc, bullets, sizeof(bullets_loc));
+		hit_unlock();
 
 		// On dessine le header
 		fb_rect_fill(0, 10, 0, 239, LU_GREY);
@@ -98,24 +108,22 @@ static void fb_task(void *cookie){
 		fb_progress_bar(3, 7, 40, 100, LU_RED, ship_loc.hp, LIFE_SHIP);
 
 		// On dessine les bullets
-		hit_lock();
 		for(i = 0; i < NB_MAX_BULLETS; i++){
-			if (bullets[i].weapon != NULL){
-				if( (bullets[i].weapon->weapon_type != RAIL) &&
+			if (bullets_loc[i].weapon != NULL){
+				/*if( (bullets[i].weapon->weapon_type != RAIL) &&
 					(bullets[i].hitbox.y-1 == 0) ){
 					remove_bullet(i);
 				}
-				bullets[i].hitbox.y -= bullets[i].weapon->speed;
+				bullets[i].hitbox.y -= bullets[i].weapon->speed;*/
 
-				draw_bitmap(bullets[i].hitbox);
+				draw_bitmap(bullets_loc[i].hitbox);
 			}
 		}
-		hit_unlock();
 
 		// On dessine les invaders
 		for(i = 0; i < NB_INVADERS; i++){
-			if(invader_loc[i].hp > 0){
-				draw_bitmap(invader_loc[i].hitbox);
+			if(invaders_loc[i].hp > 0){
+				draw_bitmap(invaders_loc[i].hitbox);
 			}
 		}
 

@@ -19,7 +19,7 @@
 #include "bitmaps.h"
 
 #define NB_INVADERS 7
-#define NB_MAX_BULLETS 500
+#define NB_MAX_BULLETS 200
 #define NB_MAX_BOMBS 10
 
 #define COOLDOWN_RAIL 10
