@@ -1,0 +1,20 @@
+#bomb
+hexdump -s 0x46 -v -e '"{" 8/2 "0x%04X " "},\n"' bomb.bmp
+
+#bullet
+hexdump -s 0x46 -v -e '"{" 5/2 "0x%04X " "},\n"' bullet.bmp
+
+#bullet
+hexdump -s 0x46 -v -e '"{" 5/2 "0x%04X " "},\n"' rail.bmp
+
+#rocket
+hexdump -s 0x46 -v -e '"{" 10/2 "0x%04X " "},\n"' rocket.bmp
+
+#wave
+hexdump -s 0x46 -v -e '"{" 240/2 "0x%04X " "},\n"' wave.bmp
+
+#invader
+hexdump -s 0x46 -v -e '"{" 16/2 "0x%04X " "},\n"' invader.bmp
+
+#ship
+hexdump -s 0x46 -v -e '"{" 32/2 "0x%04X " "},\n"' ship.bmp
