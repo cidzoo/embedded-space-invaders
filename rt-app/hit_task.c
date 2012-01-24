@@ -151,13 +151,8 @@ void hit_task(void *cookie){
 				bullet->hitbox.y -= bullet->weapon->speed;
 				y = bullet->hitbox.y;
 
-				//rail
-				if(rail_id != -1 && rail_timeout <= 0){
-					remove_bullet(bullets[rail_id],rail_id);
-					rail_id = -1;
-				}else
-					rail_timeout--;
-
+				//TODO a ameliorer car risque de null pointer pour après
+				//suppression des bullets en haut de l'écran
 				if(y <= 0){
 					if(bullet->weapon->weapon_type != RAIL){
 						// Gestion des points lors de la sortie d'un bullet
@@ -165,6 +160,7 @@ void hit_task(void *cookie){
 							game_points -= 1;
 						}
 						remove_bullet(*bullet, i);
+						break;
 					}
 				}
 
@@ -236,6 +232,13 @@ void hit_task(void *cookie){
 			}//if not null
 
 		}//for each bullet
+
+		//rail
+		if(rail_id != -1 && rail_timeout <= 0){
+			remove_bullet(bullets[rail_id],rail_id);
+			rail_id = -1;
+		}else
+			rail_timeout--;
 
 		//For each bomb
 		for(i=0;i<NB_MAX_BOMBS;i++){
