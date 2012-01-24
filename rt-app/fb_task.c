@@ -76,7 +76,7 @@ static void fb_task(void *cookie){
 
 	(void)cookie;
 
-	// On d�finit la p�riode de la tache
+	// On définit la période de la tache
 	rt_task_set_periodic(NULL, TM_NOW, 50*MS);
 
 	for (;;) {
@@ -124,7 +124,7 @@ static void fb_task(void *cookie){
 		draw_bitmap(ship_loc.hitbox);
 
 		// On dessine le header
-		fb_rect_fill(0, 20, 0, 239, LU_GREY);
+		fb_rect_fill(0, GAME_ZONE_Y_MIN, 0, 239, LU_GREY);
 
 		// On print le texte pour la progress bar
 		fb_print_string(LU_BLACK, LU_GREY, "life", 3, 3);

@@ -37,7 +37,7 @@
 
 #define GAME_ZONE_X_MIN		0
 #define GAME_ZONE_X_MAX		240
-#define GAME_ZONE_Y_MIN		10
+#define GAME_ZONE_Y_MIN		20
 #define GAME_ZONE_Y_MAX		320
 
 #define LIFE_SHIP			3

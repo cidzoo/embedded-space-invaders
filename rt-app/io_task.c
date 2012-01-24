@@ -71,7 +71,7 @@ void io_task(void *cookie)
 	tmp_file.private_data = (void *)&io_data;
 
 	(void)cookie;
-	// On définit la période de la tache
+	// On dï¿½finit la pï¿½riode de la tache
 	rt_task_set_periodic(NULL, TM_NOW, 50*MS);
 
     for (;;) {
@@ -105,6 +105,7 @@ void io_task(void *cookie)
 						if(weapons[i+1].timing_charge.now > 0){
 							weapons[i+1].timing_charge.now--;
 							weapons[i+1].timing_charge.last = weapons[i+1].timing_charge.now;
+							printk("fire single\n");
 							fire_weapon((weapontype_t)(i+1));
 						}
 
@@ -115,6 +116,7 @@ void io_task(void *cookie)
 						if(weapons[i+1].timing_charge.now > 0 &&
 						   weapons[i+1].timing_charge.now >= weapons[i+1].timing_charge.last){
 							weapons[i+1].timing_charge.now--;
+							printk("fire continuous\n");
 							fire_weapon((weapontype_t)(i+1));
 						}
 					}else{
