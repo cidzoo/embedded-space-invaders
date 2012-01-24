@@ -18,7 +18,7 @@
 
 #include "bitmaps.h"
 
-#define NB_INVADERS_MAX 20
+#define NB_INVADERS_MAX 24
 #define NB_MAX_BULLETS 50
 #define NB_MAX_BOMBS 20
 
@@ -46,20 +46,18 @@
 #define NB_WEAPONS			5
 
 
-/* Game over*/
+/* General */
 extern uint8_t game_over;
-
 extern uint32_t game_points;
 extern uint32_t game_bullet_kill;
 extern uint32_t game_bullet_used;
-
 extern uint8_t game_break;
 
 /* Difficulty */
 typedef enum{EASY=1, NORMAL=2, HARD=3}difficulty_t;
 extern difficulty_t difficulty;
 
-/* for use of bitmap */
+/* Graphics bitmaps */
 typedef enum{G_SHIP,G_INVADER,G_BOMB,G_GUN,G_RAIL,G_ROCKET,G_WAVE} graphics_t;
 
 /* Coord */
@@ -77,7 +75,7 @@ typedef struct{
 /* Weapons */
 typedef enum{BOMB, GUN, RAIL, ROCKET, WAVE} weapontype_t;
 typedef enum{ONE=1, TWO=2, THREE=3, MAX=10}damage_t;
-typedef enum{STATIC=0, SLOW=1, MEDIUM=3, FAST=10}speed_t;
+typedef enum{STATIC=0, SLOW=1, MEDIUM=3, FAST=7}speed_t;
 
 typedef struct{
 	uint16_t max;
@@ -101,21 +99,9 @@ typedef struct{
 	weapon_timing_led_t timing_led;
 }weapon_t;
 
-//Array of all weapons
-extern weapon_t weapons[5];
-
-
-/* Bullets */
-//TODO : si le temps supprimer le pointeur weapon et mettre un weapon_type à la place
 typedef struct{
 	weapon_t *weapon;
 	hitbox_t hitbox;
 }bullet_t;
-
-//List of the bombs
-extern bullet_t bombs[NB_MAX_BOMBS];
-
-/* Prototypes */
-extern void level_up(void);
 
 #endif /* __GLOBAL_H__ */
