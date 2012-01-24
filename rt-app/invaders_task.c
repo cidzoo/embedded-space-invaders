@@ -94,7 +94,7 @@ static void invaders_task(void *cookie){
 	invaders_lock();
 	wave.invader_speed = 1;
 	wave.level = 0;
-	wave.invaders_count = 10;
+	wave.invaders_count = 15;
 	invaders_init();
 	invaders_unlock();
 
@@ -133,7 +133,7 @@ static void invaders_task(void *cookie){
          nb_invaders_per_line[line]++;
 
          //Détermine si la ligne est complète
-         if((GAME_ZONE_X_MAX - MARGE - WIDTH_INVADER - (nb_invaders_per_line[line]*(SPACE_BETWEEN_INVADER+WIDTH_INVADER))) < 0)
+         if((GAME_ZONE_X_MAX - GAME_ZONE_X_MIN -MARGE - WIDTH_INVADER - (nb_invaders_per_line[line]*(SPACE_BETWEEN_INVADER+WIDTH_INVADER))) < 0)
              line++;
 
 
@@ -145,8 +145,15 @@ static void invaders_task(void *cookie){
      for (i=0; i<=line;i++){
 
          for(j=0;j<nb_invaders_per_line[i];j++){
-        	 wave.invaders[invader_id].hitbox.x = (MARGE)+(j*(SPACE_BETWEEN_INVADER+WIDTH_INVADER));
-             wave.invaders[invader_id].hitbox.y = (SPACE_BETWEEN_INVADER)+(i*(SPACE_BETWEEN_INVADER+HEIGT_INVADER));
+
+        	 if(i==line){
+				 wave.invaders[invader_id].hitbox.x = (GAME_ZONE_X_MIN+MARGE+((WIDTH_INVADER)*(nb_invaders_per_line[0]-nb_invaders_per_line[i])))+(j*(SPACE_BETWEEN_INVADER+WIDTH_INVADER));
+				 wave.invaders[invader_id].hitbox.y = (GAME_ZONE_Y_MIN+SPACE_BETWEEN_INVADER)+(i*(SPACE_BETWEEN_INVADER+HEIGT_INVADER));
+        	 }
+        	 else{
+        		 wave.invaders[invader_id].hitbox.x = (GAME_ZONE_X_MIN+MARGE)+(j*(SPACE_BETWEEN_INVADER+WIDTH_INVADER));
+        		 wave.invaders[invader_id].hitbox.y = (GAME_ZONE_Y_MIN+SPACE_BETWEEN_INVADER)+(i*(SPACE_BETWEEN_INVADER+HEIGT_INVADER));
+        	 }
              invader_id++;
          }
 
@@ -163,9 +170,10 @@ static void invaders_task(void *cookie){
 	 hitbox_t dimension;
 	 int invader_dead=0;
 
+	 //Check la dimmension de la wave
 	 invaders_get_wave_box(&dimension);
 
-
+	 //Déplacement à droite
 	 if (moving_right){
 		 if ((dimension.x + dimension.width + wave.invader_speed) < GAME_ZONE_X_MAX){
 			 x = wave.invader_speed;
@@ -175,6 +183,7 @@ static void invaders_task(void *cookie){
 			 move_up=1;
 		 }
 	 }
+	 //Déplacement à gauche
 	 else{
 		 if (((int32_t)dimension.x - (int32_t)wave.invader_speed) > GAME_ZONE_X_MIN){
 			 x = -wave.invader_speed;
@@ -188,9 +197,11 @@ static void invaders_task(void *cookie){
 	 for (i=0; i<wave.invaders_count;i++){
 		 wave.invaders[i].hitbox.x += x;
 
+		 //Avance les invaders en avant
 		 if(move_up)
 			 wave.invaders[i].hitbox.y+=1;
 
+		 //check si un invader atteint la terre
 		 if(wave.invaders[i].hitbox.y+wave.invaders[i].hitbox.height == GAME_ZONE_Y_MAX)
 			 game_over=1;
 
@@ -205,6 +216,8 @@ static void invaders_task(void *cookie){
 	 // test if level finish
 	 if (invader_dead == wave.invaders_count)
 		 level_finish = 1;
+
+
  }
 
  //return  hitboxes from wave
@@ -263,7 +276,9 @@ void level_up(){
 
 	//current_wave->level = ++lvl;
 	wave.level++;
-	wave.invaders_count++;
+
+	if(wave.invaders_count<NB_INVADERS_MAX)
+		wave.invaders_count++;
 	wave.invader_speed = difficulty;
 
 	//init_invaders(current_wave->invaders);
