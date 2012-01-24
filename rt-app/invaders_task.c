@@ -229,7 +229,7 @@ static void invaders_task(void *cookie){
 	 }
 	 */
 
-	 fire_weapon(wave.invaders[wave.invaders_count].hitbox,BOMB);
+	 //fire_weapon(wave.invaders[0].hitbox,BOMB);
  }
 
 
