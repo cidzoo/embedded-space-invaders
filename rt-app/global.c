@@ -7,23 +7,14 @@
 
 #include "global.h"
 #include "hit_task.h"
+#include "invaders_task.h"
 
-wave_t current_wave = {0,1};
 
 difficulty_t difficulty = NORMAL;
 
-/* Prototypes */
+/* Game over*/
+uint8_t game_over = 0;
 
-//To call each time the current invaders wave is finished to init a new one
-void level_up(){
-	//static uint8_t lvl = 0;
-
-	//current_wave->level = ++lvl;
-	current_wave.level++;
-	current_wave.invader_speed += 2*difficulty;
-
-	//init_invaders(current_wave->invaders);
-}
 
 /* Functions to manipulate the list of bullet */
 int add_bullet(bullet_t b){

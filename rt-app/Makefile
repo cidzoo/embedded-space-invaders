@@ -25,7 +25,7 @@ pca9554-objs := pca9554-m.o xeno-i2c.o
 KDIR	= /home/redsuser/src/linux-2.6.14-imx21-xenomai
 
 PWD		= $(shell pwd)
-EXTRA_CFLAGS = -Wall -Wextra -I/home/redsuser/src/linux-2.6.14-imx21-xenomai/include -I/home/redsuser/src/linux-2.6.14-imx21-xenomai/include/xenomai -D__KERNEL__
+EXTRA_CFLAGS = -Wall -I/home/redsuser/src/linux-2.6.14-imx21-xenomai/include -I/home/redsuser/src/linux-2.6.14-imx21-xenomai/include/xenomai -D__KERNEL__
 
 all: default i2ctest
 

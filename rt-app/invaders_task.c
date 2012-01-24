@@ -11,7 +11,7 @@
 /**
  * Variables public
  */
-invader_t invaders[NB_INVADERS];
+wave_t wave;
 
 
 /**
@@ -89,9 +89,12 @@ void invaders_task_cleanup_objects(){
 
 static void invaders_task(void *cookie){
 
-	// On d�finit la p�riode de la tache
+	// On définit la période de la tache
 	rt_task_set_periodic(NULL, TM_NOW, 100000000);
 	invaders_lock();
+	wave.invader_speed = 1;
+	wave.level = 0;
+	wave.invaders_count = 10;
 	invaders_init();
 	invaders_unlock();
 
@@ -113,19 +116,19 @@ static void invaders_task(void *cookie){
 }
 
  void invaders_init(){
-	 int nb_invaders_per_line[NB_INVADERS]={0};
+	 int nb_invaders_per_line[NB_INVADERS_MAX]={0};
 	 int line=0;
 	 int invader_id=0;
 	 int i,j;
 
      //Détermine le nombre d'ennemi par ligne
-     for(i=0;i<NB_INVADERS;i++){
+     for(i=0;i<wave.invaders_count;i++){
 
          //Initialise les valeurs chaque ennemi
-         invaders[i].hp=10;
-         invaders[i].hitbox.height=HEIGT_INVADER;
-         invaders[i].hitbox.width=WIDTH_INVADER;
-         invaders[i].hitbox.type=G_INVADER;
+         wave.invaders[i].hp=10;
+         wave.invaders[i].hitbox.height=HEIGT_INVADER;
+         wave.invaders[i].hitbox.width=WIDTH_INVADER;
+         wave.invaders[i].hitbox.type=G_INVADER;
 
          nb_invaders_per_line[line]++;
 
@@ -142,8 +145,8 @@ static void invaders_task(void *cookie){
      for (i=0; i<=line;i++){
 
          for(j=0;j<nb_invaders_per_line[i];j++){
-             invaders[invader_id].hitbox.x = (MARGE)+(j*(SPACE_BETWEEN_INVADER+WIDTH_INVADER));
-             invaders[invader_id].hitbox.y = (SPACE_BETWEEN_INVADER)+(i*(SPACE_BETWEEN_INVADER+HEIGT_INVADER));
+        	 wave.invaders[invader_id].hitbox.x = (MARGE)+(j*(SPACE_BETWEEN_INVADER+WIDTH_INVADER));
+             wave.invaders[invader_id].hitbox.y = (SPACE_BETWEEN_INVADER)+(i*(SPACE_BETWEEN_INVADER+HEIGT_INVADER));
              invader_id++;
          }
 
@@ -164,8 +167,8 @@ static void invaders_task(void *cookie){
 
 
 	 if (moving_right){
-		 if ((dimension.x + dimension.width + current_wave.invader_speed) < GAME_ZONE_X_MAX){
-			 x = current_wave.invader_speed;
+		 if ((dimension.x + dimension.width + wave.invader_speed) < GAME_ZONE_X_MAX){
+			 x = wave.invader_speed;
 		 }else{
 			 x = LCD_MAX_X - (dimension.x + dimension.width);
 			 moving_right = 0;
@@ -173,8 +176,8 @@ static void invaders_task(void *cookie){
 		 }
 	 }
 	 else{
-		 if (((int32_t)dimension.x - (int32_t)current_wave.invader_speed) > GAME_ZONE_X_MIN){
-			 x = -current_wave.invader_speed;
+		 if (((int32_t)dimension.x - (int32_t)wave.invader_speed) > GAME_ZONE_X_MIN){
+			 x = -wave.invader_speed;
 		 }else{
 			 x = -dimension.x;
 			 moving_right = 1;
@@ -182,17 +185,17 @@ static void invaders_task(void *cookie){
 		 }
 	 }
 
-	 for (i=0; i<NB_INVADERS;i++){
-		 invaders[i].hitbox.x += x;
+	 for (i=0; i<wave.invaders_count;i++){
+		 wave.invaders[i].hitbox.x += x;
 
 		 if(move_up)
-			 invaders[i].hitbox.y+=50;
+			 wave.invaders[i].hitbox.y+=1;
 
-		 if(invaders[i].hitbox.y+invaders[i].hitbox.height == GAME_ZONE_Y_MAX)
-			 invaders[i].hp =0;
+		 if(wave.invaders[i].hitbox.y+wave.invaders[i].hitbox.height == GAME_ZONE_Y_MAX)
+			 game_over=1;
 
 		 //Count the number of invader dead
-		 if (invaders[i].hp<=0)
+		 if (wave.invaders[i].hp<=0)
 			 invader_dead++;
 	 }
 
@@ -200,7 +203,7 @@ static void invaders_task(void *cookie){
 		 move_up=0;
 
 	 // test if level finish
-	 if (invader_dead == NB_INVADERS)
+	 if (invader_dead == wave.invaders_count)
 		 level_finish = 1;
  }
 
@@ -215,26 +218,26 @@ static void invaders_task(void *cookie){
 	 wave_hitbox->height = 0;
 
 	 //Detection hitbox top
-	 for (i=0;i<NB_INVADERS;i++){
-		 if(invaders[i].hp > 0){
+	 for (i=0;i<wave.invaders_count;i++){
+		 if(wave.invaders[i].hp > 0){
 			 //Detection x
-			 if (invaders[i].hitbox.x < wave_hitbox->x){
-				 wave_hitbox->x = invaders[i].hitbox.x;
+			 if (wave.invaders[i].hitbox.x < wave_hitbox->x){
+				 wave_hitbox->x = wave.invaders[i].hitbox.x;
 			 }
 			 //Detection y
-			 if (invaders[i].hitbox.y < wave_hitbox->y){
-				 wave_hitbox->y = invaders[i].hitbox.y+1;
+			 if (wave.invaders[i].hitbox.y < wave_hitbox->y){
+				 wave_hitbox->y = wave.invaders[i].hitbox.y+1;
 			 }
 
 			 //Detection width
-			 if (invaders[i].hitbox.x+invaders[i].hitbox.width >
+			 if (wave.invaders[i].hitbox.x+wave.invaders[i].hitbox.width >
 			 	 wave_hitbox->x + wave_hitbox->width){
-				 wave_hitbox->width = (invaders[i].hitbox.x+invaders[i].hitbox.width)-wave_hitbox->x-1;
+				 wave_hitbox->width = (wave.invaders[i].hitbox.x+wave.invaders[i].hitbox.width)-wave_hitbox->x-1;
 			 }
 			 //Detection height
-			 if (invaders[i].hitbox.y+invaders[i].hitbox.height >
+			 if (wave.invaders[i].hitbox.y+wave.invaders[i].hitbox.height >
 				 wave_hitbox->y + wave_hitbox->height){
-				 wave_hitbox->height = (invaders[i].hitbox.y+invaders[i].hitbox.height)-wave_hitbox->y;
+				 wave_hitbox->height = (wave.invaders[i].hitbox.y+wave.invaders[i].hitbox.height)-wave_hitbox->y;
 			 }
 		 }
 	 }
@@ -252,6 +255,18 @@ int invaders_unlock(){
 		return rt_mutex_unlock(&invaders_task_mutex);
 	}
 	return -1;
+}
+
+//To call each time the current invaders wave is finished to init a new one
+void level_up(){
+	//static uint8_t lvl = 0;
+
+	//current_wave->level = ++lvl;
+	wave.level++;
+	wave.invaders_count++;
+	wave.invader_speed = difficulty;
+
+	//init_invaders(current_wave->invaders);
 }
 
 

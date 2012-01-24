@@ -22,7 +22,7 @@ weapon_t weapons[NB_WEAPONS] = {
 		{15, 15, 0, 4, 0},
 		{10, 0, 0},
 	},
-	{RAIL, TWO, INSTANT,
+	{RAIL, TWO, STATIC,
 		{1, 0, 0, 50, 0},
 		{10, 0, 0},
 	},
@@ -116,8 +116,8 @@ void hit_task(void *cookie){
 	int16_t y;
 
 	(void)cookie;
-	// On définit la période de la tache
-	rt_task_set_periodic(NULL, TM_NOW, 20*MS);
+	// On dÃ©finit la pÃ©riode de la tache
+	rt_task_set_periodic(NULL, TM_NOW, 50*MS);
 
 
 	for (;;) {
@@ -131,53 +131,56 @@ void hit_task(void *cookie){
 		invaders_lock();
 		//for each bullet.
 		for (i=0;i<NB_MAX_BULLETS;i++){
-			//for each invader
-			for (j=0;j<NB_INVADERS;j++){
-				//current traited objects
-				invader = &invaders[j];
+			if(bullets[i].weapon != NULL){
 				bullet = &bullets[i];
 
-				//test if applicable
-				if(invader->hp>0 && bullet->weapon != NULL){
-					//control if the bullet it touching the invader
-					if(hit_test(invader->hitbox, bullet->hitbox) == 0){
-						//if so : damage the invader
-						for (k=0;k < bullet->weapon->damage;k++){
-							invader->hp--;
-							if(invader->hp == 0)
-								break;
-						}
-//						//for a rocket create the explosion as a new bullet
-//						if(bullet->weapon->weapon_type == ROCKET){
-//							bullet_t new_bullet;
-//							new_bullet.weapon = &weapons[GUN];
-//							new_bullet.hitbox.x = bullet->hitbox.x;
-//							new_bullet.hitbox.y = bullet->hitbox.y;
-//							new_bullet.hitbox.width = 20;
-//							new_bullet.hitbox.height = 20;
-//							add_bullet(new_bullet);
-//						}
-						if(!(bullet->weapon->weapon_type == WAVE))
-							remove_bullet(i);
-					}//if positive hit test*/
-				}
-			}//for each invaders
-			//control that the spaceship is not been touched by a invader's bomb
-//			if(bullet->weapon != NULL){
-//				if( hit_test(ship.hitbox, bullet->hitbox) ){
-//					ship.hp--;
-//					remove_bullet(*bullet);
-//				}
-//			}
+				// On dÃ©place le bullets
+				//bullet->hitbox.y -= bullet->weapon->speed;
+				bullet->hitbox.y -= bullet->weapon->speed;
+				/*y = bullet->hitbox.y-1;
+				if( (bullet->weapon->weapon_type != RAIL) &&
+					(y <= 0) ){
+					remove_bullet(i);
+				}*/
 
-			// On déplace le bullets
-			bullet->hitbox.y -= bullet->weapon->speed;
-			y = bullet->hitbox.y-1;
-			if( (bullet->weapon->weapon_type != RAIL) &&
-				(y <= 0) ){
-				remove_bullet(i);
+				//for each invader
+				for (j=0;j<wave.invaders_count;j++){
+					//current traited objects
+					invader = &wave.invaders[j];
+
+					//test if applicable
+					if(invader->hp > 0){
+						//control if the bullet it touching the invader
+						if(hit_test(invader->hitbox, bullet->hitbox) == 0){
+							//if so : damage the invader
+							for (k=0;k < bullet->weapon->damage;k++){
+								invader->hp--;
+								if(invader->hp == 0)
+									break;
+							}
+	//						//for a rocket create the explosion as a new bullet
+	//						if(bullet->weapon->weapon_type == ROCKET){
+	//							bullet_t new_bullet;
+	//							new_bullet.weapon = &weapons[GUN];
+	//							new_bullet.hitbox.x = bullet->hitbox.x;
+	//							new_bullet.hitbox.y = bullet->hitbox.y;
+	//							new_bullet.hitbox.width = 20;
+	//							new_bullet.hitbox.height = 20;
+	//							add_bullet(new_bullet);
+	//						}
+							if(!(bullet->weapon->weapon_type == WAVE))
+								remove_bullet(i);
+						}//if positive hit test*/
+					}
+				}//for each invaders
+				//control that the spaceship is not been touched by a invader's bomb
+	//			if(bullet->weapon != NULL){
+	//				if( hit_test(ship.hitbox, bullet->hitbox) ){
+	//					ship.hp--;
+	//					remove_bullet(*bullet);
+	//				}
+	//			}
 			}
-
 
 		}//for each bullet
 		// On deverrouille les invaders
@@ -227,9 +230,9 @@ void fire_weapon(weapontype_t w){
 	case RAIL:
 		b.weapon = &weapons[RAIL];
 		b.hitbox.x = start_x-RAIL_WIDTH/2;
-		b.hitbox.y = 0;
+		b.hitbox.y = GAME_ZONE_Y_MIN;
 		b.hitbox.width = RAIL_WIDTH;
-		b.hitbox.height = RAIL_HEIGHT-start_y;
+		b.hitbox.height = start_y - GAME_ZONE_Y_MIN;
 		b.hitbox.type = G_RAIL;
 		break;
 	case ROCKET:

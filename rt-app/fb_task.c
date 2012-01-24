@@ -69,14 +69,14 @@ static void fb_task(void *cookie){
 
 	int  i;
 	// Variable locale pour les invaders
-	invader_t invaders_loc[NB_INVADERS];
+	wave_t wave_loc;
 	// Variable locale pour les bullets
 	bullet_t bullets_loc[NB_MAX_BULLETS];
 	spaceship_t ship_loc;
 
 	(void)cookie;
 
-	// On définit la période de la tache
+	// On dÃ©finit la pÃ©riode de la tache
 	rt_task_set_periodic(NULL, TM_NOW, 50*MS);
 
 	for (;;) {
@@ -84,7 +84,7 @@ static void fb_task(void *cookie){
 
 		// On copie les invaders en local
 		invaders_lock();
-		memcpy(invaders_loc, invaders, sizeof(invaders_loc));
+		memcpy(&wave_loc, &wave, sizeof(wave_loc));
 		invaders_unlock();
 
 		// On copie le vaisseau en local
@@ -97,15 +97,8 @@ static void fb_task(void *cookie){
 		memcpy(bullets_loc, bullets, sizeof(bullets_loc));
 		hit_unlock();
 
-		// On dessine le header
-		fb_rect_fill(0, 10, 0, 239, LU_GREY);
 		// On dessine le background
 		fb_rect_fill(10, 319, 0, 239, LU_BLACK);
-
-		// On print le texte pour la progress bar
-		fb_print_string(LU_BLACK, LU_GREY, "life", 3, 3);
-		// On print la progress bar
-		fb_progress_bar(3, 7, 40, 100, LU_RED, ship_loc.hp, LIFE_SHIP);
 
 		// On dessine les bullets
 		for(i = 0; i < NB_MAX_BULLETS; i++){
@@ -121,14 +114,22 @@ static void fb_task(void *cookie){
 		}
 
 		// On dessine les invaders
-		for(i = 0; i < NB_INVADERS; i++){
-			if(invaders_loc[i].hp > 0){
-				draw_bitmap(invaders_loc[i].hitbox);
+		for(i = 0; i < wave_loc.invaders_count; i++){
+			if(wave_loc.invaders[i].hp > 0){
+				draw_bitmap(wave_loc.invaders[i].hitbox);
 			}
 		}
 
 		// On dessine le vaisseau
 		draw_bitmap(ship_loc.hitbox);
+
+		// On dessine le header
+		fb_rect_fill(0, GAME_ZONE_Y_MIN, 0, 239, LU_GREY);
+
+		// On print le texte pour la progress bar
+		fb_print_string(LU_BLACK, LU_GREY, "life", 3, 3);
+		// On print la progress bar
+		fb_progress_bar(3, 10, 40, 200, LU_RED, ship_loc.hp, LIFE_SHIP);
 
 		rt_task_set_priority(NULL, 90);
 		fb_display();
@@ -138,9 +139,7 @@ static void fb_task(void *cookie){
 
 static void draw_bitmap(hitbox_t hb){
 	int i, j;
-//fb_set_pixel(hb.y + hb.height-i, hb.x + j, (*((*(bmp_wave+i))+j)));
 	uint16_t *bmp[hb.height];
-
 
 	switch(hb.type){
 		case G_SHIP:
@@ -152,50 +151,39 @@ static void draw_bitmap(hitbox_t hb){
 			for(i = 0; i < hb.height; i++){
 				bmp[i] = bmp_invader[i];
 			}
-			//bmp = bmp_invader;
 			break;
 		case G_BOMB:
 			for(i = 0; i < hb.height; i++){
 				bmp[i] = bmp_bomb[i];
 			}
-			//bmp = bmp_bomb;
 			break;
 		case G_GUN:
 			for(i = 0; i < hb.height; i++){
 				bmp[i] = bmp_gun[i];
 			}
-			//bmp = bmp_gun;
 			break;
 		case G_RAIL:
 			for(i = 0; i < hb.height; i++){
 				bmp[i] = bmp_rail[i];
 			}
-			//bmp = bmp_rail;
 			break;
 		case G_ROCKET:
 			for(i = 0; i < hb.height; i++){
 				bmp[i] = bmp_rocket[i];
 			}
-			//bmp = bmp_rocket;
 			break;
 		case G_WAVE:
 			for(i = 0; i < hb.height; i++){
 				bmp[i] = bmp_wave[i];
 			}
-			//bmp = bmp_wave;
 			break;
 	}
 
-
-	//printk("%d %d %d %d\n", hb.x, hb.y, hb.width, hb.height);
 	for(i = 0; i < hb.height; i++){
 		for(j = 0; j < hb.width; j++){
 			if((*((*(bmp+i))+j)) != LU_BLACK){
-				//printk("%p %p\n", bmp, bmp_ship);
-				//printk("%d\n", *((*(bmp+i))+j));
 				fb_set_pixel(hb.y + hb.height-i, hb.x + j, (*((*(bmp+i))+j)));
 			}
-			//fb_set_pixel(hb.y + hb.height-i, hb.x + j, bmp[i][j]);
 		}
 	}
 }
