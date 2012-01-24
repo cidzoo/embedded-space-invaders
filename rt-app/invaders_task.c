@@ -223,8 +223,8 @@ static void invaders_task(void *cookie){
 	 if (invader_dead == wave.invaders_count)
 		 level_finish = 1;
 
-	 if(invaders_random(20)==1){
-		 for (i=0;i<2+wave.level;i++){
+	 if(invaders_random(40-2*wave.level)==1){
+		 for (i=0;i<1+wave.level;i++){
 			 fire_weapon(wave.invaders[invaders_random(wave.invaders_count)].hitbox,BOMB);
 		 }
 
