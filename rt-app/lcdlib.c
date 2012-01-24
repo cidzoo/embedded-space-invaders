@@ -81,21 +81,24 @@ void fb_line(int x0, int y0, int x1, int y1, int color){
 	dx = abs(x1 - x0);
 	dy = abs(y1 - y0);
 
-	/* On calcule le sens de tracage et "l'erreur" (erreur=0 -> segment � 45�) */
-	if (x0 < x1)
+	/* On calcule le sens de tracage et "l'erreur" (erreur = 0 -> segment à 45°) */
+	if (x0 < x1){
 		sx = 1;
-	else
+	}else{
 		sx = -1;
-	if (y0 < y1)
+	}
+
+	if (y0 < y1){
 		sy = 1;
-	else
+	}else{
 		sy = -1;
+	}
 
 	err = dx - dy;
 
 	/* Boucle de tracage de la ligne */
 	do {
-		fb_set_pixel(x0,y0,color);		// Dessiner un pixel
+		fb_set_pixel(y0,x0,color);		// Dessiner un pixel
 
 		e2 = 2 * err;
 		// On corrige la trajectoire en X
@@ -112,7 +115,7 @@ void fb_line(int x0, int y0, int x1, int y1, int color){
 }
 
 void fb_rect(int y_min, int y_max, int x_min, int x_max, int couleur){
-	// On dessine la ligne sup�rieure
+	// On dessine la ligne supérieure
 	fb_line(x_min, y_min, x_max, y_min, couleur);
 	// On dessine la ligne droite
 	fb_line(x_max, y_min, x_max, y_max, couleur);
