@@ -63,7 +63,7 @@ static int rail_timeout = 0;
  */
 static int hit_test(hitbox_t a, hitbox_t b);
 static int add_bullet(bullet_t b);
-static void remove_bullet(int id);
+static void remove_bullet(bullet_t b, int id);
 static void hit_task(void *cookie);
 
 int hit_task_start(){
@@ -153,25 +153,22 @@ void hit_task(void *cookie){
 
 				//rail
 				if(rail_id != -1 && rail_timeout <= 0){
-					remove_bullet(rail_id);
+					remove_bullet(bullets[rail_id],rail_id);
 					rail_id = -1;
 				}else
 					rail_timeout--;
 
 				if( (bullet->weapon->weapon_type != RAIL) &&
 					(y <= 0) ){
-					remove_bullet(i);
+					remove_bullet(*bullet, i);
 					if(game_points >= 5)
 						game_points -= 5;
 				}
 
 				//for each invader
 				for (j=0;j<wave.invaders_count;j++){
-					//current traited objects
-					invader = &wave.invaders[j];
-
 					//test if applicable
-					if(&wave.invaders[j].hp > 0){
+					if(wave.invaders[j].hp > 0){
 
 						//current object
 						invader = &wave.invaders[j];
@@ -208,7 +205,7 @@ void hit_task(void *cookie){
 						if(hit_test(bombs[j].hitbox, bullet->hitbox) == 0){
 							impact = 1;
 							//destroy the bomb
-							bombs[j].weapon = NULL;
+							remove_bullet(bombs[j], i);
 						}
 					}
 				}
@@ -219,7 +216,7 @@ void hit_task(void *cookie){
 						//control if the bullet is touched
 						if(hit_test(bullets[j].hitbox, bullet->hitbox) == 0){
 							impact = 1;
-							//destroy the bomb
+							//destroy the bullet
 							bullets[j].weapon = NULL;
 						}
 					}
@@ -229,7 +226,7 @@ void hit_task(void *cookie){
 				if(		impact &&
 						!(bullet->weapon->weapon_type == WAVE) &&
 						!(bullet->weapon->weapon_type == RAIL) )
-					remove_bullet(i);
+					remove_bullet(*bullet, i);
 
 			}//if not null
 
@@ -244,7 +241,7 @@ void hit_task(void *cookie){
 					//if so damage the ship and remove bomb
 					//TODO handle case ship is dead
 					ship.hp--;
-					bombs[i].weapon = NULL;
+					remove_bullet(bombs[i], i);
 				}
 			}
 		}
@@ -324,6 +321,7 @@ void fire_weapon(hitbox_t shooter, weapontype_t w){
 	//add it to the list of current bullets
 	add_bullet(b);
 
+
 }//fire_weapon()
 
 static int hit_test(hitbox_t a, hitbox_t b){
@@ -341,23 +339,39 @@ static int hit_test(hitbox_t a, hitbox_t b){
 /* Functions to manipulate the list of bullet */
 static int add_bullet(bullet_t b){
 	int i=0;
-	//find the first empty slot and place the bullet there
-	//TODO : gérer le cas ou le tableau est plein
-	for(i=0;i<NB_MAX_BULLETS;i++){
-		if(bullets[i].weapon == NULL){
-			bullets[i] = b;
-			if(bullets[i].weapon->weapon_type == RAIL){
-				rail_id = i;
-				rail_timeout = 15;
+
+	//normal bullet
+	if(b.weapon->weapon_type != BOMB){
+		//find the first empty slot and place the bullet there
+		for(i=0;i<NB_MAX_BULLETS;i++){
+			if(bullets[i].weapon == NULL){
+				bullets[i] = b;
+				if(bullets[i].weapon->weapon_type == RAIL){
+					rail_id = i;
+					rail_timeout = 15;
+				}
+				return 0;
 			}
-			return 0;
+		}
+		//for the bombs
+	}else{
+		//find the first empty slot and place the bomb there
+		for(i=0;i<NB_MAX_BOMBS;i++){
+			if(bullets[i].weapon == NULL){
+				bombs[i] = b;
+				return 0;
+			}
 		}
 	}
 	return -1;
 }
 
-static void remove_bullet(int id){
-	bullets[id].weapon = NULL;
+static void remove_bullet(bullet_t b, int id){
+	if(b.weapon->weapon_type != BOMB)
+		bullets[id].weapon = NULL;
+	else
+		bombs[id].weapon = NULL;
+
 }
 
 int hit_lock(){
