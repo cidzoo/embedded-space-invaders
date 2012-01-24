@@ -51,10 +51,19 @@ static uint8_t hit_task_mutex_created = 0;
 RT_TASK hit_task_handle;
 static uint8_t hit_task_created = 0;
 
+//flag de collision
+static int impact = 0;
+
+//for rail use
+static int rail_id = -1;
+static int rail_timeout = 0;
+
 /**
  * Fonctions privées
  */
 static int hit_test(hitbox_t a, hitbox_t b);
+static int add_bullet(bullet_t b);
+static void remove_bullet(int id);
 static void hit_task(void *cookie);
 
 int hit_task_start(){
@@ -112,7 +121,7 @@ void hit_task(void *cookie){
 
 	invader_t *invader;
 	bullet_t *bullet;
-	int i, j, k;
+	int i, j;
 	int16_t y;
 
 	(void)cookie;
@@ -129,15 +138,26 @@ void hit_task(void *cookie){
 		ship_lock();
 		// On verrouille les invaders
 		invaders_lock();
-		//for each bullet.
+
+		//for each bullet
 		for (i=0;i<NB_MAX_BULLETS;i++){
 			if(bullets[i].weapon != NULL){
+				impact = 0;
+
+				//current object
 				bullet = &bullets[i];
 
 				// On déplace le bullets
-				//bullet->hitbox.y -= bullet->weapon->speed;
 				bullet->hitbox.y -= bullet->weapon->speed;
-				y = bullet->hitbox.y-1;
+				y = bullet->hitbox.y;
+
+				//rail
+				if(rail_id != -1 && rail_timeout <= 0){
+					remove_bullet(rail_id);
+					rail_id = -1;
+				}else
+					rail_timeout--;
+
 				if( (bullet->weapon->weapon_type != RAIL) &&
 					(y <= 0) ){
 					remove_bullet(i);
@@ -151,16 +171,22 @@ void hit_task(void *cookie){
 					invader = &wave.invaders[j];
 
 					//test if applicable
-					if(invader->hp > 0){
+					if(&wave.invaders[j].hp > 0){
+
+						//current object
+						invader = &wave.invaders[j];
+
 						//control if the bullet it touching the invader
 						if(hit_test(invader->hitbox, bullet->hitbox) == 0){
+							impact = 1;
 							//if so : damage the invader
-							for (k=0;k < bullet->weapon->damage;k++){
+							if(invader->hp >= bullet->weapon->damage){
+								invader->hp-= bullet->weapon->damage;
 								game_points += 10;
-								invader->hp--;
-								if(invader->hp == 0)
-									break;
 							}
+							else
+								invader->hp = 0;
+
 	//						//for a rocket create the explosion as a new bullet
 	//						if(bullet->weapon->weapon_type == ROCKET){
 	//							bullet_t new_bullet;
@@ -171,21 +197,58 @@ void hit_task(void *cookie){
 	//							new_bullet.hitbox.height = 20;
 	//							add_bullet(new_bullet);
 	//						}
-							if(!(bullet->weapon->weapon_type == WAVE))
-								remove_bullet(i);
 						}//if positive hit test*/
 					}
 				}//for each invaders
-				//control that the spaceship is not been touched by a invader's bomb
-	//			if(bullet->weapon != NULL){
-	//				if( hit_test(ship.hitbox, bullet->hitbox) ){
-	//					ship.hp--;
-	//					remove_bullet(*bullet);
-	//				}
-	//			}
-			}
+
+				//hit test with bombs
+				for(j=0;j<NB_MAX_BOMBS;j++){
+					if(bombs[j].weapon != NULL){
+						//control if the bomb is touched
+						if(hit_test(bombs[j].hitbox, bullet->hitbox) == 0){
+							impact = 1;
+							//destroy the bomb
+							bombs[j].weapon = NULL;
+						}
+					}
+				}
+
+				//hit test with other bullets
+				for(j=0;j<NB_MAX_BULLETS;j++){
+					if(bullets[j].weapon != NULL && &bullets[j] != bullet){
+						//control if the bullet is touched
+						if(hit_test(bullets[j].hitbox, bullet->hitbox) == 0){
+							impact = 1;
+							//destroy the bomb
+							bullets[j].weapon = NULL;
+						}
+					}
+				}
+
+				//if impact detected delete the bullet
+				if(		impact &&
+						!(bullet->weapon->weapon_type == WAVE) &&
+						!(bullet->weapon->weapon_type == RAIL) )
+					remove_bullet(i);
+
+			}//if not null
 
 		}//for each bullet
+
+		//For each bomb
+		for(i=0;i<NB_MAX_BOMBS;i++){
+			if(bombs[i].weapon != NULL){
+
+				//hit test with ship
+				if(hit_test(ship.hitbox, bombs[i].hitbox) ){
+					//if so damage the ship and remove bomb
+					//TODO handle case ship is dead
+					ship.hp--;
+					bombs[i].weapon = NULL;
+				}
+			}
+		}
+
 		// On deverrouille les invaders
 		invaders_unlock();
 		// On deverrouille le vaisseau
@@ -196,28 +259,30 @@ void hit_task(void *cookie){
 	//level_up();
 }
 
-void fire_weapon(weapontype_t w){
+void fire_weapon(hitbox_t shooter, weapontype_t w){
 	uint16_t start_x=0, start_y=0;
 	bullet_t b;
 
 	//Control that the selected weapon CAN be used
 
 
-//		if(w == BOMB){
-//			//TODO:Grab the position of the spaceship's gun's
-//		}
-//		else{
+		if(w == BOMB){
+			//Grab the position of the invader's bottom
+			start_x = shooter.x + shooter.width/2;
+			start_y = shooter.y+shooter.height+1;
+		}
+		else{
 			//Grab the position of the spaceship's gun's
-			start_x = ship.hitbox.x + ship.hitbox.width/2;
-			start_y = ship.hitbox.y-1;
-//		}
+			start_x = shooter.x + shooter.width/2;
+			start_y = shooter.y-1;
+		}
 
 	//Fire the weapon
 	switch(w){
 	case BOMB:
 		b.weapon = &weapons[BOMB];
 		b.hitbox.x = start_x-BOMB_WIDTH/2;
-		b.hitbox.y = start_y-BOMB_HEIGHT;
+		b.hitbox.y = start_y;
 		b.hitbox.width = BOMB_WIDTH;
 		b.hitbox.height = BOMB_HEIGHT;
 		b.hitbox.type = G_BOMB;
@@ -272,6 +337,28 @@ static int hit_test(hitbox_t a, hitbox_t b){
 	return -1;
 
 }//hit_test()
+
+/* Functions to manipulate the list of bullet */
+static int add_bullet(bullet_t b){
+	int i=0;
+	//find the first empty slot and place the bullet there
+	//TODO : gérer le cas ou le tableau est plein
+	for(i=0;i<NB_MAX_BULLETS;i++){
+		if(bullets[i].weapon == NULL){
+			bullets[i] = b;
+			if(bullets[i].weapon->weapon_type == RAIL){
+				rail_id = i;
+				rail_timeout = 15;
+			}
+			return 0;
+		}
+	}
+	return -1;
+}
+
+static void remove_bullet(int id){
+	bullets[id].weapon = NULL;
+}
 
 int hit_lock(){
 	if(hit_task_mutex_created){

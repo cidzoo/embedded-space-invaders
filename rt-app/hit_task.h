@@ -24,6 +24,6 @@ extern void hit_task_cleanup_objects(void);
 extern int hit_lock(void);
 extern int hit_unlock(void);
 
-extern void fire_weapon(weapontype_t w);
+extern void fire_weapon(hitbox_t shooter, weapontype_t w);
 
 #endif /* HIT_TASK_H_ */

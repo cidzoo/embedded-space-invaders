@@ -8,6 +8,7 @@
 #include "hit_task.h"
 #include "pca9554-m.h"
 #include "rt-app-m.h"
+#include "ship_task.h"
 
 /**
  * Variables privées
@@ -105,8 +106,8 @@ void io_task(void *cookie)
 						if(weapons[i+1].timing_charge.now > 0){
 							weapons[i+1].timing_charge.now--;
 							weapons[i+1].timing_charge.last = weapons[i+1].timing_charge.now;
-							printk("fire single\n");
-							fire_weapon((weapontype_t)(i+1));
+							fire_weapon(ship.hitbox,(weapontype_t)(i+1));
+
 						}
 
 					}
@@ -116,8 +117,7 @@ void io_task(void *cookie)
 						if(weapons[i+1].timing_charge.now > 0 &&
 						   weapons[i+1].timing_charge.now >= weapons[i+1].timing_charge.last){
 							weapons[i+1].timing_charge.now--;
-							printk("fire continuous\n");
-							fire_weapon((weapontype_t)(i+1));
+							fire_weapon(ship.hitbox,(weapontype_t)(i+1));
 						}
 					}else{
 						rebond++;

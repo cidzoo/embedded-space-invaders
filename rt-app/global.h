@@ -19,8 +19,9 @@
 #include "bitmaps.h"
 
 #define NB_INVADERS_MAX 20
-#define NB_MAX_BULLETS 200
-#define NB_MAX_BOMBS 10
+#define NB_MAX_BULLETS 50
+#define NB_MAX_BOMBS 20
+
 
 #define COOLDOWN_RAIL 10
 #define COOLDOWN_ROCKET 20
@@ -111,7 +112,6 @@ typedef struct{
 extern bullet_t bombs[NB_MAX_BOMBS];
 
 /* Prototypes */
-extern int add_bullet(bullet_t b);
-extern void remove_bullet(int id);
+extern void level_up(void);
 
 #endif /* __GLOBAL_H__ */
