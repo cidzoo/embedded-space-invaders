@@ -158,11 +158,14 @@ void hit_task(void *cookie){
 				}else
 					rail_timeout--;
 
-				if( (bullet->weapon->weapon_type != RAIL) &&
-					(y <= 0) ){
-					remove_bullet(i);
-					if(game_points >= 5)
-						game_points -= 5;
+				if(y <= 0){
+					if(bullet->weapon->weapon_type != RAIL){
+						// Gestion des points lors de la sortie d'un bullet
+						if(bullet->weapon->weapon_type != WAVE && game_points >= 1){
+							game_points -= 1;
+						}
+						remove_bullet(i);
+					}
 				}
 
 				//for each invader
@@ -171,7 +174,7 @@ void hit_task(void *cookie){
 					invader = &wave.invaders[j];
 
 					//test if applicable
-					if(&wave.invaders[j].hp > 0){
+					if(wave.invaders[j].hp > 0){
 
 						//current object
 						invader = &wave.invaders[j];
@@ -182,10 +185,12 @@ void hit_task(void *cookie){
 							//if so : damage the invader
 							if(invader->hp >= bullet->weapon->damage){
 								invader->hp-= bullet->weapon->damage;
+								game_points += 1;
+							}
+							else{
+								invader->hp = 0;
 								game_points += 10;
 							}
-							else
-								invader->hp = 0;
 
 	//						//for a rocket create the explosion as a new bullet
 	//						if(bullet->weapon->weapon_type == ROCKET){
