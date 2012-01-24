@@ -5,8 +5,10 @@
  *      Author: michael
  */
 #include <linux/types.h>
+//#include <linux/random.h>
 #include "lcdlib.h"
 #include "invaders_task.h"
+#include "hit_task.h"
 
 /**
  * Variables public
@@ -32,6 +34,7 @@ static void invaders_task(void *cookie);
 static void invaders_init(void);
 static void invaders_move(void);
 static void invaders_get_wave_box(hitbox_t *wave_hitbox);
+int invader_random(int a, int b);
 
 int invaders_task_start(){
 	int err;
@@ -220,17 +223,16 @@ static void invaders_task(void *cookie){
 	 if (invader_dead == wave.invaders_count)
 		 level_finish = 1;
 
-
+/*
 	 for (i=0;i<2+wave.level;i++){
 		 fire_weapon(wave.invaders[invaders_random(0,wave.invaders_count)].hitbox,BOMB);
 	 }
+	 */
 
-
+	 fire_weapon(wave.invaders[wave.invaders_count].hitbox,BOMB);
  }
 
- int invaders_random(int a, int b){
-     return rand()%(b-a) +a;
- }
+
 
  //return  hitboxes from wave
  void invaders_get_wave_box(hitbox_t *wave_hitbox){
@@ -296,5 +298,10 @@ void level_up(){
 	//init_invaders(current_wave->invaders);
 }
 
+/*
+int invader_random(int a, int b){
+    return rand()%(b-a) +a;
+}
+*/
 
 

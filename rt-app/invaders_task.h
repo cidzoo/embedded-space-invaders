@@ -42,6 +42,6 @@ extern int invaders_unlock(void);
 extern void invaders_refresh(void);
 
 extern void level_up(void);
-extern int invaders_random(int a, int b);
+//extern int invader_random(int a, int b);
 
 #endif /*ENEMIES_H_*/
