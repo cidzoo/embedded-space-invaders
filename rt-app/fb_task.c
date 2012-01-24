@@ -112,6 +112,13 @@ static void fb_task(void *cookie){
 				}
 			}
 
+			// On dessine les bombs
+			for(i = 0; i < NB_MAX_BOMBS; i++){
+				if(bombs[i].weapon != NULL){
+					draw_bitmap(bombs[i].hitbox);
+				}
+			}
+
 			// On dessine les invaders
 			for(i = 0; i < wave_loc.invaders_count; i++){
 				if(wave_loc.invaders[i].hp > 0){

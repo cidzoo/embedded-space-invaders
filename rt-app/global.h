@@ -77,7 +77,7 @@ typedef struct{
 /* Weapons */
 typedef enum{BOMB, GUN, RAIL, ROCKET, WAVE} weapontype_t;
 typedef enum{ONE=1, TWO=2, THREE=3, MAX=10}damage_t;
-typedef enum{STATIC=0, SLOW=3, MEDIUM=11, FAST=15}speed_t;
+typedef enum{STATIC=0, SLOW=1, MEDIUM=3, FAST=10}speed_t;
 
 typedef struct{
 	uint16_t max;

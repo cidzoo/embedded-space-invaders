@@ -7,6 +7,7 @@
 #include <linux/types.h>
 #include "lcdlib.h"
 #include "invaders_task.h"
+#include "hit_task.h"
 
 /**
  * Variables public
@@ -32,6 +33,8 @@ static void invaders_task(void *cookie);
 static void invaders_init(void);
 static void invaders_move(void);
 static void invaders_get_wave_box(hitbox_t *wave_hitbox);
+int invaders_random(int range);
+
 
 int invaders_task_start(){
 	int err;
@@ -148,6 +151,7 @@ static void invaders_task(void *cookie){
 
          for(j=0;j<nb_invaders_per_line[i];j++){
 
+        	 //Si dernière ligne invaders -> décallage
         	 if(i==line){
 				 wave.invaders[invader_id].hitbox.x = (GAME_ZONE_X_MIN+MARGE+((WIDTH_INVADER)*(nb_invaders_per_line[0]-nb_invaders_per_line[i])))+(j*(SPACE_BETWEEN_INVADER+WIDTH_INVADER));
 				 wave.invaders[invader_id].hitbox.y = (GAME_ZONE_Y_MIN+SPACE_BETWEEN_INVADER)+(i*(SPACE_BETWEEN_INVADER+HEIGT_INVADER));
@@ -168,6 +172,8 @@ static void invaders_task(void *cookie){
 	 static int moving_right = 1;
 	 hitbox_t dimension;
 	 int invader_dead=0;
+
+
 
 	 //Check la dimmension de la wave
 	 invaders_get_wave_box(&dimension);
@@ -216,8 +222,18 @@ static void invaders_task(void *cookie){
 	 if (invader_dead == wave.invaders_count)
 		 level_finish = 1;
 
+	 if(invaders_random(40-2*wave.level)==1){
+		 for (i=0;i<1+wave.level;i++){
+			 fire_weapon(wave.invaders[invaders_random(wave.invaders_count)].hitbox,BOMB);
+		 }
+
+	 }
+
+
 
  }
+
+
 
  //return  hitboxes from wave
  void invaders_get_wave_box(hitbox_t *wave_hitbox){
@@ -282,6 +298,11 @@ void level_up(){
 
 	//init_invaders(current_wave->invaders);
 }
+
+int invaders_random(int range){
+	return get_random()%range;
+}
+
 
 
 

@@ -19,14 +19,14 @@
 #define GUN_WIDTH 4
 #define GUN_HEIGHT 5
 
-#define RAIL_WIDTH 5
+#define RAIL_WIDTH 6
 #define RAIL_HEIGHT LCD_MAX_Y
 
 #define ROCKET_WIDTH 10
 #define ROCKET_HEIGHT 14
 
 #define WAVE_WIDTH LCD_MAX_X
-#define WAVE_HEIGHT 9
+#define WAVE_HEIGHT 4
 
 #define INVADER_WIDTH 16
 #define INVADER_HEIGHT 16
