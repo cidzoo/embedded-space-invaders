@@ -160,7 +160,9 @@ void hit_task(void *cookie){
 							game_points -= 1;
 						}
 						remove_bullet(*bullet, i);
-						break;
+						// On met a jour les spef concernant la precision de tir
+						game_bullet_used++;
+						continue;
 					}
 				}
 
@@ -177,13 +179,20 @@ void hit_task(void *cookie){
 							impact = 1;
 							//if so : damage the invader
 							if(invader->hp >= bullet->weapon->damage){
+								// On met a jour les points de vie de l'invader
 								invader->hp-= bullet->weapon->damage;
+								// On met a jour les points
 								game_points += 1;
 							}
 							else{
+								// On met a jour les points de vie de l'invader
 								invader->hp = 0;
+								// On met a jour les points
 								game_points += 10;
 							}
+							// On met a jour les spef concernant la precision de tir
+							game_bullet_used++;
+							game_bullet_kill++;	// La bullet à touché sa cible
 
 	//						//for a rocket create the explosion as a new bullet
 	//						if(bullet->weapon->weapon_type == ROCKET){
@@ -195,6 +204,8 @@ void hit_task(void *cookie){
 	//							new_bullet.hitbox.height = 20;
 	//							add_bullet(new_bullet);
 	//						}
+
+							break;
 						}//if positive hit test*/
 					}
 				}//for each invaders
