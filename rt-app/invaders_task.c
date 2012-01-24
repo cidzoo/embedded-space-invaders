@@ -33,7 +33,7 @@ static void invaders_task(void *cookie);
 static void invaders_init(void);
 static void invaders_move(void);
 static void invaders_get_wave_box(hitbox_t *wave_hitbox);
-int invaders_random(int a, int b);
+int invaders_random(int range);
 
 
 int invaders_task_start(){
@@ -223,13 +223,13 @@ static void invaders_task(void *cookie){
 	 if (invader_dead == wave.invaders_count)
 		 level_finish = 1;
 
-/*
-	 for (i=0;i<2+wave.level;i++){
-		 fire_weapon(wave.invaders[invaders_random(wave.invaders_count)].hitbox,BOMB);
-	 }
-*/
+	 if(invaders_random(20)==1){
+		 for (i=0;i<2+wave.level;i++){
+			 fire_weapon(wave.invaders[invaders_random(wave.invaders_count)].hitbox,BOMB);
+		 }
 
-	 fire_weapon(wave.invaders[wave.invaders_count].hitbox,BOMB);
+	 }
+
 
 
  }

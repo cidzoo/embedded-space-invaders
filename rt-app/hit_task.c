@@ -14,11 +14,11 @@
 
 //Array of all weapons
 weapon_t weapons[NB_WEAPONS] = {
-	{BOMB, ONE, MEDIUM,
+	{BOMB, ONE, SLOW,
 		{0, 0, 0, 0, 0},
 		{0, 0, 0},
 	},
-	{GUN, ONE, MEDIUM,
+	{GUN, ONE, FAST,
 		{15, 15, 0, 4, 0},
 		{10, 0, 0},
 	},
@@ -26,7 +26,7 @@ weapon_t weapons[NB_WEAPONS] = {
 		{1, 0, 0, 50, 0},
 		{10, 0, 0},
 	},
-	{ROCKET, THREE, SLOW,
+	{ROCKET, THREE, MEDIUM,
 		{1, 0, 0, 100, 0},
 		{10, 0, 0},
 	},
@@ -241,11 +241,15 @@ void hit_task(void *cookie){
 		for(i=0;i<NB_MAX_BOMBS;i++){
 			if(bombs[i].weapon != NULL){
 
+				// On déplace les bombs
+				bombs[i].hitbox.y += bombs[i].weapon->speed;
+
 				//hit test with ship
-				if(hit_test(ship.hitbox, bombs[i].hitbox) ){
+				if(hit_test(ship.hitbox, bombs[i].hitbox) == 0){
 					//if so damage the ship and remove bomb
 					//TODO handle case ship is dead
 					ship.hp--;
+					printk("%d\n",ship.hp);
 					remove_bullet(bombs[i], i);
 				}
 			}
@@ -353,7 +357,7 @@ static int add_bullet(bullet_t b){
 				bullets[i] = b;
 				if(bullets[i].weapon->weapon_type == RAIL){
 					rail_id = i;
-					rail_timeout = 15;
+					rail_timeout = 10;
 				}
 				return 0;
 			}
@@ -362,7 +366,7 @@ static int add_bullet(bullet_t b){
 	}else{
 		//find the first empty slot and place the bomb there
 		for(i=0;i<NB_MAX_BOMBS;i++){
-			if(bullets[i].weapon == NULL){
+			if(bombs[i].weapon == NULL){
 				bombs[i] = b;
 				return 0;
 			}
