@@ -146,6 +146,7 @@ static void invaders_task(void *cookie){
 
          for(j=0;j<nb_invaders_per_line[i];j++){
 
+        	 //Si dernière ligne invaders -> décallage
         	 if(i==line){
 				 wave.invaders[invader_id].hitbox.x = (GAME_ZONE_X_MIN+MARGE+((WIDTH_INVADER)*(nb_invaders_per_line[0]-nb_invaders_per_line[i])))+(j*(SPACE_BETWEEN_INVADER+WIDTH_INVADER));
 				 wave.invaders[invader_id].hitbox.y = (GAME_ZONE_Y_MIN+SPACE_BETWEEN_INVADER)+(i*(SPACE_BETWEEN_INVADER+HEIGT_INVADER));
@@ -169,6 +170,8 @@ static void invaders_task(void *cookie){
 	 static int moving_right = 1;
 	 hitbox_t dimension;
 	 int invader_dead=0;
+
+
 
 	 //Check la dimmension de la wave
 	 invaders_get_wave_box(&dimension);
@@ -218,6 +221,15 @@ static void invaders_task(void *cookie){
 		 level_finish = 1;
 
 
+	 for (i=0;i<2+wave.level;i++){
+		 fire_weapon(wave.invaders[invaders_random(0,wave.invaders_count)].hitbox,BOMB);
+	 }
+
+
+ }
+
+ int invaders_random(int a, int b){
+     return rand()%(b-a) +a;
  }
 
  //return  hitboxes from wave
