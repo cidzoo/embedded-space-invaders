@@ -73,6 +73,7 @@ static void fb_task(void *cookie){
 	// Variable locale pour les bullets
 	bullet_t bullets_loc[NB_MAX_BULLETS];
 	spaceship_t ship_loc;
+	char buf[20];
 
 	(void)cookie;
 
@@ -102,13 +103,7 @@ static void fb_task(void *cookie){
 
 		// On dessine les bullets
 		for(i = 0; i < NB_MAX_BULLETS; i++){
-			if (bullets_loc[i].weapon != NULL){
-				/*if( (bullets[i].weapon->weapon_type != RAIL) &&
-					(bullets[i].hitbox.y-1 == 0) ){
-					remove_bullet(i);
-				}
-				bullets[i].hitbox.y -= bullets[i].weapon->speed;*/
-
+			if(bullets_loc[i].weapon != NULL){
 				draw_bitmap(bullets_loc[i].hitbox);
 			}
 		}
@@ -124,12 +119,15 @@ static void fb_task(void *cookie){
 		draw_bitmap(ship_loc.hitbox);
 
 		// On dessine le header
-		fb_rect_fill(0, GAME_ZONE_Y_MIN, 0, 239, LU_GREY);
+		fb_rect_fill(0, GAME_ZONE_Y_MIN, 0, GAME_ZONE_X_MAX-1, LU_GREY);
 
 		// On print le texte pour la progress bar
 		fb_print_string(LU_BLACK, LU_GREY, "life", 3, 3);
 		// On print la progress bar
 		fb_progress_bar(3, 10, 40, 200, LU_RED, ship_loc.hp, LIFE_SHIP);
+		// On affiche le niveau de la wave
+		sprintf(buf, "wave lvl: %d", wave_loc.level);
+		fb_print_string(LU_BLACK, LU_GREY, buf, 3, 12);
 
 		rt_task_set_priority(NULL, 90);
 		fb_display();

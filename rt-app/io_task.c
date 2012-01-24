@@ -144,7 +144,7 @@ void io_task(void *cookie)
 			}
 
 			// On définit la led
-			//pca9554_set(&io_data);
+			pca9554_set(&io_data);
     	}
     }
 }
