@@ -14,6 +14,7 @@
 #define HEIGT_INVADER	16
 #define HP_INVADER		10
 #define SPACE_BETWEEN_INVADER	20
+#define MARGE 10
 
 //List of the invaders
 extern invader_t invaders[NB_INVADERS];

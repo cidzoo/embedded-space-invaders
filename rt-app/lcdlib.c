@@ -70,7 +70,7 @@ void fb_progress_bar(int y_min, int y_max, int x_min, int x_max, int couleur, in
 	// On calcule la largeur effective de la progress bar
 	int effective_width = (x_max - x_min - 4)*current_value/total_value;
 	// On dessine la progress bar
-	fb_rect_fill(y_min + 2, y_max - 2, x_min + 2, x_min + 2 + effective_width);
+	//fb_rect_fill(y_min + 2, y_max - 2, x_min + 2, x_min + 2 + effective_width);
 }
 
 void fb_line(int x0, int y0, int x1, int y1, int color){
@@ -80,7 +80,7 @@ void fb_line(int x0, int y0, int x1, int y1, int color){
 	dx = abs(x1 - x0);
 	dy = abs(y1 - y0);
 
-	/* On calcule le sens de tracage et "l'erreur" (erreur=0 -> segment à 45°) */
+	/* On calcule le sens de tracage et "l'erreur" (erreur=0 -> segment ï¿½ 45ï¿½) */
 	if (x0 < x1)
 		sx = 1;
 	else
@@ -111,11 +111,11 @@ void fb_line(int x0, int y0, int x1, int y1, int color){
 }
 
 void fb_rect(int y_min, int y_max, int x_min, int x_max, int couleur){
-	// On dessine la ligne supérieure
+	// On dessine la ligne supï¿½rieure
 	fb_line(x_min, y_min, x_max, y_min, couleur);
 	// On dessine la ligne droite
 	fb_line(x_max, y_min, x_max, y_max, couleur);
-	// On dessine la ligne inférieure
+	// On dessine la ligne infï¿½rieure
 	fb_line(x_max, y_max, x_min, y_max, couleur);
 	// On dessine la ligne gauche
 	fb_line(x_min, y_max, x_min, y_min, couleur);

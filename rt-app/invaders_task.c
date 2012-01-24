@@ -89,7 +89,7 @@ void invaders_task_cleanup_objects(){
 
 static void invaders_task(void *cookie){
 
-	// On définit la période de la tache
+	// On dï¿½finit la pï¿½riode de la tache
 	rt_task_set_periodic(NULL, TM_NOW, 100000000);
 	invaders_lock();
 	invaders_init();
@@ -113,35 +113,49 @@ static void invaders_task(void *cookie){
 }
 
  void invaders_init(){
-	 int i;
+	 int nb_invaders_per_line[NB_INVADERS]={0};
+	 int line=0;
+	 int invader_id=0;
+	 int i,j;
+
+     //DÃ©termine le nombre d'ennemi par ligne
+     for(i=0;i<NB_INVADERS;i++){
+
+         //Initialise les valeurs chaque ennemi
+         invaders[i].hp=10;
+         invaders[i].hitbox.height=HEIGT_INVADER;
+         invaders[i].hitbox.width=WIDTH_INVADER;
+         invaders[i].hitbox.type=G_INVADER;
+
+         nb_invaders_per_line[line]++;
+
+         //DÃ©termine si la ligne est complÃ¨te
+         if((GAME_ZONE_X_MAX - MARGE - WIDTH_INVADER - (nb_invaders_per_line[line]*(SPACE_BETWEEN_INVADER+WIDTH_INVADER))) < 0)
+             line++;
 
 
-	 for (i=0;i<7;i++){
-	 			 invaders[i].hp=HP_INVADER;
-	 			 invaders[i].hitbox.height=INVADER_HEIGHT;
-	 			 invaders[i].hitbox.width=INVADER_WIDTH;
-	 			 invaders[i].hitbox.type = G_INVADER;
-
-	 }
-
-	 for (i=0;i<4;i++){
-			 invaders[i].hitbox.x = (3*SPACE_BETWEEN_INVADER)+(i*(SPACE_BETWEEN_INVADER+WIDTH_INVADER));
-			 invaders[i].hitbox.y = 30;
-	 }
-
-
-	 for (i=0;i<3;i++){
-			 invaders[i+4].hitbox.x = (3*SPACE_BETWEEN_INVADER+(WIDTH_INVADER))+(i*(SPACE_BETWEEN_INVADER+WIDTH_INVADER));
-			 invaders[i+4].hitbox.y = 60;
-	 }
+     }
 
 
 
+     //Placement des invaders
+     for (i=0; i<=line;i++){
+
+         for(j=0;j<nb_invaders_per_line[i];j++){
+             invaders[invader_id].hitbox.x = (MARGE)+(j*(SPACE_BETWEEN_INVADER+WIDTH_INVADER));
+             invaders[invader_id].hitbox.y = (SPACE_BETWEEN_INVADER)+(i*(SPACE_BETWEEN_INVADER+HEIGT_INVADER));
+             invader_id++;
+         }
+
+
+
+     }
  }
 
  void invaders_move(){
 	 int i;
 	 int x = 0;
+	 static int move_up=0;
 	 static int moving_right = 1;
 	 hitbox_t dimension;
 	 int invader_dead=0;
@@ -150,28 +164,40 @@ static void invaders_task(void *cookie){
 
 
 	 if (moving_right){
-		 if ((dimension.x + dimension.width + current_wave.invader_speed) < LCD_MAX_X){
+		 if ((dimension.x + dimension.width + current_wave.invader_speed) < GAME_ZONE_X_MAX){
 			 x = current_wave.invader_speed;
 		 }else{
 			 x = LCD_MAX_X - (dimension.x + dimension.width);
 			 moving_right = 0;
+			 move_up=1;
 		 }
 	 }
 	 else{
-		 if (((int32_t)dimension.x - (int32_t)current_wave.invader_speed) > 0){
+		 if (((int32_t)dimension.x - (int32_t)current_wave.invader_speed) > GAME_ZONE_X_MIN){
 			 x = -current_wave.invader_speed;
 		 }else{
 			 x = -dimension.x;
 			 moving_right = 1;
+			 move_up=1;
 		 }
 	 }
 
 	 for (i=0; i<NB_INVADERS;i++){
 		 invaders[i].hitbox.x += x;
+
+		 if(move_up)
+			 invaders[i].hitbox.y+=50;
+
+		 if(invaders[i].hitbox.y+invaders[i].hitbox.height == GAME_ZONE_Y_MAX)
+			 invaders[i].hp =0;
+
 		 //Count the number of invader dead
 		 if (invaders[i].hp<=0)
 			 invader_dead++;
 	 }
+
+	 if(move_up)
+		 move_up=0;
 
 	 // test if level finish
 	 if (invader_dead == NB_INVADERS)
