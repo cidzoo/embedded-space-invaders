@@ -59,7 +59,7 @@ typedef struct{
 /* Hitbox */
 typedef struct{
 	uint16_t x,y;
-	uint8_t width, height;
+	uint16_t width, height;
 	graphics_t type;
 }hitbox_t;
 
@@ -80,7 +80,7 @@ extern wave_t current_wave;
 /* Weapons */
 typedef enum{BOMB, GUN, RAIL, ROCKET, WAVE} weapontype_t;
 typedef enum{ONE=1, TWO=2, THREE=3, MAX=10}damage_t;
-typedef enum{SLOW=3, MEDIUM=11, FAST=15, INSTANT}speed_t;
+typedef enum{STATIC=0, SLOW=3, MEDIUM=11, FAST=15}speed_t;
 
 typedef struct{
 	uint16_t max;
