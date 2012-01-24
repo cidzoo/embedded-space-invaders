@@ -66,12 +66,18 @@ void fb_display(){
 
 void fb_progress_bar(int y_min, int y_max, int x_min, int x_max, int couleur, int current_value, int total_value){
 	int effective_width;
+	// On dessine le fond
+	fb_rect_fill(y_min + 1, y_max - 1, x_min + 1, x_max - 1, LU_BRT_WHITE);
 	// On dessine le tour
 	fb_rect(y_min, y_max, x_min, x_max, LU_BLACK);
 	// On calcule la largeur effective de la progress bar
-	effective_width = (x_max - x_min - 4)*current_value/total_value;
-	// On dessine la progress bar
-	fb_rect_fill(y_min + 2, y_max - 2, x_min + 2, x_min + 2 + effective_width, couleur);
+	if(total_value > 0){
+		effective_width = (x_max - x_min - 4)*current_value/total_value;
+		// On dessine la progress bar
+		fb_rect_fill(y_min + 2, y_max - 2, x_min + 2, x_min + 2 + effective_width, couleur);
+	}else{
+		effective_width = 0;
+	}
 }
 
 void fb_line(int x0, int y0, int x1, int y1, int color){

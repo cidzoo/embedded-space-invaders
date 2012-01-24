@@ -101,17 +101,19 @@ static void invaders_task(void *cookie){
 	for (;;) {
 		rt_task_wait_period(NULL);
 
-		if (level_finish){
-			level_up();
-			level_finish=0;
+		if(!game_break){
+			if (level_finish){
+				level_up();
+				level_finish=0;
+				invaders_lock();
+				invaders_init();
+				invaders_unlock();
+			}
+
 			invaders_lock();
-			invaders_init();
+			invaders_move();
 			invaders_unlock();
 		}
-
-		invaders_lock();
-		invaders_move();
-		invaders_unlock();
 	}
 }
 
@@ -156,9 +158,6 @@ static void invaders_task(void *cookie){
         	 }
              invader_id++;
          }
-
-
-
      }
  }
 

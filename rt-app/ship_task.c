@@ -95,10 +95,12 @@ static void ship_task(void *cookie){
 	int acc = 0;
 	int dir = 0;
 	int x;
+	uint8_t game_break_loc = 0;
+	uint32_t cpt = 0;
 
 	(void)cookie;
 
-	// On définit la période de la tache
+	// On dÃ©finit la pÃ©riode de la tache
 	rt_task_set_periodic(NULL, TM_NOW, 30*MS);
 	ship_lock();
 	ship_init();
@@ -106,14 +108,29 @@ static void ship_task(void *cookie){
 	x = ship_loc.hitbox.x;
 	ship_unlock();
 
+	uint8_t rebond = 0;
+
+
 	for (;;) {
+		rt_task_wait_period(NULL);
+
 		// Lecture de l'etat du touchscreen
 		xeno_ts_read(&sample, 1, O_NONBLOCK);
 
 		//ship_lock();
 		// Tester une pression sur l'ecran
 		if(sample.pressure > 0){
-			if(sample.y >= 200){
+			if(cpt > 3){
+				if(!rebond){
+					rebond = 1;
+					if(sample.y < 100){
+						game_break = !game_break;
+					}
+				}
+			}else{
+				cpt++;
+			}
+			if(sample.y >= 200 && !game_break){
 				if(sample.x < (ship_loc.hitbox.x + ship_loc.hitbox.width/2 - 2)){
 					if(dir == -1){
 						acc += 1;
@@ -140,16 +157,16 @@ static void ship_task(void *cookie){
 					acc = 0;
 					dir = 0;
 				}
+				//ship_unlock();
+				ship_lock();
+				ship_loc.hitbox.x = x;
+				memcpy(&ship, &ship_loc, sizeof(ship_loc));
+				ship_unlock();
 			}
+		}else{
+			cpt = 0;
+			rebond = 0;
 		}
-
-		//ship_unlock();
-		ship_lock();
-		ship_loc.hitbox.x = x;
-		memcpy(&ship, &ship_loc, sizeof(ship_loc));
-		ship_unlock();
-
-		rt_task_wait_period(NULL);
 	}
 }
 
@@ -223,8 +240,4 @@ int ship_unlock(){
 		return 0;
 	}
 	return -1;
-}
-
-void ship_refresh(void){
-
 }

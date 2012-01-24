@@ -39,8 +39,6 @@ extern void invaders_task_cleanup_objects(void);
 extern int invaders_lock(void);
 extern int invaders_unlock(void);
 
-extern void invaders_refresh(void);
-
 extern void level_up(void);
 
 #endif /*ENEMIES_H_*/

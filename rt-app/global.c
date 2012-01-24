@@ -16,3 +16,8 @@ difficulty_t difficulty = NORMAL;
 uint8_t game_over = 0;
 
 uint32_t game_points = 0;
+uint32_t game_bullet_kill = 1;
+uint32_t game_bullet_used = 1;
+
+uint8_t game_break = 0;
+

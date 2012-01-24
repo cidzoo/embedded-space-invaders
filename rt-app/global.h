@@ -50,6 +50,10 @@
 extern uint8_t game_over;
 
 extern uint32_t game_points;
+extern uint32_t game_bullet_kill;
+extern uint32_t game_bullet_used;
+
+extern uint8_t game_break;
 
 /* Difficulty */
 typedef enum{EASY=1, NORMAL=2, HARD=3}difficulty_t;

@@ -69,83 +69,104 @@ void io_task(void *cookie)
 	uint8_t counter_io = 0;
 	char modif;
 	char old_val_sw[4], new_val_sw[4];
+	char old_val_sw_break[4], new_val_sw_break[4];
 	tmp_file.private_data = (void *)&io_data;
 
 	(void)cookie;
-	// On d�finit la p�riode de la tache
+	// On définit la période de la tache
 	rt_task_set_periodic(NULL, TM_NOW, 50*MS);
 
     for (;;) {
     	rt_task_wait_period(NULL);
 
-    	if(counter_io == 1){
-    		counter_io = 0;
+		if(!game_break){
+			if(counter_io == 1){
+				counter_io = 0;
 
-			modif = 0;
+				modif = 0;
+				for(i = 0; i < 4; i++){
+
+					// Gestion de la recharge
+					weapons[i+1].timing_charge.time_current++;
+					if(weapons[i+1].timing_charge.time_current >= weapons[i+1].timing_charge.time_total){
+						weapons[i+1].timing_charge.time_current = 0;
+						if(weapons[i+1].timing_charge.now < weapons[i+1].timing_charge.max){
+							weapons[i+1].timing_charge.now++;
+						}
+					}
+
+					io_data.io_num = i;
+					io_data.io_type = io_switch;
+
+					//pca9554_read(&tmp_file, NULL, 0, NULL);
+					pca9554_get(&io_data);
+					new_val_sw[i] = io_data.value;
+					if(old_val_sw[i] != new_val_sw[i]){
+						rebond = 0;
+						if(new_val_sw[i] == 1){
+
+							if(weapons[i+1].timing_charge.now > 0){
+								weapons[i+1].timing_charge.now--;
+								weapons[i+1].timing_charge.last = weapons[i+1].timing_charge.now;
+								fire_weapon(ship.hitbox,(weapontype_t)(i+1));
+
+							}
+
+						}
+						old_val_sw[i] = new_val_sw[i];
+					}else if(new_val_sw[i] == 1){
+						if(rebond > 2){
+							if(weapons[i+1].timing_charge.now > 0 &&
+							   weapons[i+1].timing_charge.now >= weapons[i+1].timing_charge.last){
+								weapons[i+1].timing_charge.now--;
+								fire_weapon(ship.hitbox,(weapontype_t)(i+1));
+							}
+						}else{
+							rebond++;
+						}
+					}
+				}
+			}else{
+				counter_io++;
+			}
 			for(i = 0; i < 4; i++){
-
-				// Gestion de la recharge
-				weapons[i+1].timing_charge.time_current++;
-				if(weapons[i+1].timing_charge.time_current >= weapons[i+1].timing_charge.time_total){
-					weapons[i+1].timing_charge.time_current = 0;
-					if(weapons[i+1].timing_charge.now < weapons[i+1].timing_charge.max){
-						weapons[i+1].timing_charge.now++;
-					}
-				}
-
+				// Gestion de la led
 				io_data.io_num = i;
-				io_data.io_type = io_switch;
+				io_data.io_type = io_led;
+				// Si vide, on eteint la led
+				weapons[i+1].timing_led.ratio = (weapons[i+1].timing_led.max*(weapons[i+1].timing_charge.now*100/weapons[i+1].timing_charge.max)/100);
 
-				//pca9554_read(&tmp_file, NULL, 0, NULL);
-				pca9554_get(&io_data);
-				new_val_sw[i] = io_data.value;
-				if(old_val_sw[i] != new_val_sw[i]){
-					rebond = 0;
-					if(new_val_sw[i] == 1){
-
-						if(weapons[i+1].timing_charge.now > 0){
-							weapons[i+1].timing_charge.now--;
-							weapons[i+1].timing_charge.last = weapons[i+1].timing_charge.now;
-							fire_weapon(ship.hitbox,(weapontype_t)(i+1));
-
-						}
-
-					}
-					old_val_sw[i] = new_val_sw[i];
-				}else if(new_val_sw[i] == 1){
-					if(rebond > 2){
-						if(weapons[i+1].timing_charge.now > 0 &&
-						   weapons[i+1].timing_charge.now >= weapons[i+1].timing_charge.last){
-							weapons[i+1].timing_charge.now--;
-							fire_weapon(ship.hitbox,(weapontype_t)(i+1));
-						}
-					}else{
-						rebond++;
-					}
+				if(weapons[i+1].timing_led.now++ >= (weapons[i+1].timing_led.max - weapons[i+1].timing_led.ratio) ){
+					io_data.value = 1;
+				}else{
+					io_data.value = 0;
 				}
+				if(weapons[i+1].timing_led.now >= weapons[i+1].timing_led.ratio){
+					weapons[i+1].timing_led.now = 0;
+				}
+
+				// On définit la led
+				pca9554_set(&io_data);
 			}
 		}else{
-			counter_io++;
+			// En mode pause
+			for(i = 0; i < 4; i++){
+				io_data.io_num = i;
+				io_data.io_type = io_switch;
+				pca9554_get(&io_data);
+				new_val_sw_break[i] = io_data.value;
+				if(old_val_sw_break[i] != new_val_sw_break[i]){
+					if(io_data.value == 1){
+						if(i == 0){
+							printk("down\n");
+						}else if(i == 3){
+							printk("up\n");
+						}
+					}
+					old_val_sw_break[i] = new_val_sw_break[i];
+				}
+			}
 		}
-    	for(i = 0; i < 4; i++){
-			// Gestion de la led
-			io_data.io_num = i;
-			io_data.io_type = io_led;
-			// Si vide, on eteint la led
-			weapons[i+1].timing_led.ratio = (weapons[i+1].timing_led.max*(weapons[i+1].timing_charge.now*100/weapons[i+1].timing_charge.max)/100);
-
-			if(weapons[i+1].timing_led.now++ >= (weapons[i+1].timing_led.max - weapons[i+1].timing_led.ratio) ){
-				io_data.value = 1;
-			}else{
-				io_data.value = 0;
-			}
-			if(weapons[i+1].timing_led.now >= weapons[i+1].timing_led.ratio){
-				weapons[i+1].timing_led.now = 0;
-			}
-
-			// On définit la led
-			pca9554_set(&io_data);
-    	}
     }
 }
 
