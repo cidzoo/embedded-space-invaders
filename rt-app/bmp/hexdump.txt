@@ -2,10 +2,10 @@
 hexdump -s 0x46 -v -e '"{" 8/2 "0x%04X " "},\n"' bomb.bmp
 
 #bullet
-hexdump -s 0x46 -v -e '"{" 5/2 "0x%04X " "},\n"' bullet.bmp
+hexdump -s 0x46 -v -e '"{" 4/2 "0x%04X " "},\n"' bullet.bmp
 
 #bullet
-hexdump -s 0x46 -v -e '"{" 5/2 "0x%04X " "},\n"' rail.bmp
+hexdump -s 0x46 -v -e '"{" 6/2 "0x%04X " "},\n"' rail.bmp
 
 #rocket
 hexdump -s 0x46 -v -e '"{" 10/2 "0x%04X " "},\n"' rocket.bmp
