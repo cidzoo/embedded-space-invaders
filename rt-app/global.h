@@ -37,7 +37,7 @@
 
 #define GAME_ZONE_X_MIN		0
 #define GAME_ZONE_X_MAX		240
-#define GAME_ZONE_Y_MIN		20
+#define GAME_ZONE_Y_MIN		35
 #define GAME_ZONE_Y_MAX		320
 
 #define LIFE_SHIP			3
@@ -47,6 +47,8 @@
 
 /* Game over*/
 extern uint8_t game_over;
+
+extern uint32_t game_points;
 
 /* Difficulty */
 typedef enum{EASY=1, NORMAL=2, HARD=3}difficulty_t;

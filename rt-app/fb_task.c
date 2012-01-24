@@ -73,6 +73,7 @@ static void fb_task(void *cookie){
 	// Variable locale pour les bullets
 	bullet_t bullets_loc[NB_MAX_BULLETS];
 	spaceship_t ship_loc;
+	uint32_t game_points_loc;
 	char buf[20];
 
 	(void)cookie;
@@ -96,6 +97,7 @@ static void fb_task(void *cookie){
 		// On copie les bullets en local
 		hit_lock();
 		memcpy(bullets_loc, bullets, sizeof(bullets_loc));
+		game_points_loc = game_points;
 		hit_unlock();
 
 		// On dessine le background
@@ -120,14 +122,18 @@ static void fb_task(void *cookie){
 
 		// On dessine le header
 		fb_rect_fill(0, GAME_ZONE_Y_MIN, 0, GAME_ZONE_X_MAX-1, LU_GREY);
+		fb_line(0, GAME_ZONE_Y_MIN, GAME_ZONE_X_MAX, GAME_ZONE_Y_MIN, LU_WHITE);
 
 		// On print le texte pour la progress bar
-		fb_print_string(LU_BLACK, LU_GREY, "life", 3, 3);
-		// On print la progress bar
-		fb_progress_bar(3, 10, 40, 200, LU_RED, ship_loc.hp, LIFE_SHIP);
+		fb_print_string(LU_BLACK, LU_GREY, "hp:", 3, 3);
+		// On print la progress bar pour la vie
+		fb_progress_bar(2, 10, 30, 150, LU_RED, ship_loc.hp, LIFE_SHIP);
 		// On affiche le niveau de la wave
-		sprintf(buf, "wave lvl: %d", wave_loc.level);
-		fb_print_string(LU_BLACK, LU_GREY, buf, 3, 12);
+		sprintf(buf, "wave lvl: %d", wave_loc.level+1);
+		fb_print_string(LU_BLACK, LU_GREY, buf, 3, 13);
+		// On affiche les points
+		sprintf(buf, "points:   %d", game_points_loc);
+		fb_print_string(LU_BLACK, LU_GREY, buf, 3, 23);
 
 		rt_task_set_priority(NULL, 90);
 		fb_display();

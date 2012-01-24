@@ -137,11 +137,13 @@ void hit_task(void *cookie){
 				// On déplace le bullets
 				//bullet->hitbox.y -= bullet->weapon->speed;
 				bullet->hitbox.y -= bullet->weapon->speed;
-				/*y = bullet->hitbox.y-1;
+				y = bullet->hitbox.y-1;
 				if( (bullet->weapon->weapon_type != RAIL) &&
 					(y <= 0) ){
 					remove_bullet(i);
-				}*/
+					if(game_points >= 5)
+						game_points -= 5;
+				}
 
 				//for each invader
 				for (j=0;j<wave.invaders_count;j++){
@@ -154,6 +156,7 @@ void hit_task(void *cookie){
 						if(hit_test(invader->hitbox, bullet->hitbox) == 0){
 							//if so : damage the invader
 							for (k=0;k < bullet->weapon->damage;k++){
+								game_points += 10;
 								invader->hp--;
 								if(invader->hp == 0)
 									break;

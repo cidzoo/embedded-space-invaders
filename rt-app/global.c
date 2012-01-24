@@ -15,6 +15,8 @@ difficulty_t difficulty = NORMAL;
 /* Game over*/
 uint8_t game_over = 0;
 
+uint32_t game_points = 0;
+
 
 /* Functions to manipulate the list of bullet */
 int add_bullet(bullet_t b){
