@@ -107,6 +107,7 @@ void io_task(void *cookie)
 							weapons[i+1].timing_charge.now--;
 							weapons[i+1].timing_charge.last = weapons[i+1].timing_charge.now;
 							fire_weapon(ship.hitbox,(weapontype_t)(i+1));
+
 						}
 
 					}

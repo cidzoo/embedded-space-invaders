@@ -163,13 +163,16 @@ void hit_task(void *cookie){
 					remove_bullet(i);
 				}*/
 
-				//hit test with invaders
-				for (j=0;j<NB_INVADERS;j++){
+				//for each invader
+				for (j=0;j<wave.invaders_count;j++){
+					//current traited objects
+					invader = &wave.invaders[j];
+
 					//test if applicable
-					if(invaders[j].hp > 0){
+					if(&wave.invaders[j].hp > 0){
 
 						//current object
-						invader = &invaders[j];
+						invader = &wave.invaders[j];
 
 						//control if the bullet it touching the invader
 						if(hit_test(invader->hitbox, bullet->hitbox) == 0){
