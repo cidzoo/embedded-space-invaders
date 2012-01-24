@@ -18,7 +18,7 @@
 
 #include "bitmaps.h"
 
-#define NB_INVADERS 7
+#define NB_INVADERS_MAX 20
 #define NB_MAX_BULLETS 200
 #define NB_MAX_BOMBS 10
 
@@ -44,6 +44,10 @@
 
 #define NB_WEAPONS			5
 
+
+/* Game over*/
+extern uint8_t game_over;
+
 /* Difficulty */
 typedef enum{EASY=1, NORMAL=2, HARD=3}difficulty_t;
 extern difficulty_t difficulty;
@@ -62,20 +66,6 @@ typedef struct{
 	uint16_t width, height;
 	graphics_t type;
 }hitbox_t;
-
-/* Invaders */
-typedef struct invader_t{
-	uint8_t hp;
-	hitbox_t hitbox;
-}invader_t;
-
-/* Waves */
-typedef struct{
-	uint8_t level;
-	uint16_t invader_speed;
-}wave_t;
-
-extern wave_t current_wave;
 
 /* Weapons */
 typedef enum{BOMB, GUN, RAIL, ROCKET, WAVE} weapontype_t;
@@ -121,6 +111,5 @@ extern bullet_t bombs[NB_MAX_BOMBS];
 /* Prototypes */
 extern int add_bullet(bullet_t b);
 extern void remove_bullet(int id);
-extern void level_up(void);
 
 #endif /* __GLOBAL_H__ */

@@ -69,7 +69,7 @@ static void fb_task(void *cookie){
 
 	int  i;
 	// Variable locale pour les invaders
-	invader_t invaders_loc[NB_INVADERS];
+	wave_t wave_loc;
 	// Variable locale pour les bullets
 	bullet_t bullets_loc[NB_MAX_BULLETS];
 	spaceship_t ship_loc;
@@ -84,7 +84,7 @@ static void fb_task(void *cookie){
 
 		// On copie les invaders en local
 		invaders_lock();
-		memcpy(invaders_loc, invaders, sizeof(invaders_loc));
+		memcpy(&wave_loc, &wave, sizeof(wave_loc));
 		invaders_unlock();
 
 		// On copie le vaisseau en local
@@ -114,9 +114,9 @@ static void fb_task(void *cookie){
 		}
 
 		// On dessine les invaders
-		for(i = 0; i < NB_INVADERS; i++){
-			if(invaders_loc[i].hp > 0){
-				draw_bitmap(invaders_loc[i].hitbox);
+		for(i = 0; i < wave_loc.invaders_count; i++){
+			if(wave_loc.invaders[i].hp > 0){
+				draw_bitmap(wave_loc.invaders[i].hitbox);
 			}
 		}
 

@@ -144,9 +144,9 @@ void hit_task(void *cookie){
 				}*/
 
 				//for each invader
-				for (j=0;j<NB_INVADERS;j++){
+				for (j=0;j<wave.invaders_count;j++){
 					//current traited objects
-					invader = &invaders[j];
+					invader = &wave.invaders[j];
 
 					//test if applicable
 					if(invader->hp > 0){
