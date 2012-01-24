@@ -14,7 +14,7 @@ hexdump -s 0x46 -v -e '"{" 10/2 "0x%04X " "},\n"' rocket.bmp
 hexdump -s 0x46 -v -e '"{" 240/2 "0x%04X " "},\n"' wave.bmp
 
 #invader
-hexdump -s 0x46 -v -e '"{" 16/2 "0x%04X " "},\n"' invader.bmp
+hexdump -s 0x46 -v -e '"{" 11/2 "0x%04X " "},\n"' invader3.bmp
 
 #ship
 hexdump -s 0x46 -v -e '"{" 32/2 "0x%04X " "},\n"' ship.bmp
