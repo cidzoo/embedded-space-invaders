@@ -102,6 +102,7 @@ static void draw_menu_pause(void);
 static void draw_menu_game_over(void);
 static int check_button(button_t button, uint16_t x, uint16_t y);
 
+static void draw_stats(uint16_t x, uint16_t y);
 static void draw_credits(uint16_t x, uint16_t y);
 
 static void fb_task(void *cookie);
@@ -148,6 +149,8 @@ static void fb_task_init(){
 
 static void fb_task_update(void){
 	int i;
+	progress_bar_t pb;
+
 	// On copie les invaders en local
 	invaders_lock();
 	memcpy(&wave_loc, &wave, sizeof(wave_loc));
@@ -199,12 +202,40 @@ static void fb_task_update(void){
 	// On print le texte pour la progress bar
 	fb_print_string(LU_BLACK, LU_GREY, "hp:", 3, 3);
 	// On print la progress bar pour la vie
-	fb_progress_bar(2, 10, 30, 150, LU_RED, ship_loc.hp, LIFE_SHIP);
+	pb.x = 30;
+	pb.y = 2;
+	pb.width = 120;
+	pb.height = 10;
+	pb.current_value = ship_loc.hp;
+	pb.max_value = LIFE_SHIP;
+	// On determine la couleur
+	if(100*ship_loc.hp/LIFE_SHIP > 70){
+		pb.couleur = LU_PB_GREEN;
+	}else if(100*ship_loc.hp/LIFE_SHIP > 40){
+		pb.couleur = LU_PB_ORANGE;
+	}else{
+		pb.couleur = LU_PB_RED;
+	}
+	fb_progress_bar(pb);
+
 	// On print le texte pour la progress bar
 	fb_print_string(LU_BLACK, LU_GREY, "ac:", 3, 13);
 	// On print la progress bar pour la precision
-	fb_progress_bar(12, 20, 30, 150, LU_RED, game_bullet_kill,
-			game_bullet_used);
+	pb.x = 30;
+	pb.y = 12;
+	pb.width = 120;
+	pb.height = 10;
+	pb.current_value = game_bullet_kill;
+	pb.max_value = game_bullet_used;
+	// On determine la couleur
+	if(100*game_bullet_kill/game_bullet_used > 70){
+		pb.couleur = LU_PB_GREEN;
+	}else if(100*game_bullet_kill/game_bullet_used > 40){
+		pb.couleur = LU_PB_ORANGE;
+	}else{
+		pb.couleur = LU_PB_RED;
+	}
+	fb_progress_bar(pb);
 }
 
 static void fb_task(void *cookie) {
@@ -449,6 +480,41 @@ static void draw_menu_game_over(){
 	draw_menu(game_over_menu);
 	// On dessine le bouton pour recommencer le jeu
 	fb_button(restart_button);
+}
+
+static void draw_stats(uint16_t x, uint16_t y){
+	char buf[30];
+	uint16_t accuracy = 100*game_bullet_kill/game_bullet_used;
+	// On affiche le nombre de points
+	sprintf(buf, "POINTS:      %d", game_points);
+	fb_print_string_transparent(LU_BLACK, buf, x, y);
+	// On affiche le nombre de tir ayant touché un invader
+	sprintf(buf, "BULLETS EFF: %d", game_bullet_kill);
+	fb_print_string_transparent(LU_BLACK, buf, x, y + 10);
+	// On affiche le nombre de tir totaux
+	sprintf(buf, "BULLETS TOT: %d", game_bullet_used);
+	fb_print_string_transparent(LU_BLACK, buf, x, y + 20);
+	// On affiche la précision
+	sprintf(buf, "ACCURACY:    %d%%", accuracy);
+	fb_print_string_transparent(LU_BLACK, buf, x, y + 30);
+	// On affiche la progress bar
+	progress_bar_t pb = {
+		.x = x,
+		.y = y + 40,
+		.width = 200,
+		.height = 10,
+		.current_value = game_bullet_kill,
+		.max_value = game_bullet_used
+	};
+	// On test pour la couleur de la progress bar
+	if(accuracy > 70){
+		pb.couleur = LU_PB_GREEN;
+	}else if(accuracy > 40){
+		pb.couleur = LU_PB_ORANGE;
+	}else{
+		pb.couleur = LU_PB_RED;
+	}
+	fb_progress_bar(pb);
 }
 
 static void draw_credits(uint16_t x, uint16_t y){
