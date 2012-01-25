@@ -21,7 +21,7 @@ typedef struct{
 	uint16_t y;
 	uint16_t width;
 	uint16_t height;
-	char *name;
+	char *title;
 } menu_t;
 
 // Bouton pour commencer
@@ -34,7 +34,7 @@ static button_t start_button = {
 };
 
 // Bouton pour recommencer
-static button_t resart_button = {
+static button_t restart_button = {
 	.x = 40,
 	.y = 200,
 	.width = 75,
@@ -100,6 +100,7 @@ static void draw_menu(menu_t menu);
 static void draw_menu_begin(void);
 static void draw_menu_pause(void);
 static void draw_menu_game_over(void);
+static int check_button(button_t button, uint16_t x, uint16_t y);
 
 static void draw_credits(uint16_t x, uint16_t y);
 
@@ -220,65 +221,27 @@ static void fb_task(void *cookie) {
 		// On test s'il y a game over
 		if(!game_over){		// Il n'y pas game over
 			// On test si le jeux est en pause
-			if(!game_break){// Le jeu n'est pas en pause
-
-			}else{			// Le jeu est en pause
-
-			}
-		}else{				// Il y a game over
-			// Le jeu doit s'arreter, on met game_break à 1
-			game_break = 1;
-		}
-
-		if(game_over){
-			game_break = 1;
-
-			fb_rect(30, 260, 30, 210, LU_WHITE);
-			fb_rect_fill(31, 259, 31, 209, LU_GREY_BACK);
-
-			draw_invader_menu(52, 70);
-
-			// On affiche la box de démarrage
-			fb_print_string(LU_BLACK, LU_WHITE, "GAME OVER", 70, 50);
-
-			// On affiche les crédits
-			draw_credits(40, 70);
-
-			// On affiche le bouton pour commencer
-			fb_rect(200, 250, 40, 190, LU_GREY);
-			fb_line(41, 201, 41, 249, LU_BLACK);
-			fb_line(41, 249, 189, 249, LU_BLACK);
-			fb_print_string(LU_GREY, LU_GREY, "RESTART", 80, 225);
-
-			if(screen_pressed){
-				screen_pressed = 0;
-
-				// Bouton commencer
-				if(screen_y >= 200 && screen_y <= 250 &&
-				   screen_x >= 40  && screen_x <= 190){
-					hit_task_init();
-					ship_task_init();
-					invaders_task_init();
-					game_break = 0;
-					game_over = 0;
-				}
-			}
-
-		}else{
-			if (!game_break) {
+			if(!game_break){// Le jeu n'est pas arrêté
+				// On rafraichit l'ecran avec tous les paramètres des autres taches
 				fb_task_update();
-				if(screen_pressed){
-					screen_pressed = 0;
 
+				// On test si pression sur l'écran
+				if(screen_pressed){
+					screen_pressed = 0;	// On remet le flag à 0
+
+					// On test si pression sur le haut de l'écran
 					if(screen_y <= 100){
+						// On met le jeu en pause
 						game_break = 1;
+						update = 1;
 					}
 				}
-			} else {
+			}else{			// Le jeu est arrêté
+				// On test si nous devons initialisé l'affichage (avant le menu de lancement)
 				if(update){
 					update = 0;
+					// On rafraichit l'ecran avec tous les paramètres des autres taches
 					fb_task_update();
-
 					// On assombrit l'ecran
 					int y, x;
 					for (y = 0; y <= 319; y++) {
@@ -288,87 +251,71 @@ static void fb_task(void *cookie) {
 					}
 				}
 
+				// On test si le jeu est commencé (faux au lancement)
 				if(game_started){
-					// On dessine la box pour le menu (mode pause)
-					//fb_rect(30, 190, 30, 210, LU_WHITE);
-					//fb_rect_fill(31, 189, 31, 209, LU_GREY_BACK);
-					fb_rect(30, 260, 30, 210, LU_WHITE);
-					fb_rect_fill(31, 259, 31, 209, LU_GREY_BACK);
-				}else{
-					// On dessine la box pour le menu (mode demarrage)
-					fb_rect(30, 260, 30, 210, LU_WHITE);
-					fb_rect_fill(31, 259, 31, 209, LU_GREY_BACK);
-				}
-
-				// On affiche l'invader du menu
-				draw_invader_menu(52, 70);
-
-				if(game_started){
-					// On affiche la pause
-					fb_print_string(LU_BLACK, LU_WHITE, "PAUSE", 100, 50);
-
-					// On affiche les crédits
-					draw_credits(40, 70);
-
-					// On affiche le bouton pour reprendre le jeux
-					fb_rect(200, 250, 40, 115, LU_GREY);
-					fb_line(41, 201, 41, 249, LU_BLACK);
-					fb_line(41, 249, 114, 249, LU_BLACK);
-					fb_print_string(LU_GREY, LU_GREY, "CONTINUE", 45, 225);
-
-					// On affiche le bouton pour recommencer le jeux
-					fb_rect(200, 250, 120, 190, LU_GREY);
-					fb_line(121, 201, 121, 249, LU_BLACK);
-					fb_line(121, 249, 189, 249, LU_BLACK);
-					fb_print_string(LU_GREY, LU_GREY, "RESTART", 125, 225);
-
+					// Le jeu est commencer mais arrêté => nous sommes en pause
+					// On affiche le menu de pause
+					draw_menu_pause();
+					// On test si pression sur l'écran
 					if(screen_pressed){
-						screen_pressed = 0;
+						screen_pressed = 0;	// On remet le flag à 0
 
-						if(screen_y >= 200 && screen_y <= 250){
-							// Bouton continuer
-							if(screen_x >= 40  && screen_x <= 115){
-								game_started = 1;
-								game_break = 0;
-							// Bouton recommencer
-							}else if(screen_x > 115  && screen_x <= 190){
-								hit_task_init();
-								ship_task_init();
-								invaders_task_init();
-								game_break = 0;
-								printk("recommencer\n");
-							}
+						// On test si pression sur le bouton continuer
+						if(check_button(continue_button, screen_x, screen_y) == 0){
+							// On veut sortir du menu de pause
+							game_break = 0;
+						}else if(check_button(restart_button, screen_x, screen_y) == 0){
+							// On veut recommencer
+							// On remet à 0 les paramètres de chaque tache
+							hit_task_init();
+							ship_task_init();
+							invaders_task_init();
+							game_break = 0;
+							printk("recommencer\n");
 						}
 					}
-
-					//fb_rect(70, 85, 40, 150, LU_GREY);
-					//fb_rect_fill(31, 189, 31, 209, LU_WHITE);
 				}else{
-					// On affiche la box de démarrage
-					fb_print_string(LU_BLACK, LU_WHITE, "SPACE INVADERS", 70, 50);
-
-					// On affiche les crédits
-					draw_credits(40, 70);
-
-					// On affiche le bouton pour commencer
-					fb_rect(200, 250, 40, 190, LU_GREY);
-					fb_line(41, 201, 41, 249, LU_BLACK);
-					fb_line(41, 249, 189, 249, LU_BLACK);
-					fb_print_string(LU_GREY, LU_GREY, "START", 80, 225);
-
+					// Le jeu n'est pas commencé mais arrêté, il s'agit de la fenêtre d'accueil
+					// On affiche le menu d'accueil
+					draw_menu_begin();
+					// On test si pression sur l'écran
 					if(screen_pressed){
-						screen_pressed = 0;
+						screen_pressed = 0;	// On remet le flag à 0
 
-						// Bouton commencer
-						if(screen_y >= 200 && screen_y <= 250 &&
-						   screen_x >= 40  && screen_x <= 190){
+						// On test si pression sur le bouton continuer
+						if(check_button(start_button, screen_x, screen_y) == 0){
+							// On veut commencer le jeu
 							game_started = 1;
+							// On veut sortir du menu de pause
 							game_break = 0;
 						}
 					}
 				}
 			}
+		}else{				// Il y a game over
+			// Le jeu doit s'arreter, on met game_break à 1
+			game_break = 1;
+			// On dessine le menu de game over
+			draw_menu_game_over();
+			// On test si pression sur l'écran
+			if(screen_pressed){
+				screen_pressed = 0;	// On remet le flag à 0
+
+				// On test si pression sur le bouton recommencer
+				if(check_button(restart_button, screen_x, screen_y) == 0){
+					// On remet à 0 les paramètres de chaque tache
+					hit_task_init();
+					ship_task_init();
+					invaders_task_init();
+					// Le jeu n'est plus en pause
+					game_break = 0;
+					// Le jeu n'est plus en game over
+					game_over = 0;
+				}
+			}
 		}
+
+		// On met à jour l'affichage
 		rt_task_set_priority(NULL, 90);
 		fb_display();
 		rt_task_set_priority(NULL, 70);
@@ -468,9 +415,40 @@ static void draw_invader_menu(uint16_t x, uint16_t y){
 	}
 }
 
-static void draw_menu(uint16_t x, uint16_t y, char *title){
+static void draw_menu(menu_t menu){
 	// On dessine le tour
+	fb_rect(menu.y, menu.y + menu.height, menu.x, menu.x + menu.width, LU_WHITE);
+	// On dessine le fond
+	fb_rect_fill(menu.y + 1, menu.y + menu.height - 1, menu.x + 1, menu.x + menu.width - 1, LU_GREY_BACK);
+	// On dessine le titre
+	fb_print_string_transparent(LU_BLACK, menu.title, (menu.width-strlen(menu.title))/2, 2);
+	//On dessine le fond (invader)
+	draw_invader_menu(menu.x + 20, menu.y + 20);
+	// On dessine les crédits
+	draw_credits(menu.x + 10, menu.y + 30);
+}
 
+static void draw_menu_begin(){
+	// On dessine le menu de base
+	draw_menu(begin_menu);
+	// On dessine le bouton pour commencer
+	fb_button(start_button);
+}
+
+static void draw_menu_pause(){
+	// On dessine le menu de base
+	draw_menu(pause_menu);
+	// On dessine le bouton pour retourner au jeu
+	fb_button(continue_button);
+	// On dessine le bouton pour recommencer le jeu
+	fb_button(restart_button);
+}
+
+static void draw_menu_game_over(){
+	// On dessine le menu de base
+	draw_menu(game_over_menu);
+	// On dessine le bouton pour recommencer le jeu
+	fb_button(restart_button);
 }
 
 static void draw_credits(uint16_t x, uint16_t y){
@@ -483,3 +461,10 @@ static void draw_credits(uint16_t x, uint16_t y){
 	fb_print_string_transparent(LU_DARK_GREY, LU_WHITE, "Mohamed Regaya", x+10, y+45);
 }
 
+static int check_button(button_t button, uint16_t x, uint16_t y){
+	if(x >= button.x && x <= button.x + button.width &&
+	   y >= button.y && y <= button.y + button.height){
+		return 0;
+	}
+	return -1;
+}
