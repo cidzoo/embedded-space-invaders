@@ -199,8 +199,6 @@ void hit_task(void *cookie){
 							// On met a jour les spef concernant la precision de tir
 							game_bullet_used++;
 							game_bullet_kill++;	// La bullet à touché sa cible
-
-							break;
 						}//if positive hit test
 					}
 				}//for each invaders
@@ -219,7 +217,11 @@ void hit_task(void *cookie){
 
 				//bullet : hit test with other bullets
 				for(j=0;j<NB_MAX_BULLETS;j++){
-					if(bullets[j].weapon != NULL && &bullets[j] != bullet){
+					if( 	(bullets[j].weapon != NULL) &&
+							(&bullets[j] != bullet) &&
+							(bullets[j].weapon->weapon_type != RAIL) &&
+							(bullets[j].weapon->weapon_type != WAVE)
+							){
 						//control if the bullet is touched
 						if(hit_test(bullets[j].hitbox, bullet->hitbox) == 0){
 							impact = 1;
@@ -374,7 +376,7 @@ static int add_bullet(bullet_t b){
 	}else{
 		//find the first empty slot and place the bomb there
 		for(i=0;i<NB_MAX_BOMBS;i++){
-			if(bullets[i].weapon == NULL){
+			if(bombs[i].weapon == NULL){
 				bombs[i] = b;
 				return 0;
 			}
