@@ -16,5 +16,11 @@ hexdump -s 0x46 -v -e '"{" 240/2 "0x%04X " "},\n"' wave.bmp
 #invader
 hexdump -s 0x46 -v -e '"{" 16/2 "0x%04X " "},\n"' invader.bmp
 
+#invader_menu1
+hexdump -s 0x46 -v -e '"{" 136/2 "0x%04X " "},\n"' invader_menu1.bmp
+
+#invader_menu2
+hexdump -s 0x46 -v -e '"{" 136/2 "0x%04X " "},\n"' invader_menu2.bmp
+
 #ship
 hexdump -s 0x46 -v -e '"{" 32/2 "0x%04X " "},\n"' ship.bmp
