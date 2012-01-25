@@ -11,6 +11,7 @@
 #include "invaders_task.h"
 #include "ship_task.h"
 #include "hit_task.h"
+
 #include "rt-app-m.h"
 #include "vga_lookup.h"
 #include <linux/slab.h>
@@ -136,8 +137,6 @@ static void fb_task_update(void){
 
 static void fb_task(void *cookie) {
 
-	int i;
-	char buf[20];
 
 	uint8_t update = 1;
 
@@ -160,6 +159,13 @@ static void fb_task(void *cookie) {
 
 		if (!game_break) {
 			fb_task_update();
+			if(screen_pressed){
+				screen_pressed = 0;
+
+				if(screen_y <= 100){
+					game_break = 1;
+				}
+			}
 		} else {
 			if(update){
 				update = 0;
@@ -174,9 +180,17 @@ static void fb_task(void *cookie) {
 				}
 			}
 
-			// On dessine la box pour le menu
-			fb_rect(30, 190, 30, 210, LU_WHITE);
-			fb_rect_fill(31, 189, 31, 209, LU_GREY_BACK);
+			if(game_started){
+				// On dessine la box pour le menu (mode pause)
+				//fb_rect(30, 190, 30, 210, LU_WHITE);
+				//fb_rect_fill(31, 189, 31, 209, LU_GREY_BACK);
+				fb_rect(30, 260, 30, 210, LU_WHITE);
+				fb_rect_fill(31, 259, 31, 209, LU_GREY_BACK);
+			}else{
+				// On dessine la box pour le menu (mode demarrage)
+				fb_rect(30, 260, 30, 210, LU_WHITE);
+				fb_rect_fill(31, 259, 31, 209, LU_GREY_BACK);
+			}
 
 			// On affiche l'invader du menu
 			if (invader_bmp_select == 0) {
@@ -206,25 +220,71 @@ static void fb_task(void *cookie) {
 
 				// On affiche les crédits
 				fb_print_string(LU_BLACK, LU_WHITE, "CREDITS:", 40, 70);
-				fb_print_string(LU_DARK_GREY, LU_WHITE, "Michael Favaretto", 50,
-						85);
+				fb_print_string(LU_DARK_GREY, LU_WHITE, "Michael Favaretto", 50, 85);
 				fb_print_string(LU_DARK_GREY, LU_WHITE, "Yannick Lanz", 50, 95);
 				fb_print_string(LU_DARK_GREY, LU_WHITE, "Romain Maffina", 50, 105);
 				fb_print_string(LU_DARK_GREY, LU_WHITE, "Mohamed Regaya", 50, 115);
+
+				// On affiche le bouton pour reprendre le jeux
+				fb_rect(200, 250, 40, 115, LU_GREY);
+				fb_line(41, 201, 41, 249, LU_BLACK);
+				fb_line(41, 249, 114, 249, LU_BLACK);
+				fb_print_string(LU_GREY, LU_GREY, "CONTINUE", 45, 225);
+
+				// On affiche le bouton pour recommencer le jeux
+				fb_rect(200, 250, 120, 190, LU_GREY);
+				fb_line(121, 201, 121, 249, LU_BLACK);
+				fb_line(121, 249, 189, 249, LU_BLACK);
+				fb_print_string(LU_GREY, LU_GREY, "RESTART", 125, 225);
+
+				if(screen_pressed){
+					screen_pressed = 0;
+
+					if(screen_y >= 200 && screen_y <= 250){
+						// Bouton continuer
+						if(screen_x >= 40  && screen_x <= 115){
+							game_started = 1;
+							game_break = 0;
+						// Bouton recommencer
+						}else if(screen_x > 115  && screen_x <= 190){
+							hit_task_init();
+							ship_task_init();
+							invaders_task_init();
+							game_break = 0;
+							printk("recommencer\n");
+						}
+					}
+				}
 
 				//fb_rect(70, 85, 40, 150, LU_GREY);
 				//fb_rect_fill(31, 189, 31, 209, LU_WHITE);
 			}else{
-				// On affiche la pause
+				// On affiche la box de démarrage
 				fb_print_string(LU_BLACK, LU_WHITE, "SPACE INVADERS", 70, 50);
 
 				// On affiche les crédits
 				fb_print_string(LU_BLACK, LU_WHITE, "CREDITS:", 40, 70);
-				fb_print_string(LU_DARK_GREY, LU_WHITE, "Michael Favaretto", 50,
-						85);
+				fb_print_string(LU_DARK_GREY, LU_WHITE, "Michael Favaretto", 50, 85);
 				fb_print_string(LU_DARK_GREY, LU_WHITE, "Yannick Lanz", 50, 95);
 				fb_print_string(LU_DARK_GREY, LU_WHITE, "Romain Maffina", 50, 105);
 				fb_print_string(LU_DARK_GREY, LU_WHITE, "Mohamed Regaya", 50, 115);
+
+				// On affiche le bouton pour commencer
+				fb_rect(200, 250, 40, 190, LU_GREY);
+				fb_line(41, 201, 41, 249, LU_BLACK);
+				fb_line(41, 249, 189, 249, LU_BLACK);
+				fb_print_string(LU_GREY, LU_GREY, "START", 80, 225);
+
+				if(screen_pressed){
+					screen_pressed = 0;
+
+					// Bouton commencer
+					if(screen_y >= 200 && screen_y <= 250 &&
+					   screen_x >= 40  && screen_x <= 190){
+						game_started = 1;
+						game_break = 0;
+					}
+				}
 			}
 		}
 		rt_task_set_priority(NULL, 90);

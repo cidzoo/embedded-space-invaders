@@ -23,6 +23,7 @@ extern spaceship_t ship;
 extern int ship_task_start(void);
 extern void ship_task_cleanup_task(void);
 extern void ship_task_cleanup_objects(void);
+extern void ship_task_init(void);
 
 extern int ship_lock(void);
 extern int ship_unlock(void);

@@ -123,6 +123,16 @@ void hit_task_cleanup_objects(){
 	}
 }
 
+void hit_task_init(){
+	int i;
+	for(i = 0; i < NB_MAX_BULLETS; i++){
+		bullets[i].weapon = NULL;
+	}
+	for(i = 0; i < NB_MAX_BOMBS; i++){
+		bombs[i].weapon = NULL;
+	}
+}
+
 /*****************HIT TASK***********************/
 void hit_task(void *cookie){
 
@@ -130,161 +140,168 @@ void hit_task(void *cookie){
 	bullet_t *bullet;
 	int i, j;
 	int16_t y;
+	uint8_t removed;
 
 	(void)cookie;
 	// On définit la période de la tache
 	rt_task_set_periodic(NULL, TM_NOW, 50*MS);
 
-	uint8_t removed;
+
+
+	hit_task_init();
 
 
 	for (;;) {
 		rt_task_wait_period(NULL);
 
-		// On verrouille les bullets
-		hit_lock();
-		// On verrouille le vaisseau
-		ship_lock();
-		// On verrouille les invaders
-		invaders_lock();
+		if(!game_break){
+			// On verrouille les bullets
+			hit_lock();
+			// On verrouille le vaisseau
+			ship_lock();
+			// On verrouille les invaders
+			invaders_lock();
 
-		//for each bullet
-		for (i=0;i<NB_MAX_BULLETS;i++){
-			removed = 0;
-			if(bullets[i].weapon != NULL){
-				impact = 0;
+			//for each bullet
+			for (i=0;i<NB_MAX_BULLETS;i++){
+				removed = 0;
+				if(bullets[i].weapon != NULL){
+					impact = 0;
 
-				//current object
-				bullet = &bullets[i];
+					//current object
+					bullet = &bullets[i];
 
-				// On déplace la bullet
-				bullet->hitbox.y -= bullet->weapon->speed;
-				y = bullet->hitbox.y;
+					// On déplace la bullet
+					bullet->hitbox.y -= bullet->weapon->speed;
+					y = bullet->hitbox.y;
 
-				//suppression des bullets en haut de l'écran
-				if(y <= 0){
-					if(bullet->weapon->weapon_type != RAIL){
-						// Gestion des points lors de la sortie d'un bullet
-						if(bullet->weapon->weapon_type != WAVE && game_points >= 1){
-							game_points -= 1;
+					//suppression des bullets en haut de l'écran
+					if(y <= 0){
+						if(bullet->weapon->weapon_type != RAIL){
+							// Gestion des points lors de la sortie d'un bullet
+							if(bullet->weapon->weapon_type != WAVE && game_points >= 1){
+								game_points -= 1;
+							}
+							if(!removed){
+								remove_bullet(*bullet, i);
+								removed = 1;
+							}
+							// On met a jour les spef concernant la precision de tir
+							game_bullet_used++;
+							continue;
 						}
+					}
+
+					//bullet : hit test with invaders
+					for (j=0;j<wave.invaders_count;j++){
+						//test if applicable
+						if(wave.invaders[j].hp > 0){
+
+							//current object
+							invader = &wave.invaders[j];
+
+							//hit test
+							if(hit_test(invader->hitbox, bullet->hitbox) == 0){
+								impact = 1;
+								//if so : damage the invader
+								if(invader->hp >= bullet->weapon->damage){
+									// On met a jour les points de vie de l'invader
+									invader->hp-= bullet->weapon->damage;
+									// On met a jour les points
+									game_points += 1;
+								}
+								else{
+									// On met a jour les points de vie de l'invader
+									invader->hp = 0;
+									// On met a jour les points
+									game_points += 10;
+								}
+								// On met a jour les spef concernant la precision de tir
+								game_bullet_used++;
+								game_bullet_kill++;	// La bullet à touché sa cible
+							}//if positive hit test
+						}
+					}//for each invaders
+
+					//bullet : hit test with bombs
+					for(j=0;j<NB_MAX_BOMBS;j++){
+						if(bombs[j].weapon != NULL){
+							//control if the bomb is touched
+							if(hit_test(bombs[j].hitbox, bullet->hitbox) == 0){
+								impact = 1;
+								//destroy the bomb
+								remove_bullet(bombs[j], j);
+							}
+						}
+					}
+
+					//bullet : hit test with other bullets
+					for(j=0;j<NB_MAX_BULLETS;j++){
+						if( 	(bullets[j].weapon != NULL) &&
+								(&bullets[j] != bullet) &&
+								(bullets[j].weapon->weapon_type != RAIL) &&
+								(bullets[j].weapon->weapon_type != WAVE)
+								){
+							//control if the bullet is touched
+							if(hit_test(bullets[j].hitbox, bullet->hitbox) == 0){
+								impact = 1;
+								//destroy the bullet
+								if(!removed){
+									remove_bullet(bullets[j], j);
+									removed = 1;
+								}
+							}
+						}
+					}
+
+					//if impact was detected delete the bullet
+					if(		impact &&
+							!(bullet->weapon->weapon_type == WAVE) &&
+							!(bullet->weapon->weapon_type == RAIL) ){
 						if(!removed){
 							remove_bullet(*bullet, i);
 							removed = 1;
 						}
-						// On met a jour les spef concernant la precision de tir
-						game_bullet_used++;
-						continue;
 					}
-				}
 
-				//bullet : hit test with invaders
-				for (j=0;j<wave.invaders_count;j++){
-					//test if applicable
-					if(wave.invaders[j].hp > 0){
+				}//if not null
+			}//for each bullet
 
-						//current object
-						invader = &wave.invaders[j];
+			//For each bomb
+			for(i=0;i<NB_MAX_BOMBS;i++){
+				if(bombs[i].weapon != NULL){
 
-						//hit test
-						if(hit_test(invader->hitbox, bullet->hitbox) == 0){
-							impact = 1;
-							//if so : damage the invader
-							if(invader->hp >= bullet->weapon->damage){
-								// On met a jour les points de vie de l'invader
-								invader->hp-= bullet->weapon->damage;
-								// On met a jour les points
-								game_points += 1;
-							}
-							else{
-								// On met a jour les points de vie de l'invader
-								invader->hp = 0;
-								// On met a jour les points
-								game_points += 10;
-							}
-							// On met a jour les spef concernant la precision de tir
-							game_bullet_used++;
-							game_bullet_kill++;	// La bullet à touché sa cible
-						}//if positive hit test
+					// On déplace les bombs
+					bombs[i].hitbox.y += bombs[i].weapon->speed;
+
+					//hit test with ship
+					if(hit_test(ship.hitbox, bombs[i].hitbox) == 0){
+						//if so damage the ship and remove bomb
+						ship.hp--;
+						if(ship.hp==0)
+							game_over = 1;
+
+						remove_bullet(bombs[i], i);
 					}
-				}//for each invaders
-
-				//bullet : hit test with bombs
-				for(j=0;j<NB_MAX_BOMBS;j++){
-					if(bombs[j].weapon != NULL){
-						//control if the bomb is touched
-						if(hit_test(bombs[j].hitbox, bullet->hitbox) == 0){
-							impact = 1;
-							//destroy the bomb
-							remove_bullet(bombs[j], j);
-						}
-					}
-				}
-
-				//bullet : hit test with other bullets
-				for(j=0;j<NB_MAX_BULLETS;j++){
-					if( 	(bullets[j].weapon != NULL) &&
-							(&bullets[j] != bullet) &&
-							(bullets[j].weapon->weapon_type != RAIL) &&
-							(bullets[j].weapon->weapon_type != WAVE)
-							){
-						//control if the bullet is touched
-						if(hit_test(bullets[j].hitbox, bullet->hitbox) == 0){
-							impact = 1;
-							//destroy the bullet
-							if(!removed){
-								remove_bullet(bullets[j], j);
-								removed = 1;
-							}
-						}
-					}
-				}
-
-				//if impact was detected delete the bullet
-				if(		impact &&
-						!(bullet->weapon->weapon_type == WAVE) &&
-						!(bullet->weapon->weapon_type == RAIL) ){
-					if(!removed){
-						remove_bullet(*bullet, i);
-						removed = 1;
-					}
-				}
-
-			}//if not null
-		}//for each bullet
-
-		//For each bomb
-		for(i=0;i<NB_MAX_BOMBS;i++){
-			if(bombs[i].weapon != NULL){
-
-				// On déplace les bombs
-				bombs[i].hitbox.y += bombs[i].weapon->speed;
-
-				//hit test with ship
-				if(hit_test(ship.hitbox, bombs[i].hitbox) == 0){
-					//if so damage the ship and remove bomb
-					ship.hp--;
-					if(ship.hp==0)
-						game_over = 1;
-
-					remove_bullet(bombs[i], i);
 				}
 			}
+
+			//special treatement for rail
+			if(rail_id != -1 && rail_timeout <= 0){
+				remove_bullet(bullets[rail_id],rail_id);
+				rail_id = -1;
+			}else
+				rail_timeout--;
+
+			// On deverrouille les invaders
+			invaders_unlock();
+			// On deverrouille le vaisseau
+			ship_unlock();
+			// On deverrouille les bullets
+			hit_unlock();
+		}else{
+
 		}
-
-		//special treatement for rail
-		if(rail_id != -1 && rail_timeout <= 0){
-			remove_bullet(bullets[rail_id],rail_id);
-			rail_id = -1;
-		}else
-			rail_timeout--;
-
-		// On deverrouille les invaders
-		invaders_unlock();
-		// On deverrouille le vaisseau
-		ship_unlock();
-		// On deverrouille les bullets
-		hit_unlock();
 	}
 
 }//hit_task

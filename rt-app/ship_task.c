@@ -28,6 +28,10 @@ static uint8_t ship_task_created = 0;
 
 struct ts_sample sample;	// Utilise pour recuperer les information du TS
 
+static int ship_acc;
+static int ship_dir;
+static int ship_x;
+
 /**
  * Fonctions privées
  */
@@ -89,26 +93,39 @@ void ship_task_cleanup_objects(){
 	}*/
 }
 
+void ship_task_init(){
+	ship.hp = LIFE_SHIP;
+	ship.hitbox.height=32;
+	ship.hitbox.width=32;
+	ship.hitbox.x= 104;
+	ship.hitbox.y= 280;
+	ship.hitbox.type = G_SHIP;
+
+	ship_acc = 0;
+	ship_dir = 0;
+	ship_x = 104;
+}
+
 static void ship_task(void *cookie){
 
-	spaceship_t ship_loc;
-	int acc = 0;
-	int dir = 0;
-	int x;
+	//spaceship_t ship_loc;
+
 	uint8_t game_break_loc = 0;
 	uint32_t cpt = 0;
+	uint8_t rebond = 0;
 
 	(void)cookie;
 
 	// On définit la période de la tache
 	rt_task_set_periodic(NULL, TM_NOW, 30*MS);
 	ship_lock();
-	ship_init();
-	memcpy(&ship_loc, &ship, sizeof(ship_loc));
-	x = ship_loc.hitbox.x;
+	//ship_init();
+	ship_task_init();
+	//memcpy(&ship_loc, &ship, sizeof(ship_loc));
+	//x = ship_loc.hitbox.x;
+	ship_x = ship.hitbox.x;
 	ship_unlock();
 
-	uint8_t rebond = 0;
 
 
 	for (;;) {
@@ -132,43 +149,48 @@ static void ship_task(void *cookie){
 					if(!screen_pressed){
 						screen_pressed = 1;
 						screen_x = sample.x;
-						screen_x = sample.y;
+						screen_y = sample.y;
 					}
 				}
 			}else{
 				cpt++;
 			}
 			if(sample.y >= 200 && !game_break){
-				if(sample.x < (ship_loc.hitbox.x + ship_loc.hitbox.width/2 - 2)){
-					if(dir == -1){
-						acc += 1;
+				//if(sample.x < (ship_loc.hitbox.x + ship_loc.hitbox.width/2 - 2)){
+				if(sample.x < (ship.hitbox.x + ship.hitbox.width/2 - 2)){
+					if(ship_dir == -1){
+						ship_acc += 1;
 					}else{
-						acc /= 3;
+						ship_acc /= 3;
 					}
-					dir = -1;
-					x -= acc;
-				}else if(sample.x > (ship_loc.hitbox.x + ship_loc.hitbox.width/2 + 2)){
-					if(dir == 1){
-						acc += 1;
+					ship_dir = -1;
+					ship_x -= ship_acc;
+				//}else if(sample.x > (ship_loc.hitbox.x + ship_loc.hitbox.width/2 + 2)){
+				}else if(sample.x > (ship.hitbox.x + ship.hitbox.width/2 + 2)){
+					if(ship_dir == 1){
+						ship_acc += 1;
 					}else{
-						acc /= 3;
+						ship_acc /= 3;
 					}
-					dir = 1;
-					x += acc;
+					ship_dir = 1;
+					ship_x += ship_acc;
 				}
-				if(x < 0){
-					x = 0;
-					acc = 0;
-					dir = 0;
-				}else if(x > LCD_MAX_X-1 - ship_loc.hitbox.width){
-					x = LCD_MAX_X - 1 - ship_loc.hitbox.width;
-					acc = 0;
-					dir = 0;
+				if(ship_x < 0){
+					ship_x = 0;
+					ship_acc = 0;
+					ship_dir = 0;
+				//}else if(x > LCD_MAX_X-1 - ship_loc.hitbox.width){
+				}else if(ship_x > LCD_MAX_X-1 - ship.hitbox.width){
+					//x = LCD_MAX_X - 1 - ship_loc.hitbox.width;
+					ship_x = LCD_MAX_X - 1 - ship.hitbox.width;
+					ship_acc = 0;
+					ship_dir = 0;
 				}
 				//ship_unlock();
-				ship_lock();
-				ship_loc.hitbox.x = x;
-				memcpy(&ship, &ship_loc, sizeof(ship_loc));
+
+				//ship_loc.hitbox.x = x;
+				ship.hitbox.x = ship_x;
+				//memcpy(&ship, &ship_loc, sizeof(ship_loc));
 				ship_unlock();
 			}
 		}else{
