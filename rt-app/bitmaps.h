@@ -34,6 +34,9 @@
 #define SHIP_WIDTH 32
 #define SHIP_HEIGHT 32
 
+#define INVADER_MENU_WIDTH	136
+#define INVADER_MENU_HEIGHT	99
+
 extern uint16_t bmp_bomb[BOMB_HEIGHT][BOMB_WIDTH];
 extern uint16_t bmp_gun[GUN_HEIGHT][GUN_WIDTH];
 extern uint16_t bmp_rail[RAIL_HEIGHT][RAIL_WIDTH];
@@ -41,5 +44,7 @@ extern uint16_t bmp_rocket[ROCKET_HEIGHT][ROCKET_WIDTH];
 extern uint16_t bmp_wave[WAVE_HEIGHT][WAVE_WIDTH];
 extern uint16_t bmp_invader[INVADER_HEIGHT][INVADER_WIDTH];
 extern uint16_t bmp_ship[SHIP_HEIGHT][SHIP_WIDTH];
+extern uint16_t bmp_invader_menu1[INVADER_MENU_HEIGHT][INVADER_MENU_WIDTH];
+extern uint16_t bmp_invader_menu2[INVADER_MENU_HEIGHT][INVADER_MENU_WIDTH];
 
 #endif /* BITMAPS_H_ */
