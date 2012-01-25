@@ -97,7 +97,7 @@ static void invaders_task(void *cookie){
 	invaders_lock();
 	wave.invader_speed = 1;
 	wave.level = 0;
-	wave.invaders_count = 15;
+	wave.invaders_count = 6;
 	invaders_init();
 	invaders_unlock();
 
@@ -152,7 +152,8 @@ static void invaders_task(void *cookie){
          for(j=0;j<nb_invaders_per_line[i];j++){
 
         	 //Si dernière ligne invaders -> décallage
-        	 if(i==line){
+        	 //TODO tester sans le line!=0
+        	 if(line!=0 && i==line){
 				 wave.invaders[invader_id].hitbox.x = (GAME_ZONE_X_MIN+MARGE+((WIDTH_INVADER)*(nb_invaders_per_line[0]-nb_invaders_per_line[i])))+(j*(SPACE_BETWEEN_INVADER+WIDTH_INVADER));
 				 wave.invaders[invader_id].hitbox.y = (GAME_ZONE_Y_MIN+SPACE_BETWEEN_INVADER)+(i*(SPACE_BETWEEN_INVADER+HEIGT_INVADER));
         	 }
@@ -204,7 +205,7 @@ static void invaders_task(void *cookie){
 
 		 //Avance les invaders en avant
 		 if(move_up)
-			 wave.invaders[i].hitbox.y+=1;
+			 wave.invaders[i].hitbox.y+=wave.level+1;
 
 		 //check si un invader atteint la terre
 		 if(wave.invaders[i].hitbox.y+wave.invaders[i].hitbox.height == GAME_ZONE_Y_MAX)
@@ -287,16 +288,12 @@ int invaders_unlock(){
 
 //To call each time the current invaders wave is finished to init a new one
 void level_up(){
-	//static uint8_t lvl = 0;
 
-	//current_wave->level = ++lvl;
 	wave.level++;
 
 	if(wave.invaders_count<NB_INVADERS_MAX)
-		wave.invaders_count++;
-	wave.invader_speed = difficulty;
-
-	//init_invaders(current_wave->invaders);
+		wave.invaders_count+=2;
+	wave.invader_speed = 1+difficulty;
 }
 
 int invaders_random(int range){

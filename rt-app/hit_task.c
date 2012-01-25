@@ -1,8 +1,8 @@
 /*
  * hit_task.c
  *
- *  Created on: 17 janv. 2012
- *      Author: redsuser
+ *  Created on: dec 2011
+ *      Author: Romain Maffina
  */
 #include "hit_task.h"
 #include "invaders_task.h"
@@ -12,7 +12,9 @@
 #include "vga_lookup.h"
 #include "rt-app-m.h"
 
-//Array of all weapons
+/**
+ * Variables publics (voir .h)
+ */
 weapon_t weapons[NB_WEAPONS] = {
 	{BOMB, ONE, SLOW,
 		{0, 0, 0, 0, 0},
@@ -36,15 +38,13 @@ weapon_t weapons[NB_WEAPONS] = {
 	}
 };
 
-//List of the bullets
 bullet_t bullets[NB_MAX_BULLETS];
-
-//List of the bombs
 bullet_t bombs[NB_MAX_BOMBS];
 
 /**
  * Variables privées
  */
+
 RT_MUTEX hit_task_mutex;
 static uint8_t hit_task_mutex_created = 0;
 
@@ -58,14 +58,18 @@ static int impact = 0;
 static int rail_id = -1;
 static int rail_timeout = 0;
 
+
 /**
- * Fonctions privées
+ * Prototypes fonctions privées
  */
+
 static int hit_test(hitbox_t a, hitbox_t b);
 static int add_bullet(bullet_t b);
 static void remove_bullet(bullet_t b, int id);
 static void hit_task(void *cookie);
 
+
+/* Task start */
 int hit_task_start(){
 	int err;
 
@@ -103,6 +107,7 @@ fail:
 	return -1;
 }
 
+/* Task cleanup */
 void hit_task_cleanup_task(){
 	if(hit_task_created){
 		hit_task_created = 0;
@@ -110,6 +115,7 @@ void hit_task_cleanup_task(){
 	}
 }
 
+/* Task objects cleanup */
 void hit_task_cleanup_objects(){
 	if(hit_task_mutex_created){
 		hit_task_mutex_created = 0;
@@ -117,6 +123,7 @@ void hit_task_cleanup_objects(){
 	}
 }
 
+/*****************HIT TASK***********************/
 void hit_task(void *cookie){
 
 	invader_t *invader;
@@ -147,11 +154,10 @@ void hit_task(void *cookie){
 				//current object
 				bullet = &bullets[i];
 
-				// On déplace le bullets
+				// On déplace la bullet
 				bullet->hitbox.y -= bullet->weapon->speed;
 				y = bullet->hitbox.y;
 
-				//TODO a ameliorer car risque de null pointer pour après
 				//suppression des bullets en haut de l'écran
 				if(y <= 0){
 					if(bullet->weapon->weapon_type != RAIL){
@@ -166,7 +172,7 @@ void hit_task(void *cookie){
 					}
 				}
 
-				//for each invader
+				//bullet : hit test with invaders
 				for (j=0;j<wave.invaders_count;j++){
 					//test if applicable
 					if(wave.invaders[j].hp > 0){
@@ -174,7 +180,7 @@ void hit_task(void *cookie){
 						//current object
 						invader = &wave.invaders[j];
 
-						//control if the bullet it touching the invader
+						//hit test
 						if(hit_test(invader->hitbox, bullet->hitbox) == 0){
 							impact = 1;
 							//if so : damage the invader
@@ -194,62 +200,43 @@ void hit_task(void *cookie){
 							game_bullet_used++;
 							game_bullet_kill++;	// La bullet à touché sa cible
 
-	//						//for a rocket create the explosion as a new bullet
-	//						if(bullet->weapon->weapon_type == ROCKET){
-	//							bullet_t new_bullet;
-	//							new_bullet.weapon = &weapons[GUN];
-	//							new_bullet.hitbox.x = bullet->hitbox.x;
-	//							new_bullet.hitbox.y = bullet->hitbox.y;
-	//							new_bullet.hitbox.width = 20;
-	//							new_bullet.hitbox.height = 20;
-	//							add_bullet(new_bullet);
-	//						}
-
 							break;
-						}//if positive hit test*/
+						}//if positive hit test
 					}
 				}//for each invaders
 
-				//hit test with bombs
+				//bullet : hit test with bombs
 				for(j=0;j<NB_MAX_BOMBS;j++){
 					if(bombs[j].weapon != NULL){
 						//control if the bomb is touched
 						if(hit_test(bombs[j].hitbox, bullet->hitbox) == 0){
 							impact = 1;
 							//destroy the bomb
-							remove_bullet(bombs[j], i);
+							remove_bullet(bombs[j], j);
 						}
 					}
 				}
 
-				//hit test with other bullets
+				//bullet : hit test with other bullets
 				for(j=0;j<NB_MAX_BULLETS;j++){
 					if(bullets[j].weapon != NULL && &bullets[j] != bullet){
 						//control if the bullet is touched
 						if(hit_test(bullets[j].hitbox, bullet->hitbox) == 0){
 							impact = 1;
 							//destroy the bullet
-							bullets[j].weapon = NULL;
+							remove_bullet(bullets[j], j);
 						}
 					}
 				}
 
-				//if impact detected delete the bullet
+				//if impact was detected delete the bullet
 				if(		impact &&
 						!(bullet->weapon->weapon_type == WAVE) &&
 						!(bullet->weapon->weapon_type == RAIL) )
 					remove_bullet(*bullet, i);
 
 			}//if not null
-
 		}//for each bullet
-
-		//rail
-		if(rail_id != -1 && rail_timeout <= 0){
-			remove_bullet(bullets[rail_id],rail_id);
-			rail_id = -1;
-		}else
-			rail_timeout--;
 
 		//For each bomb
 		for(i=0;i<NB_MAX_BOMBS;i++){
@@ -261,13 +248,21 @@ void hit_task(void *cookie){
 				//hit test with ship
 				if(hit_test(ship.hitbox, bombs[i].hitbox) == 0){
 					//if so damage the ship and remove bomb
-					//TODO handle case ship is dead
 					ship.hp--;
-					printk("%d\n",ship.hp);
+					if(ship.hp==0)
+						game_over = 1;
+
 					remove_bullet(bombs[i], i);
 				}
 			}
 		}
+
+		//special treatement for rail
+		if(rail_id != -1 && rail_timeout <= 0){
+			remove_bullet(bullets[rail_id],rail_id);
+			rail_id = -1;
+		}else
+			rail_timeout--;
 
 		// On deverrouille les invaders
 		invaders_unlock();
@@ -276,26 +271,25 @@ void hit_task(void *cookie){
 		// On deverrouille les bullets
 		hit_unlock();
 	}
-	//level_up();
-}
 
+}//hit_task
+
+/* To be called to fire a weapon */
 void fire_weapon(hitbox_t shooter, weapontype_t w){
 	uint16_t start_x=0, start_y=0;
 	bullet_t b;
 
-	//Control that the selected weapon CAN be used
-
-
-		if(w == BOMB){
-			//Grab the position of the invader's bottom
-			start_x = shooter.x + shooter.width/2;
-			start_y = shooter.y+shooter.height+1;
-		}
-		else{
-			//Grab the position of the spaceship's gun's
-			start_x = shooter.x + shooter.width/2;
-			start_y = shooter.y-1;
-		}
+	//Define starting position
+	if(w == BOMB){
+		//Grab the position of the invader's bottom
+		start_x = shooter.x + shooter.width/2;
+		start_y = shooter.y+shooter.height+1;
+	}
+	else{
+		//Grab the position of the spaceship's gun's
+		start_x = shooter.x + shooter.width/2;
+		start_y = shooter.y-1;
+	}
 
 	//Fire the weapon
 	switch(w){
@@ -341,12 +335,12 @@ void fire_weapon(hitbox_t shooter, weapontype_t w){
 		break;
 	}
 
-	//add it to the list of current bullets
+	//add it to the list of current bullets or bombs
 	add_bullet(b);
-
 
 }//fire_weapon()
 
+/* Detect collision between two hitboxes */
 static int hit_test(hitbox_t a, hitbox_t b){
 
 	if (	(a.x + a.width >= b.x) &&
@@ -359,7 +353,7 @@ static int hit_test(hitbox_t a, hitbox_t b){
 
 }//hit_test()
 
-/* Functions to manipulate the list of bullet */
+/* Functions to add a bullet or bomb */
 static int add_bullet(bullet_t b){
 	int i=0;
 
@@ -389,6 +383,7 @@ static int add_bullet(bullet_t b){
 	return -1;
 }
 
+/* Functions to remove a bullet or bomb */
 static void remove_bullet(bullet_t b, int id){
 	if(b.weapon->weapon_type != BOMB)
 		bullets[id].weapon = NULL;
@@ -397,6 +392,7 @@ static void remove_bullet(bullet_t b, int id){
 
 }
 
+/* mutex lock */
 int hit_lock(){
 	if(hit_task_mutex_created){
 		return rt_mutex_lock(&hit_task_mutex, TM_INFINITE);
@@ -404,6 +400,7 @@ int hit_lock(){
 	return -1;
 }
 
+/* mutex unlock */
 int hit_unlock(){
 	if(hit_task_mutex_created){
 		return rt_mutex_unlock(&hit_task_mutex);
