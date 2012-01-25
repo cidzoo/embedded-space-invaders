@@ -123,8 +123,16 @@ static void ship_task(void *cookie){
 			if(cpt > 3){
 				if(!rebond){
 					rebond = 1;
-					if(sample.y < 100){
+					/*if(sample.y < 100){
 						game_break = !game_break;
+						if(game_break){
+
+						}
+					}*/
+					if(!screen_pressed){
+						screen_pressed = 1;
+						screen_x = sample.x;
+						screen_x = sample.y;
 					}
 				}
 			}else{

@@ -135,6 +135,8 @@ void hit_task(void *cookie){
 	// On définit la période de la tache
 	rt_task_set_periodic(NULL, TM_NOW, 50*MS);
 
+	uint8_t removed;
+
 
 	for (;;) {
 		rt_task_wait_period(NULL);
@@ -148,6 +150,7 @@ void hit_task(void *cookie){
 
 		//for each bullet
 		for (i=0;i<NB_MAX_BULLETS;i++){
+			removed = 0;
 			if(bullets[i].weapon != NULL){
 				impact = 0;
 
@@ -165,7 +168,10 @@ void hit_task(void *cookie){
 						if(bullet->weapon->weapon_type != WAVE && game_points >= 1){
 							game_points -= 1;
 						}
-						remove_bullet(*bullet, i);
+						if(!removed){
+							remove_bullet(*bullet, i);
+							removed = 1;
+						}
 						// On met a jour les spef concernant la precision de tir
 						game_bullet_used++;
 						continue;
@@ -224,7 +230,10 @@ void hit_task(void *cookie){
 						if(hit_test(bullets[j].hitbox, bullet->hitbox) == 0){
 							impact = 1;
 							//destroy the bullet
-							remove_bullet(bullets[j], j);
+							if(!removed){
+								remove_bullet(bullets[j], j);
+								removed = 1;
+							}
 						}
 					}
 				}
@@ -232,8 +241,12 @@ void hit_task(void *cookie){
 				//if impact was detected delete the bullet
 				if(		impact &&
 						!(bullet->weapon->weapon_type == WAVE) &&
-						!(bullet->weapon->weapon_type == RAIL) )
-					remove_bullet(*bullet, i);
+						!(bullet->weapon->weapon_type == RAIL) ){
+					if(!removed){
+						remove_bullet(*bullet, i);
+						removed = 1;
+					}
+				}
 
 			}//if not null
 		}//for each bullet
@@ -374,7 +387,7 @@ static int add_bullet(bullet_t b){
 	}else{
 		//find the first empty slot and place the bomb there
 		for(i=0;i<NB_MAX_BOMBS;i++){
-			if(bullets[i].weapon == NULL){
+			if(bombs[i].weapon == NULL){
 				bombs[i] = b;
 				return 0;
 			}

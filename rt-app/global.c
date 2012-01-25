@@ -19,5 +19,10 @@ uint32_t game_points = 0;
 uint32_t game_bullet_kill = 1;
 uint32_t game_bullet_used = 1;
 
-uint8_t game_break = 0;
+uint8_t game_break = 1;
+uint8_t game_started = 0;
+
+uint8_t screen_pressed = 0;
+uint16_t screen_x = 0;
+uint16_t screen_y = 0;
 

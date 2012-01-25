@@ -52,13 +52,18 @@ extern uint32_t game_points;
 extern uint32_t game_bullet_kill;
 extern uint32_t game_bullet_used;
 extern uint8_t game_break;
+extern uint8_t game_started;
+
+extern uint8_t screen_pressed;
+extern uint16_t screen_x;
+extern uint16_t screen_y;
 
 /* Difficulty */
 typedef enum{EASY=1, NORMAL=2, HARD=3}difficulty_t;
 extern difficulty_t difficulty;
 
 /* Graphics bitmaps */
-typedef enum{G_SHIP,G_INVADER,G_BOMB,G_GUN,G_RAIL,G_ROCKET,G_WAVE} graphics_t;
+typedef enum{G_SHIP,G_INVADER,G_BOMB,G_GUN,G_RAIL,G_ROCKET,G_WAVE, G_INVADER_MENU1, G_INVADER_MENU2} graphics_t;
 
 /* Coord */
 typedef struct{

@@ -247,8 +247,8 @@ void fb_print_char(int color, int color_fond, unsigned char car, int x, int y)
 			// Permet de déterminer si on doit allumer le pixel cocnerné
 			if (ligne & tab[7-j])
 				fb_set_pixel(y+i,x+j,color);
-			else
-				fb_set_pixel(y+i,x+j,color_fond);
+			//else
+			//	fb_set_pixel(y+i,x+j,color_fond);
 		}
 	}
 }
