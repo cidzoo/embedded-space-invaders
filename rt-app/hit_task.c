@@ -24,15 +24,15 @@ weapon_t weapons[NB_WEAPONS] = {
 		{15, 15, 0, 4, 0},
 		{10, 0, 0},
 	},
-	{RAIL, TWO, STATIC,
+	{RAIL, THREE, STATIC,
 		{1, 0, 0, 50, 0},
 		{10, 0, 0},
 	},
-	{ROCKET, THREE, MEDIUM,
+	{ROCKET, MAX, MEDIUM,
 		{1, 0, 0, 100, 0},
 		{10, 0, 0},
 	},
-	{WAVE, MAX, FAST,
+	{WAVE, MAX, SUPERFAST,
 		{1, 0, 0, 250, 0},
 		{10, 0, 0},
 	}
@@ -277,15 +277,25 @@ void hit_task(void *cookie){
 					//hit test with ship
 					if(hit_test(ship.hitbox, bombs[i].hitbox) == 0){
 						//if so damage the ship and remove bomb
-						ship.hp--;
-						if(ship.hp==0)
-							game_over = 1;
-
+						if(ship.hp > 0){
+							ship.hp--;
+							if(ship.hp==0){
+								game_over = 1;
+							}
+						}
 						remove_bullet(bombs[i], i);
 					}
 				}
 			}
 
+			//invaders : hit test with ship
+			for (i=0;i<wave.invaders_count;i++){
+				if(wave.invaders[i].hp > 0 &&
+				   hit_test(ship.hitbox, wave.invaders[i].hitbox) == 0){
+					ship.hp = 0;
+					game_over = 1;
+				}
+			}
 			//special treatement for rail
 			if(rail_id != -1 && rail_timeout <= 0){
 				remove_bullet(bullets[rail_id],rail_id);
@@ -417,11 +427,12 @@ static int add_bullet(bullet_t b){
 
 /* Functions to remove a bullet or bomb */
 static void remove_bullet(bullet_t b, int id){
-	if(b.weapon->weapon_type != BOMB)
-		bullets[id].weapon = NULL;
-	else
-		bombs[id].weapon = NULL;
-
+	if(b.weapon != NULL){
+		if(b.weapon->weapon_type != BOMB)
+			bullets[id].weapon = NULL;
+		else
+			bombs[id].weapon = NULL;
+	}
 }
 
 /* mutex lock */

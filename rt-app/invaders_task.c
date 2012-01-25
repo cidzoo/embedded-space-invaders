@@ -153,9 +153,9 @@ void invaders_update() {
 			//TODO tester sans le line!=0
 			if (line != 0 && i == line) {
 				wave.invaders[invader_id].hitbox.x = (GAME_ZONE_X_MIN + 2*MARGE
-						+ ((WIDTH_INVADER)
-								* (nb_invaders_per_line[0]
-										- nb_invaders_per_line[i])))
+						+ ((WIDTH_INVADER+SPACE_BETWEEN_INVADER)
+								* ((nb_invaders_per_line[0]
+										- nb_invaders_per_line[i])/2)))
 						+ (j * (SPACE_BETWEEN_INVADER + WIDTH_INVADER));
 				wave.invaders[invader_id].hitbox.y = (GAME_ZONE_Y_MIN
 						+ SPACE_BETWEEN_INVADER)
@@ -231,7 +231,7 @@ void invaders_move() {
 	if (invader_dead == wave.invaders_count)
 		level_finish = 1;
 
-	if (invaders_random(40 - 2 * wave.level) == 1) {
+	if (invaders_random(40 - wave.level) == 1) {
 		for (i = 0; i < 1 + wave.level; i++) {
 			while (1) {
 				uint8_t rand = invaders_random(wave.invaders_count);

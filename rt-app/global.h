@@ -30,7 +30,7 @@
 #define TASK_MODE  T_FPU|T_CPU(0)  /* Uses FPU, bound to CPU #0 */
 #define TASK_STKSZ 8192            /* Stack size (in bytes) */
 
-#define TASK_FB_PRIO  40
+#define TASK_FB_PRIO  70 //40
 #define TASK_IO_PRIO  60
 #define TASK_HIT_PRIO 20
 #define TASK_INVADERS_PRIO	50
@@ -80,7 +80,7 @@ typedef struct{
 /* Weapons */
 typedef enum{BOMB, GUN, RAIL, ROCKET, WAVE} weapontype_t;
 typedef enum{ONE=1, TWO=2, THREE=3, MAX=10}damage_t;
-typedef enum{STATIC=0, SLOW=1, MEDIUM=3, FAST=7}speed_t;
+typedef enum{STATIC=0, SLOW=1, MEDIUM=3, FAST=7, SUPERFAST = 10}speed_t;
 
 typedef struct{
 	uint16_t max;
