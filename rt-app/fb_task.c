@@ -11,10 +11,73 @@
 #include "invaders_task.h"
 #include "ship_task.h"
 #include "hit_task.h"
-
 #include "rt-app-m.h"
 #include "vga_lookup.h"
 #include <linux/slab.h>
+
+// Type pour les menus
+typedef struct{
+	uint16_t x;
+	uint16_t y;
+	uint16_t width;
+	uint16_t height;
+	char *name;
+} menu_t;
+
+// Bouton pour commencer
+static button_t start_button = {
+	.x = 40,
+	.y = 200,
+	.width = 150,
+	.height = 50,
+	.title = "START"
+};
+
+// Bouton pour recommencer
+static button_t resart_button = {
+	.x = 40,
+	.y = 200,
+	.width = 75,
+	.height = 50,
+	.title = "RESTART"
+};
+
+// Bouton pour retourner au jeu
+static button_t continue_button = {
+	.x = 125,
+	.y = 200,
+	.width = 75,
+	.height = 50,
+	.title = "CONTINUE"
+};
+
+// Menu de démarrage
+static menu_t begin_menu = {
+	.x = 30,
+	.y = 40,
+	.width = 180,
+	.height = 200,
+	.title = "SPACE INVADERS"
+};
+
+// Menu de pause
+static menu_t pause_menu = {
+	.x = 30,
+	.y = 40,
+	.width = 180,
+	.height = 200,
+	.title = "PAUSE"
+};
+
+// Menu de démarrage
+static menu_t game_over_menu = {
+	.x = 30,
+	.y = 40,
+	.width = 180,
+	.height = 200,
+	.title = "GAME OVER"
+};
+
 /**
  * Variables privées
  */
@@ -32,6 +95,14 @@ uint32_t game_points_loc;
  * Fonctions privées
  */
 static void draw_bitmap(hitbox_t hb);
+static void draw_invader_menu(uint16_t x, uint16_t y);
+static void draw_menu(menu_t menu);
+static void draw_menu_begin(void);
+static void draw_menu_pause(void);
+static void draw_menu_game_over(void);
+
+static void draw_credits(uint16_t x, uint16_t y);
+
 static void fb_task(void *cookie);
 static void fb_task_init(void);
 static void fb_task_update(void);
@@ -136,18 +207,7 @@ static void fb_task_update(void){
 }
 
 static void fb_task(void *cookie) {
-
-
 	uint8_t update = 1;
-
-	uint8_t invader_bmp_select = 0;
-	uint8_t invader_bmp_counter = 0;
-
-	hitbox_t hitbox_invader_menu = { 52, // x
-			70, // y
-			136, // width
-			99 // height
-			};
 
 	(void) cookie;
 
@@ -157,44 +217,32 @@ static void fb_task(void *cookie) {
 	for (;;) {
 		rt_task_wait_period(NULL);
 
+		// On test s'il y a game over
+		if(!game_over){		// Il n'y pas game over
+			// On test si le jeux est en pause
+			if(!game_break){// Le jeu n'est pas en pause
+
+			}else{			// Le jeu est en pause
+
+			}
+		}else{				// Il y a game over
+			// Le jeu doit s'arreter, on met game_break à 1
+			game_break = 1;
+		}
+
 		if(game_over){
 			game_break = 1;
 
 			fb_rect(30, 260, 30, 210, LU_WHITE);
 			fb_rect_fill(31, 259, 31, 209, LU_GREY_BACK);
 
-			// On affiche l'invader du menu
-			if (invader_bmp_select == 0) {
-				// Image 1
-				hitbox_invader_menu.type = G_INVADER_MENU1;
-				draw_bitmap(hitbox_invader_menu);
-
-				if (invader_bmp_counter++ >= 10) {
-					invader_bmp_counter = 0;
-					// On change la valeur pour la prochaine image
-					invader_bmp_select = 1;
-				}
-			} else {
-				// Image 2
-				hitbox_invader_menu.type = G_INVADER_MENU2;
-				draw_bitmap(hitbox_invader_menu);
-
-				if (invader_bmp_counter++ >= 10) {
-					invader_bmp_counter = 0;
-					// On change la valeur pour la prochaine image
-					invader_bmp_select = 0;
-				}
-			}
+			draw_invader_menu(52, 70);
 
 			// On affiche la box de démarrage
 			fb_print_string(LU_BLACK, LU_WHITE, "GAME OVER", 70, 50);
 
 			// On affiche les crédits
-			fb_print_string(LU_BLACK, LU_WHITE, "CREDITS:", 40, 70);
-			fb_print_string(LU_DARK_GREY, LU_WHITE, "Michael Favaretto", 50, 85);
-			fb_print_string(LU_DARK_GREY, LU_WHITE, "Yannick Lanz", 50, 95);
-			fb_print_string(LU_DARK_GREY, LU_WHITE, "Romain Maffina", 50, 105);
-			fb_print_string(LU_DARK_GREY, LU_WHITE, "Mohamed Regaya", 50, 115);
+			draw_credits(40, 70);
 
 			// On affiche le bouton pour commencer
 			fb_rect(200, 250, 40, 190, LU_GREY);
@@ -253,37 +301,14 @@ static void fb_task(void *cookie) {
 				}
 
 				// On affiche l'invader du menu
-				if (invader_bmp_select == 0) {
-					// Image 1
-					hitbox_invader_menu.type = G_INVADER_MENU1;
-					draw_bitmap(hitbox_invader_menu);
+				draw_invader_menu(52, 70);
 
-					if (invader_bmp_counter++ >= 10) {
-						invader_bmp_counter = 0;
-						// On change la valeur pour la prochaine image
-						invader_bmp_select = 1;
-					}
-				} else {
-					// Image 2
-					hitbox_invader_menu.type = G_INVADER_MENU2;
-					draw_bitmap(hitbox_invader_menu);
-
-					if (invader_bmp_counter++ >= 10) {
-						invader_bmp_counter = 0;
-						// On change la valeur pour la prochaine image
-						invader_bmp_select = 0;
-					}
-				}
 				if(game_started){
 					// On affiche la pause
 					fb_print_string(LU_BLACK, LU_WHITE, "PAUSE", 100, 50);
 
 					// On affiche les crédits
-					fb_print_string(LU_BLACK, LU_WHITE, "CREDITS:", 40, 70);
-					fb_print_string(LU_DARK_GREY, LU_WHITE, "Michael Favaretto", 50, 85);
-					fb_print_string(LU_DARK_GREY, LU_WHITE, "Yannick Lanz", 50, 95);
-					fb_print_string(LU_DARK_GREY, LU_WHITE, "Romain Maffina", 50, 105);
-					fb_print_string(LU_DARK_GREY, LU_WHITE, "Mohamed Regaya", 50, 115);
+					draw_credits(40, 70);
 
 					// On affiche le bouton pour reprendre le jeux
 					fb_rect(200, 250, 40, 115, LU_GREY);
@@ -323,11 +348,7 @@ static void fb_task(void *cookie) {
 					fb_print_string(LU_BLACK, LU_WHITE, "SPACE INVADERS", 70, 50);
 
 					// On affiche les crédits
-					fb_print_string(LU_BLACK, LU_WHITE, "CREDITS:", 40, 70);
-					fb_print_string(LU_DARK_GREY, LU_WHITE, "Michael Favaretto", 50, 85);
-					fb_print_string(LU_DARK_GREY, LU_WHITE, "Yannick Lanz", 50, 95);
-					fb_print_string(LU_DARK_GREY, LU_WHITE, "Romain Maffina", 50, 105);
-					fb_print_string(LU_DARK_GREY, LU_WHITE, "Mohamed Regaya", 50, 115);
+					draw_credits(40, 70);
 
 					// On affiche le bouton pour commencer
 					fb_rect(200, 250, 40, 190, LU_GREY);
@@ -414,5 +435,51 @@ static void draw_bitmap(hitbox_t hb) {
 			}
 		}
 	}
+}
+
+static void draw_invader_menu(uint16_t x, uint16_t y){
+
+	static uint8_t invader_bmp_select = 0;		// Invader du menu à 1 au debut
+	static uint8_t invader_bmp_counter = 0;		// Timer pour le changement de l'invader
+
+	static hitbox_t hitbox_invader_menu = {
+		0, 		// x par défaut 52
+		0, 		// y par défaut 70
+		136, 	// width
+		99 		// height
+	};
+
+	hitbox_invader_menu.x = x;		// On assigne le bon x
+	hitbox_invader_menu.y = y;		// On assigne le bon y
+
+	// On test quel invader on doit dessiner (1 ou 2 ?)
+	if (invader_bmp_select == 0) {	// Image 1
+		hitbox_invader_menu.type = G_INVADER_MENU1;
+		draw_bitmap(hitbox_invader_menu);
+	} else {						// Image 2
+		hitbox_invader_menu.type = G_INVADER_MENU2;
+		draw_bitmap(hitbox_invader_menu);
+	}
+	// On incrémente le timer
+	if (invader_bmp_counter++ >= 10) {	// Si timer finit, on change d'image
+		invader_bmp_counter = 0;
+		// On change la valeur pour la prochaine image
+		invader_bmp_select = !invader_bmp_select;
+	}
+}
+
+static void draw_menu(uint16_t x, uint16_t y, char *title){
+	// On dessine le tour
+
+}
+
+static void draw_credits(uint16_t x, uint16_t y){
+	// On affiche le titre
+	fb_print_string_transparent(LU_BLACK, LU_WHITE, "CREDITS:", x, y);
+	// On affiche les noms
+	fb_print_string_transparent(LU_DARK_GREY, LU_WHITE, "Michael Favaretto", x+10, y+15);
+	fb_print_string_transparent(LU_DARK_GREY, LU_WHITE, "Yannick Lanz", x+10, y+25);
+	fb_print_string_transparent(LU_DARK_GREY, LU_WHITE, "Romain Maffina", x+10, y+35);
+	fb_print_string_transparent(LU_DARK_GREY, LU_WHITE, "Mohamed Regaya", x+10, y+45);
 }
 

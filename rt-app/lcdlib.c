@@ -12,6 +12,7 @@
 #include "lcdfont.h"
 #include <linux/fb.h>
 #include <linux/kernel.h>
+#include <linux/string.h>
 #include "vga_lookup.h"
 
 //unsigned char fb_mem_tmp[154080];
@@ -64,19 +65,34 @@ void fb_display(){
 	memcpy(fb_mem, fb_mem_rt, LCD_MAX_X * LCD_MAX_Y * 2);
 }
 
-void fb_progress_bar(int y_min, int y_max, int x_min, int x_max, int couleur, int current_value, int total_value){
+void fb_progress_bar(progress_bar_t pb){
 	int effective_width;
 	// On dessine le fond
-	fb_rect_fill(y_min + 1, y_max - 1, x_min + 1, x_max - 1, LU_BRT_WHITE);
+	fb_rect_fill(pb.y + 1, pb.y + pb.height - 1, pb.x + 1, pb.x + pb.width - 1, LU_BRT_WHITE);
 	// On dessine le tour
-	fb_rect(y_min, y_max, x_min, x_max, LU_BLACK);
+	fb_rect(pb.y, pb.y + pb.height, pb.x, pb.x + pb.width, LU_BLACK);
 	// On calcule la largeur effective de la progress bar
-	if(total_value > 0){
-		effective_width = (x_max - x_min - 4)*current_value/total_value;
+	if(pb.max_value > 0){
+		effective_width = (pb.width - 4)*pb.current_value/pb.max_value;
 		// On dessine la progress bar
-		fb_rect_fill(y_min + 2, y_max - 2, x_min + 2, x_min + 2 + effective_width, couleur);
+		fb_rect_fill(pb.y + 2, pb.y + pb.height - 2, pb.x + 2, pb.x + 2 + effective_width, pb.couleur);
 	}else{
 		effective_width = 0;
+	}
+}
+
+void fb_button(button_t button){
+	int title_size = 8*strlen(button.title);
+	// On dessine le tour
+	fb_rect(button.y, button.y + button.height, button.x, button.x + button.width, LU_GREY);
+	// On dessine le rebord gauche
+	fb_line(button.x + 1, button.y + 1, button.x + 1, button.y + button.height - 1);
+	// On dessine le rebord inférieur
+	fb_line(button.x + 1, button.y + button.height, button.x + button.width - 2, button.y + button.height - 1);
+	// On fait le calcul pour le placement du titre
+	if(button.width > title_size && button.height > 10){
+		// On affiche le titre
+		fb_print_string_transparent(LU_GREY, button.title, (button.width-title_size)/2, (button.height-8)/2);
 	}
 }
 
@@ -247,8 +263,32 @@ void fb_print_char(int color, int color_fond, unsigned char car, int x, int y)
 			// Permet de déterminer si on doit allumer le pixel cocnerné
 			if (ligne & tab[7-j])
 				fb_set_pixel(y+i,x+j,color);
-			//else
-			//	fb_set_pixel(y+i,x+j,color_fond);
+			else
+				fb_set_pixel(y+i,x+j,color_fond);
+		}
+	}
+}
+
+void fb_print_char_transparent(int color, unsigned char car, int x, int y)
+{
+	unsigned char ligne;
+	unsigned int j;
+	unsigned int i;
+	unsigned int tab[] = { 1, 2, 4, 8, 16, 32, 64, 128};
+
+	// Permet de parcourir les 8 lignes
+	for (i = 0; i < 8 ; i++)
+	{
+		// Permet de récuperer la valeur codé sur 8 bits
+		// pour le caractère.
+		ligne = fb_font_data[car-FIRST_CHAR][i];
+
+		// Permet de parcourir les 8 colonnes
+		for (j = 0 ; j < 8; j++)
+		{
+			// Permet de déterminer si on doit allumer le pixel cocnerné
+			if (ligne & tab[7-j])
+				fb_set_pixel(y+i,x+j,color);
 		}
 	}
 }
@@ -298,6 +338,38 @@ void fb_print_string(int color, int color_fond, unsigned char *ptr_texte, int x,
 
 		// Affichage du caractère sur l'afficheur LCD
 		fb_print_char(color,color_fond, *(ptr_texte + pos_car), x + (8*pos_car_ligne), y);
+		pos_car++;
+		pos_car_ligne++;
+	}
+}
+
+void fb_print_string_transparent(int color, unsigned char *ptr_texte, int x, int y)
+{
+	unsigned char pos_car = 0;			// Position du caractère sur l'afficheur.
+	unsigned char pos_car_ligne = 0;	// Position d'un caractère au sein d'une ligne de l'afficheur.
+
+	// Tant que la chaîne de caractère n'a pas été complétement parcourue
+	while(*(pos_car + ptr_texte) != '\0')
+	{
+		// Si le caractère de retour à la ligne est présent
+		if(*(pos_car + ptr_texte) == '\n')
+		{
+			pos_car_ligne = 0;
+			x = 0;
+			y += 10;
+			pos_car++;
+			continue;
+		}
+		// Si le nombre maximum de caractère est présent sur la ligne (30 caractères)?
+		else if(((pos_car_ligne % 30) == 0) && pos_car_ligne)
+		{
+			pos_car_ligne = 0;
+			x = 0;
+			y += 10;
+		}
+
+		// Affichage du caractère sur l'afficheur LCD
+		fb_print_char_transparent(color, *(ptr_texte + pos_car), x + (8*pos_car_ligne), y);
 		pos_car++;
 		pos_car_ligne++;
 	}
