@@ -53,6 +53,7 @@ extern uint32_t game_bullet_kill;
 extern uint32_t game_bullet_used;
 extern uint8_t game_break;
 extern uint8_t game_started;
+extern uint8_t game_level_up;
 
 extern uint8_t screen_pressed;
 extern uint16_t screen_x;

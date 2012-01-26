@@ -21,6 +21,7 @@ uint32_t game_bullet_used = 0;
 
 uint8_t game_break = 1;
 uint8_t game_started = 0;
+uint8_t game_level_up = 0;
 
 uint8_t screen_pressed = 0;
 uint16_t screen_x = 0;

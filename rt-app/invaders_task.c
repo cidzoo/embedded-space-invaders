@@ -99,6 +99,8 @@ static void invaders_task(void *cookie) {
 			if (level_finish) {
 				level_up();
 				level_finish = 0;
+				game_level_up = 1;
+
 				invaders_lock();
 				invaders_update();
 				invaders_unlock();

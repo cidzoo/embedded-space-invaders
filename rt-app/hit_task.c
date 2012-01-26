@@ -25,7 +25,7 @@ weapon_t weapons[NB_WEAPONS] = {
 		{10, 0, 0},
 	},
 	{RAIL, THREE, STATIC,
-		{1, 0, 0, 50, 0},
+		{1, 0, 0, 100, 0},
 		{10, 0, 0},
 	},
 	{ROCKET, MAX, MEDIUM,
@@ -125,6 +125,18 @@ void hit_task_cleanup_objects(){
 
 void hit_task_init(){
 	int i;
+	for(i = 0; i < NB_WEAPONS; i++){
+		if(weapons[i].weapon_type == GUN)
+			weapons[i].timing_charge.now = weapons[i].timing_charge.max;
+		else
+			weapons[i].timing_charge.now = 0;
+
+		weapons[i].timing_charge.last = 0;
+		weapons[i].timing_charge.time_current = 0;
+
+		weapons[i].timing_led.now = 0;
+	}
+
 	for(i = 0; i < NB_MAX_BULLETS; i++){
 		bullets[i].weapon = NULL;
 	}

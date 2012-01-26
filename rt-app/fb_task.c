@@ -113,6 +113,7 @@ static int check_button(button_t button, uint16_t x, uint16_t y);
 
 static void draw_stats(uint16_t x, uint16_t y);
 static void draw_credits(uint16_t x, uint16_t y);
+static void draw_rules(uint16_t x, uint16_t y);
 
 static void fb_task(void *cookie);
 static void fb_task_init(void);
@@ -235,23 +236,34 @@ static void fb_task_update(void){
 	pb.y = 12;
 	pb.width = 155;
 	pb.height = 8;
-	pb.current_value = game_bullet_kill;
-	pb.max_value = game_bullet_used;
-	// On determine la couleur
 	if(game_bullet_used > 0){
-		if(100*game_bullet_kill/game_bullet_used > 70){
-			pb.couleur = LU_PB_GREEN;
-		}else if(100*game_bullet_kill/game_bullet_used > 40){
-			pb.couleur = LU_PB_ORANGE;
-		}else{
-			pb.couleur = LU_PB_RED;
+		pb.current_value = game_bullet_kill;
+		pb.max_value = game_bullet_used;
+		// On determine la couleur
+		if(game_bullet_used > 0){
+			if(100*game_bullet_kill/game_bullet_used > 70){
+				pb.couleur = LU_PB_GREEN;
+			}else if(100*game_bullet_kill/game_bullet_used > 40){
+				pb.couleur = LU_PB_ORANGE;
+			}else{
+				pb.couleur = LU_PB_RED;
+			}
 		}
+	}else{
+		pb.current_value = 1;
+		pb.max_value = 1;
+		pb.couleur = LU_DARK_GREY;
 	}
+
 	fb_progress_bar(pb);
 
 	// On affiche les points
 	sprintf(buf, "  points: %d", game_points);
 	fb_print_string_transparent(LU_BLACK, buf, 3, 25);
+
+	// On affiche le niveau de la vague
+	sprintf(buf, "wave: %d", wave.level+1);
+	fb_print_string_transparent(LU_BLACK, buf, 150, 25);
 }
 
 static void fb_task(void *cookie) {
@@ -264,6 +276,11 @@ static void fb_task(void *cookie) {
 
 	for (;;) {
 		rt_task_wait_period(NULL);
+
+		if(game_level_up){
+			game_level_up = 0;
+			hit_task_init();
+		}
 
 		// On test si nous devons initialisé l'affichage (avant le menu de lancement)
 		if(update){
@@ -323,7 +340,6 @@ static void fb_task(void *cookie) {
 							game_points = 0;
 
 							game_break = 0;
-							printk("recommencer\n");
 						}
 					}
 				}else{
@@ -491,6 +507,8 @@ static void draw_menu(menu_t menu){
 static void draw_menu_begin(){
 	// On dessine le menu de base
 	draw_menu(begin_menu);
+	// On affiche les règles du jeu
+	draw_rules(begin_menu.x + 10, begin_menu.y + 25);
 	// On dessine le bouton pour commencer
 	fb_button(start_button);
 }
@@ -498,6 +516,8 @@ static void draw_menu_begin(){
 static void draw_menu_pause(){
 	// On dessine le menu de base
 	draw_menu(pause_menu);
+	// On affiche les règles du jeu
+	draw_rules(begin_menu.x + 10, begin_menu.y + 25);
 	// On dessine le bouton pour retourner au jeu
 	fb_button(continue_button);
 	// On dessine le bouton pour recommencer le jeu
@@ -563,6 +583,17 @@ static void draw_credits(uint16_t x, uint16_t y){
 	fb_print_string_transparent(LU_DARK_GREY, "Yannick Lanz", x+10, y+25);
 	fb_print_string_transparent(LU_DARK_GREY, "Romain Maffina", x+10, y+35);
 	fb_print_string_transparent(LU_DARK_GREY, "Mohamed Regaya", x+10, y+45);
+}
+
+static void draw_rules(uint16_t x, uint16_t y){
+	fb_print_string_transparent(LU_DARK_GREY, "BUTTON1: WAVE", x, y);
+	fb_print_string_transparent(LU_DARK_GREY, "BUTTON2: ROCKET", x, y+10);
+	fb_print_string_transparent(LU_DARK_GREY, "BUTTON2: RAIL", x, y+20);
+	fb_print_string_transparent(LU_DARK_GREY, "BUTTON2: GUN", x, y+30);
+	fb_print_string_transparent(LU_DARK_GREY, "LEDS:", x, y+45);
+	fb_print_string_transparent(LU_DARK_GREY, "  WEAPON'S CHARGE", x, y+55);
+	fb_print_string_transparent(LU_DARK_GREY, "TOUCHSCREEN:", x, y+70);
+	fb_print_string_transparent(LU_DARK_GREY, "	 MOVE SHIP", x, y+80);
 }
 
 static int check_button(button_t button, uint16_t x, uint16_t y){
