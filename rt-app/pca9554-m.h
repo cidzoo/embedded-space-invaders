@@ -1,5 +1,5 @@
 /*!
- * \file pca9554.h
+ * \file pca9554-m.h
  * \brief Fichier (header) pour le module de gestion du PCA9554
  * \author Yannick Lanz
  * \version 0.1

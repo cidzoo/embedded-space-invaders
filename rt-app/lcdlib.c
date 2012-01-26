@@ -1,13 +1,14 @@
-/*------------------------------------------------------------------------
-* But               : fonctions d'affichage pour le LCD i.MX21
-*
-* Auteurs           : Michel Starkier, Cédric Bardet, Daniel Rossier
-* Date              : 16.10.2007
-* Version           : 1.0
-*
-* Fichier           : lcdlib.c
-*-----------------------------------------------------------------------------*/
-
+/*!
+ * \file lcdlib.c
+ * \brief Fichier (body) pour la gestion du lcd
+ * \author Michel Starkier, Cédric Bardet, Daniel Rossier, Yannick Lanz
+ * \version 1.1 (fork)
+ * \date 17 janvier 2012
+ *
+ * Fichier (body) pour la gestion du lcd.
+ * Comprend les corps de fonction pour la manipulation
+ * du lcd comme le tracage de ligne, de rectangle, de cercle, etc.
+ */
 #include "lcdlib.h"
 #include "lcdfont.h"
 #include <linux/fb.h>
@@ -15,11 +16,9 @@
 #include <linux/string.h>
 #include "vga_lookup.h"
 
-//unsigned char fb_mem_tmp[154080];
-
-void *fb_mem_rt;
-unsigned char *fb_mem = NULL;
-static unsigned int Xn = 7391; /* Initial random seed */
+void *fb_mem_rt;				/*!< Pointeur pour le buffer (double buffering) */
+unsigned char *fb_mem = NULL;	/*!< Pointeur vers le frame buffer (hardware) */
+static unsigned int Xn = 7391; 	/*!< Initial random seed */
 
 int circleYpos(int cXpos, int radius);
 
@@ -138,15 +137,15 @@ void fb_line(int x0, int y0, int x1, int y1, int color){
 	} while ((x0 != x1) || (y0 != y1));
 }
 
-void fb_rect(int y_min, int y_max, int x_min, int x_max, int couleur){
+void fb_rect(int y_min, int y_max, int x_min, int x_max, int color){
 	// On dessine la ligne supérieure
-	fb_line(x_min, y_min, x_max, y_min, couleur);
+	fb_line(x_min, y_min, x_max, y_min, color);
 	// On dessine la ligne droite
-	fb_line(x_max, y_min, x_max, y_max, couleur);
+	fb_line(x_max, y_min, x_max, y_max, color);
 	// On dessine la ligne inf�rieure
-	fb_line(x_max, y_max, x_min, y_max, couleur);
+	fb_line(x_max, y_max, x_min, y_max, color);
 	// On dessine la ligne gauche
-	fb_line(x_min, y_max, x_min, y_min, couleur);
+	fb_line(x_min, y_max, x_min, y_min, color);
 }
 
 void fb_rect_fill(int y_min, int y_max, int x_min, int x_max, int couleur) {

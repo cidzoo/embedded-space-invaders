@@ -1,19 +1,25 @@
+/*!
+ * \file lcdfont.h
+ * \brief Fichier (header) contenant les définitions des caractères
+ * \author -
+ * \version -
+ * \date -
+ *
+ * basic fonts for different screen sizes.  8x16
+ * is good for VGA and above, 8x8 is good for QVGA
+ * landscape (320 x 240), while 5x7 gives the most
+ * characters on QVGA portrait mode (240 x 320).
+ *
+ * Note that 8x8 and 5x7 use one byte per font row,
+ * but 5x7 uses only the upper 5 bits.
+ *
+ * To lookup, subtract FIRST_CHAR from the character,
+ * multiply by FONT_HEIGHT and get the next FONT_WIDTH
+ * bytes.  These fonts only support printable ASCII
+ * characters 0x20 to 0x7f.
+ */
 #ifndef __FONT_H__
 #define __FONT_H__
-
-// Description:	basic fonts for different screen sizes.  8x16
-//				is good for VGA and above, 8x8 is good for QVGA
-//				landscape (320 x 240), while 5x7 gives the most
-//				characters on QVGA portrait mode (240 x 320).
-//
-//				Note that 8x8 and 5x7 use one byte per font row,
-//				but 5x7 uses only the upper 5 bits.
-//
-//				To lookup, subtract FIRST_CHAR from the character,
-//				multiply by FONT_HEIGHT and get the next FONT_WIDTH
-//				bytes.  These fonts only support printable ASCII
-//				characters 0x20 to 0x7f.
-//
 
 #define FIRST_CHAR 0x20
 #define LAST_CHAR  0x7F

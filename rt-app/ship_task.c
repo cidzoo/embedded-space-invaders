@@ -214,49 +214,6 @@ static void ship_init(){
 	ship_unlock();
 }
 
-/*
-static void ship_display (){
-	int i= 0;
-	// first we draw a pyramid
-	int pos_pix_bef = 0;
-	int pos_pix_aft = 0;
-	int half_widht = ship.hitbox.width/2 + 1;
-	int j;
-
-	// initialize the frame buffer
-	fb_init ();
-
-	// display the vessel
-
-	for (;i<ship.hitbox.height-10; i++){
-
-		if (i==0){
-			pos_pix_bef= half_widht -1; // one pixel before half
-			pos_pix_aft= half_widht +1; // one pixel after half
-		}
-
-
-		// pixel to draw per line
-		for (j=pos_pix_bef; j<pos_pix_aft +1; j++){
-			fb_set_pixel(ship.hitbox.x+j, ship.hitbox.y+i, LU_BLUE);
-		}
-		// update the limit position of the pixels to draw
-		pos_pix_bef--;
-		pos_pix_aft++;
-	}
-
-	// draw a rectangle
-	fb_rect_fill(ship.hitbox.y +i, ship.hitbox.y + ship.hitbox.height,
-			ship.hitbox.x, ship.hitbox.x+ship.hitbox.height, LU_BLUE);
-}*/
-
-/**
- * return true whether the zone pressed is in the vessel area zone
- */
-/*static int ship_comp_to_zone_vess(){
-	return 1;//(y >= VESS_Y_MIN) && (y < VESS_X_MAX);
-}*/
-
 int ship_lock(){
 	if(ship_task_mutex_created){
 		return rt_mutex_lock(&ship_task_mutex, TM_INFINITE);

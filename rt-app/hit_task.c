@@ -329,7 +329,7 @@ void hit_task(void *cookie){
 }//hit_task
 
 /* To be called to fire a weapon */
-void fire_weapon(hitbox_t shooter, weapontype_t w){
+void hit_task_fire_weapon(hitbox_t shooter, weapontype_t w){
 	uint16_t start_x=0, start_y=0;
 	bullet_t b;
 

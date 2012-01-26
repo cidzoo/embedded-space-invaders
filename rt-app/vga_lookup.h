@@ -1,14 +1,16 @@
+/*!
+ * \file vga_lookup.h
+ * \brief Fichier (header) pour les définitions des couleurs pour le lcd
+ * \author Michael Kelly, Cogent Computer Systems, Inc.
+ * \version -
+ * \date 3 juin 2005
+ *
+ * Fichier (header) pour la définitions des couleurs pour le lcd.
+ * This file contains vga color lookup
+ */
+
 #ifndef _VGA_LOOKUP_H_
 #define _VGA_LOOKUP_H_
-
-//==========================================================================
-//
-// vga_lookup.h
-//
-// Author(s):    Michael Kelly, Cogent Computer Systems, Inc.
-// Contributors:
-// Date:         03/06/2005
-// Description:  This file contains vga color lookup
 
 // 16-bit pixels are RGB 565 - LSB of RED and BLUE are tied low at the
 // LCD Interface, while the LSB of GREEN is loaded as 0

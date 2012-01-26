@@ -45,7 +45,7 @@ PROJECT_BRIEF          =
 # exceed 55 pixels and the maximum width should not exceed 200 pixels. 
 # Doxygen will copy the logo to the output directory.
 
-PROJECT_LOGO           = invader.png
+PROJECT_LOGO           = "C:/Users/Yannick Lanz/Cours/IEM/laboratoires/iem-space-invaders/rt-app/doxygen/invader.png"
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) 
 # base path where the generated documentation will be put. 
@@ -637,7 +637,18 @@ INPUT                  = ../lcdlib.h \
                          ../invaders_task.c \
                          ../invaders_task.h \
                          ../pca9554-m.c \
-                         ../pca9554-m.h
+                         ../pca9554-m.h \
+                         ../lcdfont.h \
+                         ../vga_lookup.h \
+                         ../xeno-i2c.c \
+                         ../xeno-i2c.h \
+                         ../xeno-ts.c \
+                         ../xeno-ts.h \
+                         ../xeno-ts-lib.c \
+                         ../io_task.h \
+                         ../io_task.c \
+                         ../global.h \
+                         ../global.c
 
 # This tag can be used to specify the character encoding of the source files 
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding, which is 

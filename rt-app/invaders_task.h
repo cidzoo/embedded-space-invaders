@@ -37,8 +37,8 @@
  * point de vie et sa position sur l'écran (x, y, hauteur, largeur)
  */
 typedef struct invader_t {
-	uint8_t hp;
-	hitbox_t hitbox;
+	uint8_t hp;				/*!< Point de vie de l'invader */
+	hitbox_t hitbox;		/*!< Hitbox de l'invader */
 } invader_t;
 
 /*!
@@ -50,10 +50,10 @@ typedef struct invader_t {
  * et le nombre d'invader pour la wave.
  */
 typedef struct {
-	uint8_t level;
-	uint16_t invader_speed;
-	invader_t invaders[NB_INVADERS_MAX];
-	uint8_t invaders_count;
+	uint8_t level;			/*!< Niveau de la vague */
+	uint16_t invader_speed;	/*!< Vitesse des invaders */
+	invader_t invaders[NB_INVADERS_MAX];	/*!< Tableau contenant les invaders */
+	uint8_t invaders_count;	/*!< Nombre d'invaders valides dans le tableau */
 } wave_t;
 
 //! Var de type wave_t pour la vague courante des invaders

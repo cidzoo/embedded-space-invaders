@@ -327,7 +327,7 @@ void invaders_move() {
 				uint8_t rand = invaders_random(wave.invaders_count);
 				if (wave.invaders[rand].hp > 0) {
 					//Tire une bombe
-					fire_weapon(wave.invaders[rand].hitbox, BOMB);
+					hit_task_fire_weapon(wave.invaders[rand].hitbox, BOMB);
 					break;
 				}
 			}

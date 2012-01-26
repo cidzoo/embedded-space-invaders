@@ -1,14 +1,14 @@
-/*------------------------------------------------------------------------
- * LCD control routines
+/*!
+ * \file lcdlib.h
+ * \brief Fichier (header) pour la gestion du lcd
+ * \author Michel Starkier, Lionel Sambuc, Yannick Lanz
+ * \version 1.2 (fork)
+ * \date 17 janvier 2012
  *
- * Author            : Michel Starkier, Lionel Sambuc
- * Date              : 16.10.2007
- * Version           : 1.1
- * Updates			 : 01.12.2011
- * 						Moved font definition to lcdfont.h, deleted pong-related
- * 						functions and definitions, completed code documentation.
- *
- *-----------------------------------------------------------------------------*/
+ * Fichier (header) pour la gestion du lcd.
+ * Comprend les entêtes de fonction pour la manipulation
+ * du lcd comme le tracage de ligne, de rectangle, de cercle, etc.
+ */
 #ifndef LCDLIB_H_
 #define LCDLIB_H_
 
@@ -28,24 +28,37 @@ typedef enum {
 	false = 0, true = 1
 } bool;
 
-// Structure pour représenter une progress bar
+/*!
+ * \struct progress_bar_t
+ * \brief Objet représentant une progress bar.
+ *
+ * progress_bar_t représente une progress bar. Il contient sa
+ * position (x, y), sa taille (width, height), sa couleur ainsi
+ * que les valeur courante et max de la progress bar.
+ */
 typedef struct{
-	uint16_t y;
-	uint16_t x;
-	uint16_t width;
-	uint16_t height;
-	int couleur;
-	uint16_t current_value;
-	uint16_t max_value;
+	uint16_t x;				/*!< Position en y de la progress bar */
+	uint16_t y;				/*!< Position en x de la progress bar */
+	uint16_t width;			/*!< Largeur de la progress bar */
+	uint16_t height;		/*!< Hauteur de la progress bar */
+	int couleur;			/*!< Couleur de la progress bar */
+	uint16_t current_value;	/*!< Valeur courante de la progress bar */
+	uint16_t max_value;		/*!< Valeur maximum de la progress bar */
 } progress_bar_t;
 
-// Structure pour représenter un bouton
+/*!
+ * \struct button_t
+ * \brief Objet représentant un bouton.
+ *
+ * button_t représente un bouton. Il contient sa
+ * position (x, y), sa taille (width, height) ainsi que son label.
+ */
 typedef struct{
-	uint16_t x;
-	uint16_t y;
-	uint16_t width;
-	uint16_t height;
-	char *title;
+	uint16_t x;				/*!< Position en x du bouton */
+	uint16_t y;				/*!< Position en y du bouton */
+	uint16_t width;			/*!< Largeur du bouton */
+	uint16_t height;		/*!< Hauteur du bouton */
+	char *label;			/*!< label du bouton */
 } button_t;
 
 /**
@@ -96,7 +109,7 @@ void fb_line(int x0, int y0, int x1, int y1, int color);
  * @param x_max the x coordinate of the right edge
  * @param color the color to use to draw the borders of the rectangle
  */
-void fb_rect(int y_min, int y_max, int x_min, int x_max, int couleur);
+void fb_rect(int y_min, int y_max, int x_min, int x_max, int color);
 
 /**
  * Fill the rectangle delimited by y_min, y_max, x_min and x_max with
@@ -143,7 +156,7 @@ void fb_set_pixel(int y, int x, int color);
 
 /**
  * Print the character c at the coordinates (x, y) with the given colors on the
- * LCD screen
+ * LCD screen.
  *
  * @param fg_color the foreground color of the pixel
  * @param bg_color the background color of the pixel
@@ -152,7 +165,17 @@ void fb_set_pixel(int y, int x, int color);
  * @param x the x coordinate of the character
  */
 void fb_print_char(int fg_color, int bg_color, unsigned char c, int x, int y);
-void fb_print_char_transparent(int color, unsigned char car, int x, int y);
+
+/**
+ * Print the character c at the coordinates (x, y) with the given colors on the
+ * LCD screen but without background color.
+ *
+ * @param fg_color the foreground color of the pixel
+ * @param c the character to print
+ * @param y the y coordinate of the character
+ * @param x the x coordinate of the character
+ */
+void fb_print_char_transparent(int fg_color, unsigned char c, int x, int y);
 
 /**
  * Print the string str at the coordinates (x, y) with the given colors on the
@@ -168,6 +191,19 @@ void fb_print_char_transparent(int color, unsigned char car, int x, int y);
  * @param x the x coordinate of the character
  */
 void fb_print_string(int fg_color, int bg_color, unsigned char *str, int x, int y);
-void fb_print_string_transparent(int color, unsigned char *ptr_texte, int x, int y);
+
+/**
+ * Print the string str at the coordinates (x, y) with the given colors on the
+ * LCD screen but without background color.
+ *
+ * This function automatically wraps to the next line if the string is too wide
+ * for the screen and respects embedded line feeds characters (\n).
+ *
+ * @param fg_color the foreground color of the pixel
+ * @param str the string to print
+ * @param y the y coordinate of the character
+ * @param x the x coordinate of the character
+ */
+void fb_print_string_transparent(int fg_color, unsigned char *str, int x, int y);
 
 #endif /* LCDLIB_H_ */
