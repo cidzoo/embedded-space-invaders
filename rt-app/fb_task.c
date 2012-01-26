@@ -1,11 +1,11 @@
 /*!
- * \file task_fb.c
- * \brief Body pour la gestion de la tâche de gestion du frame buffer
+ * \file fb_task.c
+ * \brief Fichier (body) pour la gestion de la tâche de gestion du frame buffer
  * \author Yannick Lanz
  * \version 0.1
  * \date 17 janvier 2012
  *
- * Fichier de body pour la tâche de gestion du frame buffer.
+ * Fichier (body) pour la tâche de gestion du frame buffer.
  * A chaque refraichissement de l'écran (définit par la période de cette tâche),
  * récupère les données des invaders, du vaisseau, des bombes et des bullets
  * puis les affiche à l'écran.

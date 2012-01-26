@@ -1,11 +1,11 @@
 /*!
- * \file task_fb.h
- * \brief Header pour la gestion de la tâche de gestion du frame buffer
+ * \file fb_task.h
+ * \brief Fichier (header) pour la gestion de la tâche de gestion du frame buffer
  * \author Yannick Lanz
  * \version 0.1
  * \date 17 janvier 2012
  *
- * Fichier de header pour la tâche de gestion du frame buffer.
+ * Fichier (header) pour la tâche de gestion du frame buffer.
  * A chaque refraichissement de l'écran (définit par la période de cette tâche),
  * récupère les données des invaders, du vaisseau, des bombes et des bullets
  * puis les affiche à l'écran.
