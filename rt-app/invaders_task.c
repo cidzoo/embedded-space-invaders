@@ -1,11 +1,11 @@
 /*!
  * \file invaders_task.c
- * \brief Corps de fichier pour la gestion de la tâche des invaders
+ * \brief Fichier (body) pour la gestion de la tâche des invaders
  * \author Michael Favaretto
  * \version 0.1
  * \date 17 janvier 2012
  *
- * Corps de fichier pour la tâche de gestion des invaders.
+ * Fichier (body) pour la tâche de gestion des invaders.
  * Initialise les invaders et gère leur déplacement dans
  * la zone de jeux. Gère la gestion des tirs des bombes des invaders
  * Permet de déterminer la fin d'un niveau lorsque tous les invaders
