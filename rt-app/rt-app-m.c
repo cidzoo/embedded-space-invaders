@@ -1,22 +1,47 @@
-/******************************************************************************
- * File		: rt-app-m.c
- *
- * Authors	: (DRE), (LSU) 2011
- *
- * Comment	:
- *  The lab goal is to implement a space invader clone on the laboratory boards,
- *  as a hard realtime Xenomai kernel application.
- *
- ******************************************************************************/
-#include <linux/module.h>
+/* Documentation tag for Doxygen
+ */
 
+/*! \mainpage PLEGAT Documentation
+ *
+ * \section intro_sec Introduction
+ *
+ * This is the Plegat documentation.
+ *
+ * \section install_sec Installation
+ *
+ * \subsection tools_subsec Tools required:
+ *
+ * \subsection running Running the program
+ * In a command window, etc etc...
+ *
+ * \section copyright Copyright and License
+ * This license applies to etc etc...
+ *
+ */
+
+/*!
+ * \file rt-app-m.c
+ * \brief Fichier (body) principal de l'application space invader
+ * \author Yannick Lanz
+ * \version 0.1
+ * \date 17 janvier 2012
+ *
+ * Fichier (body) principal de l'application space invader.
+ * L'application space invader est un module linux basé
+ * sur Xenomai. Ce fichier principal est le point d'entrée du module
+ * et appelle ensuite toutes les initialisations des tâches démarrant
+ * ainsi l'application.
+ * Ce module dépend du module de gestion du PCA9554 (io expander) basé
+ * sur le protocole série I2C et doit donc être inséré après le module
+ * pca9554.ko.
+ */
+#include <linux/module.h>
+#include "rt-app-m.h"
+#include "pca9554-m.h"
 #include "xeno-i2c.h"
 #include "xeno-ts.h"
 #include "lcdlib.h"
-#include "pca9554-m.h"
-#include "rt-app-m.h"
 #include "global.h"
-
 // Inclusion des headers pour les tâches
 #include "invaders_task.h"
 #include "fb_task.h"
@@ -25,19 +50,24 @@
 #include "ship_task.h"
 #include "lcdlib.h"
 
-RT_INTR isrDesc;
+RT_INTR isrDesc;				/*!< Descripteur d'ISR pour l'ISR de l'I2C */
 
+/*! Descripteur de heap pour le double buffering
+ * Nous créons la heap ici car dans un cas générale, elle pourrait être utilisée pour
+ * d'autre fonctions que seulement le double buffering
+ */
 RT_HEAP heap;
-uint8_t heap_created = 0;
-uint8_t heap_allocated = 0;
+uint8_t heap_created = 0;		/*!< Flag pour savoir si la heap à pu être crée */
+uint8_t heap_allocated = 0;		/*!< Flag pour savoir si la heap à pu être allouée */
 
+/*! \brief Fonction de création de l'application
+ *
+ *  Fonction appelée lorsque l'initialisation de l'I2C est faite par le module_init
+ *  (point d'entrée de l'application)
+ */
 static int space_invader(void)
 {
 	int err;
-
-
-	/* To Be Completed */
-
 
 	err = rt_intr_enable(&isrDesc);
 
@@ -58,7 +88,7 @@ static int space_invader(void)
 	}
 	printk("rt-app: RT-Heap created\n");
 
-
+	// On essaie de créer le tas pour le double buffering
 	err = rt_heap_alloc(&heap, 240*320*2, TM_NONBLOCK, &fb_mem_rt);
 	if(err != 0){
 		printk("rt-app: Could not allocate the rt heap\n");
@@ -68,35 +98,43 @@ static int space_invader(void)
 	}
 	printk("rt-app: RT-Heap allocated\n");
 
+	// On crée la tâche pour les invaders
 	if(invaders_task_start() != 0){
 		goto fail;
 	}
 
+	// On crée la tâche pour les collisions
 	if(hit_task_start() != 0){
 		goto fail;
 	}
 
+	// On crée la tâche pour la gestion des entrées/sorties
 	if(io_task_start() != 0){
 		goto fail;
 	}
 
+	// On crée la tâche pour la gestion du frame buffer
 	if(fb_task_start() != 0){
 		goto fail;
 	}
 
+	// On crée la tâche pour le vaisseau
 	if(ship_task_start() != 0){
 		goto fail;
 	}
 
 	return 0;
 
+	// En cas d'échec de création de l'ISR ou d'une tâche
 fail:
 	cleanup_module();
 	return -1;
 
 }
 
-/* Interrupt service routine to handle the I2C interrupt */
+/*! \brief Routine d'interruption pour gérer les interruption I2C
+ *  \param _idesc Structure contenant les données de l'interrupt
+ */
 static int imx_i2c_handler(struct xnintr* _idesc) {
 
 	/* safe status register */
@@ -133,13 +171,6 @@ int __init init_module(void) {
 	xeno_ts_init();
 	printk("rt-app: Touchscreen initialized\n");
 
-	/* Open Philips controller */
-	/*err = pca9554_open(NULL, NULL);
-	if (err != 0) {
-		printk("rt-app: %s: I2C slave open error: %d\n", __func__, err);
-		goto fail_open;
-	}*/
-
 	/* Initializing IRQ */
 	err = rt_intr_create(&isrDesc, "IMX_I2C", INT_I2C, imx_i2c_handler, NULL, 0);
 	if (err != 0) {
@@ -151,13 +182,8 @@ int __init init_module(void) {
 	printk("rt-app: i2c driver call\n");
 
 	printk("rt_app: i2c driver ok\n");
-	/* To Be Completed */
-
 
 	return space_invader();
-
-//fail_open:
-	//pca9554_close(NULL, NULL);
 
 fail_intr:
 	xeno_ts_exit();
@@ -167,33 +193,33 @@ fail_intr:
 
 void __exit cleanup_module(void) {
 
-	// Cleanup tasks
+	// On nettoie toutes les tâches
 	invaders_task_cleanup_task();
 	fb_task_cleanup_task();
 	io_task_cleanup_task();
 	hit_task_cleanup_task();
 	ship_task_cleanup_task();
 
-	// Cleanup objects
+	// On nettoie tous les objets
 	invaders_task_cleanup_objects();
 	fb_task_cleanup_objects();
 	io_task_cleanup_objects();
 	hit_task_cleanup_objects();
 	ship_task_cleanup_objects();
 
+	// On désalloue le tas
 	if(heap_allocated){
 		heap_allocated = 0;
 		rt_heap_free(&heap, &fb_mem_rt);
 	}
 
+	// On supprime le tas
 	if(heap_created){
 		heap_created = 0;
 		rt_heap_delete(&heap);
 	}
 
 	rt_intr_delete(&isrDesc);
-
-	//pca9554_close(NULL, NULL);
 
 	xeno_ts_exit();
 }

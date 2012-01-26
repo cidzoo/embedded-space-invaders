@@ -1,11 +1,11 @@
 /*!
- * \file task_fb.c
- * \brief Body pour la gestion de la tâche de gestion du frame buffer
+ * \file fb_task.c
+ * \brief Fichier (body) pour la gestion de la tâche de gestion du frame buffer
  * \author Yannick Lanz
  * \version 0.1
  * \date 17 janvier 2012
  *
- * Fichier de body pour la tâche de gestion du frame buffer.
+ * Fichier (body) pour la tâche de gestion du frame buffer.
  * A chaque refraichissement de l'écran (définit par la période de cette tâche),
  * récupère les données des invaders, du vaisseau, des bombes et des bullets
  * puis les affiche à l'écran.
@@ -270,10 +270,13 @@ static void fb_task(void *cookie) {
 	rt_task_set_periodic(NULL, TM_NOW, 50 * MS);
 
 	for (;;) {
+		// On attend la prochaine période
 		rt_task_wait_period(NULL);
 
+		// Si flag de level_up (depuis la tache invaders)
 		if(game_level_up){
 			game_level_up = 0;
+			// On re-init la tache de collisions (suppression de tous les bullets, bombs)
 			hit_task_init();
 		}
 
@@ -330,10 +333,12 @@ static void fb_task(void *cookie) {
 							ship_task_init();
 							invaders_task_init();
 
+							// On init les stats
 							game_bullet_kill = 0;
 							game_bullet_used = 0;
 							game_points = 0;
 
+							// On débloque le jeu
 							game_break = 0;
 						}
 					}
@@ -374,6 +379,7 @@ static void fb_task(void *cookie) {
 					ship_task_init();
 					invaders_task_init();
 
+					// On init les stats
 					game_bullet_kill = 0;
 					game_bullet_used = 0;
 					game_points = 0;
