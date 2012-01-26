@@ -74,8 +74,10 @@ void fb_progress_bar(progress_bar_t pb){
 	// On calcule la largeur effective de la progress bar
 	if(pb.max_value > 0){
 		effective_width = (pb.width - 4)*pb.current_value/pb.max_value;
-		// On dessine la progress bar
-		fb_rect_fill(pb.y + 2, pb.y + pb.height - 2, pb.x + 2, pb.x + 2 + effective_width, pb.couleur);
+		if(effective_width > 0){
+			// On dessine la progress bar
+			fb_rect_fill(pb.y + 2, pb.y + pb.height - 2, pb.x + 2, pb.x + 2 + effective_width, pb.couleur);
+		}
 	}else{
 		effective_width = 0;
 	}
@@ -86,13 +88,13 @@ void fb_button(button_t button){
 	// On dessine le tour
 	fb_rect(button.y, button.y + button.height, button.x, button.x + button.width, LU_GREY);
 	// On dessine le rebord gauche
-	fb_line(button.x + 1, button.y + 1, button.x + 1, button.y + button.height - 1);
+	fb_line(button.x + 1, button.y + 2, button.x + 1, button.y + button.height - 1, LU_BLACK);
 	// On dessine le rebord inférieur
-	fb_line(button.x + 1, button.y + button.height, button.x + button.width - 2, button.y + button.height - 1);
+	fb_line(button.x + 1, button.y + button.height - 1, button.x + button.width - 1, button.y + button.height - 1, LU_BLACK);
 	// On fait le calcul pour le placement du titre
 	if(button.width > title_size && button.height > 10){
 		// On affiche le titre
-		fb_print_string_transparent(LU_GREY, button.title, (button.width-title_size)/2, (button.height-8)/2);
+		fb_print_string_transparent(LU_GREY, button.title, button.x + (button.width-title_size)/2, button.y + (button.height-8)/2);
 	}
 }
 

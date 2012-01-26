@@ -12,6 +12,8 @@
 #ifndef LCDLIB_H_
 #define LCDLIB_H_
 
+#include <linux/types.h>
+
 #define LCD_MAX_X  240
 #define LCD_MAX_Y  320
 

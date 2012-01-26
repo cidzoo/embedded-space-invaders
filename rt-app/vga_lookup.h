@@ -35,9 +35,9 @@
 #define	LU_BRT_WHITE	RED_SUBPIXEL(0xff) | GREEN_SUBPIXEL(0xff) | BLUE_SUBPIXEL(0xff)
 #define LU_DARK_GREY	RED_SUBPIXEL(0x0b) | GREEN_SUBPIXEL(0x0b) | BLUE_SUBPIXEL(0x0b)
 #define LU_GREY_BACK	0xEF7D
-#define LU_PB_RED		0x4726
+#define LU_PB_GREEN		0x4726
 #define LU_PB_ORANGE	0xFF23
-#define LU_PB_GREEN		0xF882
+#define LU_PB_RED		0xF882
 
 static const unsigned short vga_lookup[] = {
 LU_BLACK,

@@ -180,7 +180,7 @@ void hit_task(void *cookie){
 						if(bullet->weapon->weapon_type != RAIL){
 							// Gestion des points lors de la sortie d'un bullet
 							if(bullet->weapon->weapon_type != WAVE && game_points >= 1){
-								game_points -= 1;
+								//game_points -= 1;
 							}
 							if(!removed){
 								remove_bullet(*bullet, i);

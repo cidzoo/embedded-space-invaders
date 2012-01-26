@@ -27,17 +27,26 @@ typedef struct{
 // Bouton pour commencer
 static button_t start_button = {
 	.x = 40,
-	.y = 200,
-	.width = 150,
+	.y = 170,
+	.width = 160,
 	.height = 50,
 	.title = "START"
 };
 
-// Bouton pour recommencer
-static button_t restart_button = {
+// Bouton pour recommencer dans le menu pause
+static button_t restart_break_button = {
 	.x = 40,
-	.y = 200,
+	.y = 170,
 	.width = 75,
+	.height = 50,
+	.title = "RESTART"
+};
+
+// Bouton pour recommencer dans le menu game over
+static button_t restart_game_over_button = {
+	.x = 40,
+	.y = 210,
+	.width = 160,
 	.height = 50,
 	.title = "RESTART"
 };
@@ -45,7 +54,7 @@ static button_t restart_button = {
 // Bouton pour retourner au jeu
 static button_t continue_button = {
 	.x = 125,
-	.y = 200,
+	.y = 170,
 	.width = 75,
 	.height = 50,
 	.title = "CONTINUE"
@@ -56,7 +65,7 @@ static menu_t begin_menu = {
 	.x = 30,
 	.y = 40,
 	.width = 180,
-	.height = 200,
+	.height = 190,
 	.title = "SPACE INVADERS"
 };
 
@@ -65,7 +74,7 @@ static menu_t pause_menu = {
 	.x = 30,
 	.y = 40,
 	.width = 180,
-	.height = 200,
+	.height = 190,
 	.title = "PAUSE"
 };
 
@@ -74,7 +83,7 @@ static menu_t game_over_menu = {
 	.x = 30,
 	.y = 40,
 	.width = 180,
-	.height = 200,
+	.height = 230,
 	.title = "GAME OVER"
 };
 
@@ -150,6 +159,7 @@ static void fb_task_init(){
 static void fb_task_update(void){
 	int i;
 	progress_bar_t pb;
+	char buf[30];
 
 	// On copie les invaders en local
 	invaders_lock();
@@ -200,12 +210,12 @@ static void fb_task_update(void){
 			LU_WHITE);
 
 	// On print le texte pour la progress bar
-	fb_print_string(LU_BLACK, LU_GREY, "hp:", 3, 3);
+	fb_print_string(LU_BLACK, LU_GREY, "    life:", 3, 3);
 	// On print la progress bar pour la vie
-	pb.x = 30;
+	pb.x = 75;
 	pb.y = 2;
-	pb.width = 120;
-	pb.height = 10;
+	pb.width = 155;
+	pb.height = 8;
 	pb.current_value = ship_loc.hp;
 	pb.max_value = LIFE_SHIP;
 	// On determine la couleur
@@ -219,23 +229,29 @@ static void fb_task_update(void){
 	fb_progress_bar(pb);
 
 	// On print le texte pour la progress bar
-	fb_print_string(LU_BLACK, LU_GREY, "ac:", 3, 13);
+	fb_print_string(LU_BLACK, LU_GREY, "accuracy:", 3, 13);
 	// On print la progress bar pour la precision
-	pb.x = 30;
+	pb.x = 75;
 	pb.y = 12;
-	pb.width = 120;
-	pb.height = 10;
+	pb.width = 155;
+	pb.height = 8;
 	pb.current_value = game_bullet_kill;
 	pb.max_value = game_bullet_used;
 	// On determine la couleur
-	if(100*game_bullet_kill/game_bullet_used > 70){
-		pb.couleur = LU_PB_GREEN;
-	}else if(100*game_bullet_kill/game_bullet_used > 40){
-		pb.couleur = LU_PB_ORANGE;
-	}else{
-		pb.couleur = LU_PB_RED;
+	if(game_bullet_used > 0){
+		if(100*game_bullet_kill/game_bullet_used > 70){
+			pb.couleur = LU_PB_GREEN;
+		}else if(100*game_bullet_kill/game_bullet_used > 40){
+			pb.couleur = LU_PB_ORANGE;
+		}else{
+			pb.couleur = LU_PB_RED;
+		}
 	}
 	fb_progress_bar(pb);
+
+	// On affiche les points
+	sprintf(buf, "  points: %d", game_points);
+	fb_print_string_transparent(LU_BLACK, buf, 3, 25);
 }
 
 static void fb_task(void *cookie) {
@@ -248,6 +264,20 @@ static void fb_task(void *cookie) {
 
 	for (;;) {
 		rt_task_wait_period(NULL);
+
+		// On test si nous devons initialisé l'affichage (avant le menu de lancement)
+		if(update){
+			update = 0;
+			// On rafraichit l'ecran avec tous les paramètres des autres taches
+			fb_task_update();
+			// On assombrit l'ecran
+			int y, x;
+			for (y = 0; y <= 319; y++) {
+				for(x = 0; x <= 239; x++){
+					*((unsigned short int*) (fb_mem_rt + 2 * x + y * 480)) &= (RED_SUBPIXEL(0x11) | GREEN_SUBPIXEL(0x11)| BLUE_SUBPIXEL(0x11));
+				}
+			}
+		}
 
 		// On test s'il y a game over
 		if(!game_over){		// Il n'y pas game over
@@ -268,20 +298,6 @@ static void fb_task(void *cookie) {
 					}
 				}
 			}else{			// Le jeu est arrêté
-				// On test si nous devons initialisé l'affichage (avant le menu de lancement)
-				if(update){
-					update = 0;
-					// On rafraichit l'ecran avec tous les paramètres des autres taches
-					fb_task_update();
-					// On assombrit l'ecran
-					int y, x;
-					for (y = 0; y <= 319; y++) {
-						for(x = 0; x <= 239; x++){
-							*((unsigned short int*) (fb_mem_rt + 2 * x + y * 480)) &= (RED_SUBPIXEL(0x11) | GREEN_SUBPIXEL(0x11)| BLUE_SUBPIXEL(0x11));
-						}
-					}
-				}
-
 				// On test si le jeu est commencé (faux au lancement)
 				if(game_started){
 					// Le jeu est commencer mais arrêté => nous sommes en pause
@@ -295,12 +311,17 @@ static void fb_task(void *cookie) {
 						if(check_button(continue_button, screen_x, screen_y) == 0){
 							// On veut sortir du menu de pause
 							game_break = 0;
-						}else if(check_button(restart_button, screen_x, screen_y) == 0){
+						}else if(check_button(restart_break_button, screen_x, screen_y) == 0){
 							// On veut recommencer
 							// On remet à 0 les paramètres de chaque tache
 							hit_task_init();
 							ship_task_init();
 							invaders_task_init();
+
+							game_bullet_kill = 0;
+							game_bullet_used = 0;
+							game_points = 0;
+
 							game_break = 0;
 							printk("recommencer\n");
 						}
@@ -324,8 +345,11 @@ static void fb_task(void *cookie) {
 				}
 			}
 		}else{				// Il y a game over
-			// Le jeu doit s'arreter, on met game_break à 1
-			game_break = 1;
+			if(!game_break){
+				// Le jeu doit s'arreter, on met game_break à 1
+				game_break = 1;
+				update = 1;
+			}
 			// On dessine le menu de game over
 			draw_menu_game_over();
 			// On test si pression sur l'écran
@@ -333,11 +357,16 @@ static void fb_task(void *cookie) {
 				screen_pressed = 0;	// On remet le flag à 0
 
 				// On test si pression sur le bouton recommencer
-				if(check_button(restart_button, screen_x, screen_y) == 0){
+				if(check_button(restart_game_over_button, screen_x, screen_y) == 0){
 					// On remet à 0 les paramètres de chaque tache
 					hit_task_init();
 					ship_task_init();
 					invaders_task_init();
+
+					game_bullet_kill = 0;
+					game_bullet_used = 0;
+					game_points = 0;
+
 					// Le jeu n'est plus en pause
 					game_break = 0;
 					// Le jeu n'est plus en game over
@@ -452,11 +481,11 @@ static void draw_menu(menu_t menu){
 	// On dessine le fond
 	fb_rect_fill(menu.y + 1, menu.y + menu.height - 1, menu.x + 1, menu.x + menu.width - 1, LU_GREY_BACK);
 	// On dessine le titre
-	fb_print_string_transparent(LU_BLACK, menu.title, (menu.width-strlen(menu.title))/2, 2);
+	fb_print_string_transparent(LU_BLACK, menu.title, menu.x + ((menu.width-strlen(menu.title)*8)/2), menu.y + 5);
 	//On dessine le fond (invader)
-	draw_invader_menu(menu.x + 20, menu.y + 20);
+	draw_invader_menu(menu.x + 25, menu.y + 20);
 	// On dessine les crédits
-	draw_credits(menu.x + 10, menu.y + 30);
+	//draw_credits(menu.x + 10, menu.y + 30);
 }
 
 static void draw_menu_begin(){
@@ -472,19 +501,37 @@ static void draw_menu_pause(){
 	// On dessine le bouton pour retourner au jeu
 	fb_button(continue_button);
 	// On dessine le bouton pour recommencer le jeu
-	fb_button(restart_button);
+	fb_button(restart_break_button);
 }
 
 static void draw_menu_game_over(){
 	// On dessine le menu de base
 	draw_menu(game_over_menu);
+	// On dessine les stats
+	draw_stats(game_over_menu.x + 10, game_over_menu.y + 30);
+	// On dessine les crédits
+	draw_credits(game_over_menu.x + 10, game_over_menu.y + 100);
 	// On dessine le bouton pour recommencer le jeu
-	fb_button(restart_button);
+	fb_button(restart_game_over_button);
 }
 
 static void draw_stats(uint16_t x, uint16_t y){
 	char buf[30];
-	uint16_t accuracy = 100*game_bullet_kill/game_bullet_used;
+	int16_t accuracy;
+	// On déclare la progress bar
+	progress_bar_t pb = {
+		.x = x,
+		.y = y + 45,
+		.width = 160,
+		.height = 8,
+		.current_value = game_bullet_kill,
+		.max_value = game_bullet_used
+	};
+
+	if(game_bullet_used > 0)
+		accuracy = 100*game_bullet_kill/game_bullet_used;
+	else
+		accuracy = 0;
 	// On affiche le nombre de points
 	sprintf(buf, "POINTS:      %d", game_points);
 	fb_print_string_transparent(LU_BLACK, buf, x, y);
@@ -496,16 +543,7 @@ static void draw_stats(uint16_t x, uint16_t y){
 	fb_print_string_transparent(LU_BLACK, buf, x, y + 20);
 	// On affiche la précision
 	sprintf(buf, "ACCURACY:    %d%%", accuracy);
-	fb_print_string_transparent(LU_BLACK, buf, x, y + 30);
-	// On affiche la progress bar
-	progress_bar_t pb = {
-		.x = x,
-		.y = y + 40,
-		.width = 200,
-		.height = 10,
-		.current_value = game_bullet_kill,
-		.max_value = game_bullet_used
-	};
+	fb_print_string_transparent(LU_BLACK, buf, x, y + 35);
 	// On test pour la couleur de la progress bar
 	if(accuracy > 70){
 		pb.couleur = LU_PB_GREEN;
@@ -519,12 +557,12 @@ static void draw_stats(uint16_t x, uint16_t y){
 
 static void draw_credits(uint16_t x, uint16_t y){
 	// On affiche le titre
-	fb_print_string_transparent(LU_BLACK, LU_WHITE, "CREDITS:", x, y);
+	fb_print_string_transparent(LU_BLACK, "CREDITS:", x, y);
 	// On affiche les noms
-	fb_print_string_transparent(LU_DARK_GREY, LU_WHITE, "Michael Favaretto", x+10, y+15);
-	fb_print_string_transparent(LU_DARK_GREY, LU_WHITE, "Yannick Lanz", x+10, y+25);
-	fb_print_string_transparent(LU_DARK_GREY, LU_WHITE, "Romain Maffina", x+10, y+35);
-	fb_print_string_transparent(LU_DARK_GREY, LU_WHITE, "Mohamed Regaya", x+10, y+45);
+	fb_print_string_transparent(LU_DARK_GREY, "Michael Favaretto", x+10, y+15);
+	fb_print_string_transparent(LU_DARK_GREY, "Yannick Lanz", x+10, y+25);
+	fb_print_string_transparent(LU_DARK_GREY, "Romain Maffina", x+10, y+35);
+	fb_print_string_transparent(LU_DARK_GREY, "Mohamed Regaya", x+10, y+45);
 }
 
 static int check_button(button_t button, uint16_t x, uint16_t y){
