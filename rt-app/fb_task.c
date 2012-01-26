@@ -400,61 +400,10 @@ static void fb_task(void *cookie) {
 
 static void draw_bitmap(hitbox_t hb) {
 	int i, j;
-	uint16_t *bmp[hb.height];
-
-	switch (hb.type) {
-	case G_SHIP:
-		for (i = 0; i < hb.height; i++) {
-			bmp[i] = bmp_ship[i];
-		}
-		break;
-	case G_INVADER:
-		for (i = 0; i < hb.height; i++) {
-			bmp[i] = bmp_invader[i];
-		}
-		break;
-	case G_BOMB:
-		for (i = 0; i < hb.height; i++) {
-			bmp[i] = bmp_bomb[i];
-		}
-		break;
-	case G_GUN:
-		for (i = 0; i < hb.height; i++) {
-			bmp[i] = bmp_gun[i];
-		}
-		break;
-	case G_RAIL:
-		for (i = 0; i < hb.height; i++) {
-			bmp[i] = bmp_rail[i];
-		}
-		break;
-	case G_ROCKET:
-		for (i = 0; i < hb.height; i++) {
-			bmp[i] = bmp_rocket[i];
-		}
-		break;
-	case G_WAVE:
-		for (i = 0; i < hb.height; i++) {
-			bmp[i] = bmp_wave[i];
-		}
-		break;
-	case G_INVADER_MENU1:
-		for (i = 0; i < hb.height; i++) {
-			bmp[i] = bmp_invader_menu1[i];
-		}
-		break;
-	case G_INVADER_MENU2:
-		for (i = 0; i < hb.height; i++) {
-			bmp[i] = bmp_invader_menu2[i];
-		}
-		break;
-	}
-
 	for (i = 0; i < hb.height; i++) {
 		for (j = 0; j < hb.width; j++) {
-			if ((*((*(bmp + i)) + j)) != LU_BLACK) {
-				fb_set_pixel(hb.y + hb.height - i, hb.x + j,
-						(*((*(bmp + i)) + j)));
+			if (*(hb.bitmap + i*hb.width + j) != LU_BLACK) {
+				fb_set_pixel(hb.y + hb.height - i, hb.x + j, *(hb.bitmap + i*hb.width + j));
 			}
 		}
 	}
@@ -477,10 +426,10 @@ static void draw_invader_menu(uint16_t x, uint16_t y){
 
 	// On test quel invader on doit dessiner (1 ou 2 ?)
 	if (invader_bmp_select == 0) {	// Image 1
-		hitbox_invader_menu.type = G_INVADER_MENU1;
+		hitbox_invader_menu.bitmap = bmp_invader_menu1;
 		draw_bitmap(hitbox_invader_menu);
 	} else {						// Image 2
-		hitbox_invader_menu.type = G_INVADER_MENU2;
+		hitbox_invader_menu.bitmap = bmp_invader_menu2;
 		draw_bitmap(hitbox_invader_menu);
 	}
 	// On incrémente le timer
@@ -491,6 +440,14 @@ static void draw_invader_menu(uint16_t x, uint16_t y){
 	}
 }
 
+/**
+ * \brief Résumé
+ *
+ * \param menu Le param menu .....
+ * \author Yannick Lanz
+ *
+ * Description longue
+ */
 static void draw_menu(menu_t menu){
 	// On dessine le tour
 	fb_rect(menu.y, menu.y + menu.height, menu.x, menu.x + menu.width, LU_WHITE);

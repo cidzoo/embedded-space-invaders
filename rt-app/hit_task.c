@@ -353,7 +353,7 @@ void fire_weapon(hitbox_t shooter, weapontype_t w){
 		b.hitbox.y = start_y;
 		b.hitbox.width = BOMB_WIDTH;
 		b.hitbox.height = BOMB_HEIGHT;
-		b.hitbox.type = G_BOMB;
+		b.hitbox.bitmap = bmp_bomb;
 		break;
 	case GUN:
 		b.weapon = &weapons[GUN];
@@ -361,7 +361,7 @@ void fire_weapon(hitbox_t shooter, weapontype_t w){
 		b.hitbox.y = start_y-GUN_HEIGHT;
 		b.hitbox.width = GUN_WIDTH;
 		b.hitbox.height = GUN_HEIGHT;
-		b.hitbox.type = G_GUN;
+		b.hitbox.bitmap = bmp_gun;
 		break;
 	case RAIL:
 		b.weapon = &weapons[RAIL];
@@ -369,7 +369,7 @@ void fire_weapon(hitbox_t shooter, weapontype_t w){
 		b.hitbox.y = GAME_ZONE_Y_MIN;
 		b.hitbox.width = RAIL_WIDTH;
 		b.hitbox.height = start_y - GAME_ZONE_Y_MIN;
-		b.hitbox.type = G_RAIL;
+		b.hitbox.bitmap = bmp_rail;
 		break;
 	case ROCKET:
 		b.weapon = &weapons[ROCKET];
@@ -377,7 +377,7 @@ void fire_weapon(hitbox_t shooter, weapontype_t w){
 		b.hitbox.y = start_y-ROCKET_HEIGHT;
 		b.hitbox.width = ROCKET_WIDTH;
 		b.hitbox.height = ROCKET_HEIGHT;
-		b.hitbox.type = G_ROCKET;
+		b.hitbox.bitmap = bmp_rocket;
 		break;
 	case WAVE:
 		b.weapon = &weapons[WAVE];
@@ -385,7 +385,7 @@ void fire_weapon(hitbox_t shooter, weapontype_t w){
 		b.hitbox.y = start_y-WAVE_HEIGHT;
 		b.hitbox.width = WAVE_WIDTH;
 		b.hitbox.height = WAVE_HEIGHT;
-		b.hitbox.type = G_WAVE;
+		b.hitbox.bitmap = bmp_wave;
 		break;
 	}
 

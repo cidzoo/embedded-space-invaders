@@ -99,7 +99,7 @@ void ship_task_init(){
 	ship.hitbox.width=32;
 	ship.hitbox.x= 104;
 	ship.hitbox.y= 280;
-	ship.hitbox.type = G_SHIP;
+	ship.hitbox.bitmap = bmp_ship;
 
 	ship_acc = 0;
 	ship_dir = 0;
@@ -210,7 +210,7 @@ static void ship_init(){
 	ship.hitbox.width=32;
 	ship.hitbox.x= 104;
 	ship.hitbox.y= 280;
-	ship.hitbox.type = G_SHIP;
+	ship.hitbox.bitmap = bmp_ship;
 	ship_unlock();
 }
 

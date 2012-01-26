@@ -63,9 +63,6 @@ extern uint16_t screen_y;
 typedef enum{EASY=1, NORMAL=2, HARD=3}difficulty_t;
 extern difficulty_t difficulty;
 
-/* Graphics bitmaps */
-typedef enum{G_SHIP,G_INVADER,G_BOMB,G_GUN,G_RAIL,G_ROCKET,G_WAVE, G_INVADER_MENU1, G_INVADER_MENU2} graphics_t;
-
 /* Coord */
 typedef struct{
 	uint16_t x,y;
@@ -75,7 +72,7 @@ typedef struct{
 typedef struct{
 	uint16_t x,y;
 	uint16_t width, height;
-	graphics_t type;
+	uint16_t *bitmap;
 }hitbox_t;
 
 /* Weapons */
