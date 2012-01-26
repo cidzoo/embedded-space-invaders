@@ -1,25 +1,31 @@
-/*******************************************************************
- * pca9554.c - HEIG-VD 2008, Cours IEM
+/*!
+ * \file pca9554.c
+ * \brief Fichier (body) pour le module de gestion du PCA9554
+ * \author Yannick Lanz
+ * \version 0.1
+ * \date 17 janvier 2012
  *
- * Author: DRE
- * Date: December 2008
- *******************************************************************/
-
+ * Fichier (body) principal pour le module du PCA9554.
+ * Le PCA9554 est un io expander fonctionnant sur le bus I2C.
+ * Ce module utilise directement le driver I2C de linux et
+ * permet de lire les switchs ainsi que de définir les leds de la board
+ * utilisée.
+ * Une fois compilé, ce module est représenté par pca9554.ko.
+ * Il est nécessaire d'insérer ce module avant d'insérer le module
+ * rt-app.ko.
+ */
 #include <linux/init.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
-
 #include <linux/fs.h>
 #include <linux/cdev.h>
 #include <linux/device.h>
 #include <linux/kdev_t.h>
 #include <asm/uaccess.h>
-
-
 #include "pca9554-m.h"
 #include "xeno-i2c.h"
 
-#define MAJOR_NUM			52
+#define MAJOR_NUM			52		/*!< Numéro majeur du module */
 
 #define MINOR_NUM_LED0		0
 #define MINOR_NUM_LED1		1
@@ -32,9 +38,35 @@
 
 #define MINOR_COUNT			8
 
-// Fonctions prototype pour les accès USER
-ssize_t pca9554_write(struct file *, const char __user *, size_t, loff_t *);
-ssize_t pca9554_read(struct file *, char __user *, size_t, loff_t *);
+/*! \brief Fonction pour écrire la valeur des leds local vers le pca9554
+ *  \param file Fichier contenant une valeur non nulle dans private_data pour prouver que l'accès
+ *         se fait depuis le KERNEL SPACE. Si private_data est null, l'accès se fait depuis le
+ *         USER SPACE et l'accès est refusé.
+ *  \param buff Buffer venant du USER SPACE, n'est pas utilisé (NULL)
+ *  \param len Longueur des données à écrire, n'est pas utilisé (0)
+ *  \param off Offset dans le fichier, n'est pas utilisé (NULL)
+ *  \return Résultat de l'écriture
+ *  	\retval 0 Succès
+ *  	\retval -1 Erreur
+ *
+ *  N'est en principe pas utilisé (à la place => utiliser pca9554_send())
+ */
+ssize_t pca9554_write(struct file *file, const char __user *buff, size_t len, loff_t *off);
+
+/*! \brief Fonction pour lire la valeur des switches depuis le pca9554 vers la var locale
+ *  \param file Fichier contenant une valeur non nulle dans private_data pour prouver que l'accès
+ *         se fait depuis le KERNEL SPACE. Si private_data est null, l'accès se fait depuis le
+ *         USER SPACE et l'accès est refusé.
+ *  \param buff Buffer venant du USER SPACE, n'est pas utilisé (NULL)
+ *  \param len Longueur des données à écrire, n'est pas utilisé (0)
+ *  \param off Offset dans le fichier, n'est pas utilisé (NULL)
+ *  \return Résultat de la lecture
+ *  	\retval 0 Succès
+ *  	\retval -1 Erreur
+ *
+ *  N'est en principe pas utilisé (à la place => utiliser pca9554_receive())
+ */
+ssize_t pca9554_read(struct file *file, char __user *buff, size_t len, loff_t *off);
 
 // Exportations
 EXPORT_SYMBOL(pca9554_en_led);
@@ -45,17 +77,21 @@ EXPORT_SYMBOL(pca9554_receive);
 
 dev_t dev;
 
-static uint8_t mask_led = 0;
-static uint8_t mask_switch = 0;
-static uint8_t dummy_data;
+static uint8_t mask_led = 0;		/*!< Valeur locale pour mémoriser la valeur des leds */
+static uint8_t mask_switch = 0;		/*!< Valeur locale pour mémoriser la valeur des switches */
+static uint8_t dummy_data;			/*!< Dummy data pour savoir si l'appel se fait depuis le KERNEL SPACE */
 
 #define I2C_SLAVE 0x0703 			/* IOCTL CMD value to be passed to xeno_i2c_ioctl */
 
+/*! Var définissant les callbacks à appeler pour la lecture et l'écriture du module
+ */
 struct file_operations fops = {
 	.read = pca9554_read,
 	.write = pca9554_write
 };
 
+/*! Var pour le module
+ */
 struct cdev *my_dev;
 
 ssize_t pca9554_en_led(uint8_t led_num){
@@ -183,6 +219,10 @@ int __init init_module(void) {
 	xeno_i2c_write(datas, 2);
 
 	// Création d'un noeud pour le module avec c 52 0
+	/**
+	 * Attention, ca ne sert à rien de créer un noeud puisque
+	 * la gestion de l'espace utilisateur n'est plus implémentée
+	 */
 	dev = MKDEV(MAJOR_NUM, 0);
 
 	my_dev = cdev_alloc();
