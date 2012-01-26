@@ -128,6 +128,26 @@ uint32_t game_points_loc;
  * Fonctions privées
  */
 
+/*! \brief Handler utilisé et représentant la tâche de gestion du frame buffer
+ *  \param cookie Paramètre factultatif et non utilisé (besion de Xenomai)
+ *
+ *  Cette fonction représente le corps proprement dit de la tâche de gestion
+ *  du frame buffer. C'est dans cette fonction que toute la gestion s'effectue
+ *  et que les autre fonction sont appelées.
+ *  Cette fonction ne doit pas être appelée directement mais seulement lors de
+ *  l'init (fb_task_start()) à l'aide de rt_task_create().
+ */
+static void fb_task(void *cookie);
+
+/*! \brief Fonction pour rafraichir graphiquement l'écran de façon basique.
+ *
+ *  Cette fonction est appelée périodiquement avant d'afficher autre chose sur l'écran.
+ *  Elle met en place les bases graphique comme le fond, les invaders, le vaisseau,
+ *  les bombes, les bullets ainsi que le header soit tout ce qui doit aparaitre dans
+ *  tous les cas.
+ */
+static void fb_task_update(void);
+
 /*! \brief Fonction afficher un bitmap ayant les paramètres définis par la hitbox.
  *  \param hb Var de type hitbox_t contenant les params.
  *
@@ -183,23 +203,29 @@ static int check_button(button_t button, uint16_t x, uint16_t y);
  */
 static void draw_stats(uint16_t x, uint16_t y);
 
-/*! \brief Fonction pour afficher les statistiques de jeu à la position définie par x et y
+/*! \brief Fonction pour afficher les crédits (nom des dev.) de jeu à la position définie par x et y
  *  \param x Var pour la position en x
  *  \param y Var pour la position en y
  */
 static void draw_credits(uint16_t x, uint16_t y);
-static void draw_rules(uint16_t x, uint16_t y);
 
-static void fb_task(void *cookie);
-static void fb_task_init(void);
-static void fb_task_update(void);
+/*! \brief Fonction pour afficher les règles de jeu à la position définie par x et y
+ *  \param x Var pour la position en x
+ *  \param y Var pour la position en y
+ */
+static void draw_rules(uint16_t x, uint16_t y);
 
 int fb_task_start() {
 	int err;
-	err = rt_task_create(&fb_task_handle, "task_fb", TASK_STKSZ, TASK_FB_PRIO,
-			0);
+
+	// On essai de créer la tâche pour le frame buffer
+	err = rt_task_create(&fb_task_handle, "task_fb", TASK_STKSZ, TASK_FB_PRIO, 0);
+
+	// On test si erreur
 	if (err == 0) {
+		// Si pas d'erreur, on la démarre
 		err = rt_task_start(&fb_task_handle, &fb_task, NULL);
+		// On met à jour le flag de création
 		fb_task_created = 1;
 		if (err != 0) {
 			printk("rt-app: Task FB starting failed\n");
@@ -212,133 +238,27 @@ int fb_task_start() {
 		goto fail;
 	}
 	return 0;
-	fail: fb_task_cleanup_task();
+
+	// En cas d'erreur lors de la création/initialisation
+fail:
+	fb_task_cleanup_task();
 	fb_task_cleanup_objects();
 	return -1;
 }
 
 void fb_task_cleanup_task() {
+	// Si tache créée
 	if (fb_task_created) {
+		// On la nettoie
 		printk("rt-app: Task FB cleanup task\n");
-		fb_task_created = 0;
 		rt_task_delete(&fb_task_handle);
+		fb_task_created = 0;
 	}
 }
 
 void fb_task_cleanup_objects() {
-}
-
-static void fb_task_init(){
-
-}
-
-static void fb_task_update(void){
-	int i;
-	progress_bar_t pb;
-	char buf[30];
-
-	// On copie les invaders en local
-	invaders_lock();
-	memcpy(&wave_loc, &wave, sizeof(wave_loc));
-	invaders_unlock();
-
-	// On copie le vaisseau en local
-	ship_lock();
-	memcpy(&ship_loc, &ship, sizeof(ship_loc));
-	ship_unlock();
-
-	// On copie les bullets en local
-	hit_lock();
-	memcpy(bullets_loc, bullets, sizeof(bullets_loc));
-	game_points_loc = game_points;
-	hit_unlock();
-
-	// On dessine le background
-	fb_rect_fill(10, 319, 0, 239, LU_BLACK);
-
-	// On dessine les bullets
-	for (i = 0; i < NB_MAX_BULLETS; i++) {
-		if (bullets_loc[i].weapon != NULL) {
-			draw_bitmap(bullets_loc[i].hitbox);
-		}
-	}
-
-	// On dessine les bombs
-	for (i = 0; i < NB_MAX_BOMBS; i++) {
-		if (bombs[i].weapon != NULL) {
-			draw_bitmap(bombs[i].hitbox);
-		}
-	}
-
-	// On dessine les invaders
-	for (i = 0; i < wave_loc.invaders_count; i++) {
-		if (wave_loc.invaders[i].hp > 0) {
-			draw_bitmap(wave_loc.invaders[i].hitbox);
-		}
-	}
-
-	// On dessine le vaisseau
-	draw_bitmap(ship_loc.hitbox);
-
-	// On dessine le header
-	fb_rect_fill(0, GAME_ZONE_Y_MIN, 0, GAME_ZONE_X_MAX - 1, LU_GREY);
-	fb_line(0, GAME_ZONE_Y_MIN, GAME_ZONE_X_MAX, GAME_ZONE_Y_MIN,
-			LU_WHITE);
-
-	// On print le texte pour la progress bar
-	fb_print_string(LU_BLACK, LU_GREY, "    life:", 3, 3);
-	// On print la progress bar pour la vie
-	pb.x = 75;
-	pb.y = 2;
-	pb.width = 155;
-	pb.height = 8;
-	pb.current_value = ship_loc.hp;
-	pb.max_value = LIFE_SHIP;
-	// On determine la couleur
-	if(100*ship_loc.hp/LIFE_SHIP > 70){
-		pb.couleur = LU_PB_GREEN;
-	}else if(100*ship_loc.hp/LIFE_SHIP > 40){
-		pb.couleur = LU_PB_ORANGE;
-	}else{
-		pb.couleur = LU_PB_RED;
-	}
-	fb_progress_bar(pb);
-
-	// On print le texte pour la progress bar
-	fb_print_string(LU_BLACK, LU_GREY, "accuracy:", 3, 13);
-	// On print la progress bar pour la precision
-	pb.x = 75;
-	pb.y = 12;
-	pb.width = 155;
-	pb.height = 8;
-	if(game_bullet_used > 0){
-		pb.current_value = game_bullet_kill;
-		pb.max_value = game_bullet_used;
-		// On determine la couleur
-		if(game_bullet_used > 0){
-			if(100*game_bullet_kill/game_bullet_used > 70){
-				pb.couleur = LU_PB_GREEN;
-			}else if(100*game_bullet_kill/game_bullet_used > 40){
-				pb.couleur = LU_PB_ORANGE;
-			}else{
-				pb.couleur = LU_PB_RED;
-			}
-		}
-	}else{
-		pb.current_value = 1;
-		pb.max_value = 1;
-		pb.couleur = LU_DARK_GREY;
-	}
-
-	fb_progress_bar(pb);
-
-	// On affiche les points
-	sprintf(buf, "  points: %d", game_points);
-	fb_print_string_transparent(LU_BLACK, buf, 3, 25);
-
-	// On affiche le niveau de la vague
-	sprintf(buf, "wave: %d", wave.level+1);
-	fb_print_string_transparent(LU_BLACK, buf, 150, 25);
+	// Nous n'avons pas d'obejt à nettoyer
+	printk("rt-app: Task FB cleanup objects\n");
 }
 
 static void fb_task(void *cookie) {
@@ -473,6 +393,117 @@ static void fb_task(void *cookie) {
 	}
 }
 
+static void fb_task_update(void){
+	int i;
+	progress_bar_t pb;
+	char buf[30];
+
+	// On copie les invaders en local
+	invaders_lock();
+	memcpy(&wave_loc, &wave, sizeof(wave_loc));
+	invaders_unlock();
+
+	// On copie le vaisseau en local
+	ship_lock();
+	memcpy(&ship_loc, &ship, sizeof(ship_loc));
+	ship_unlock();
+
+	// On copie les bullets en local
+	hit_lock();
+	memcpy(bullets_loc, bullets, sizeof(bullets_loc));
+	game_points_loc = game_points;
+	hit_unlock();
+
+	// On dessine le background
+	fb_rect_fill(10, 319, 0, 239, LU_BLACK);
+
+	// On dessine les bullets
+	for (i = 0; i < NB_MAX_BULLETS; i++) {
+		if (bullets_loc[i].weapon != NULL) {
+			draw_bitmap(bullets_loc[i].hitbox);
+		}
+	}
+
+	// On dessine les bombs
+	for (i = 0; i < NB_MAX_BOMBS; i++) {
+		if (bombs[i].weapon != NULL) {
+			draw_bitmap(bombs[i].hitbox);
+		}
+	}
+
+	// On dessine les invaders
+	for (i = 0; i < wave_loc.invaders_count; i++) {
+		if (wave_loc.invaders[i].hp > 0) {
+			draw_bitmap(wave_loc.invaders[i].hitbox);
+		}
+	}
+
+	// On dessine le vaisseau
+	draw_bitmap(ship_loc.hitbox);
+
+	// On dessine le header
+	fb_rect_fill(0, GAME_ZONE_Y_MIN, 0, GAME_ZONE_X_MAX - 1, LU_GREY);
+	fb_line(0, GAME_ZONE_Y_MIN, GAME_ZONE_X_MAX, GAME_ZONE_Y_MIN,
+			LU_WHITE);
+
+	// On print le texte pour la progress bar
+	fb_print_string(LU_BLACK, LU_GREY, "    life:", 3, 3);
+	// On print la progress bar pour la vie
+	pb.x = 75;
+	pb.y = 2;
+	pb.width = 155;
+	pb.height = 8;
+	pb.current_value = ship_loc.hp;
+	pb.max_value = LIFE_SHIP;
+	// On determine la couleur
+	if(100*ship_loc.hp/LIFE_SHIP > 70){
+		pb.couleur = LU_PB_GREEN;
+	}else if(100*ship_loc.hp/LIFE_SHIP > 40){
+		pb.couleur = LU_PB_ORANGE;
+	}else{
+		pb.couleur = LU_PB_RED;
+	}
+	fb_progress_bar(pb);
+
+	// On print le texte pour la progress bar
+	fb_print_string(LU_BLACK, LU_GREY, "accuracy:", 3, 13);
+	// On print la progress bar pour la precision
+	pb.x = 75;
+	pb.y = 12;
+	pb.width = 155;
+	pb.height = 8;
+	if(game_bullet_used > 0){
+		pb.current_value = game_bullet_kill;
+		pb.max_value = game_bullet_used;
+		// On determine la couleur
+		if(game_bullet_used > 0){
+			if(100*game_bullet_kill/game_bullet_used > 70){
+				pb.couleur = LU_PB_GREEN;
+			}else if(100*game_bullet_kill/game_bullet_used > 40){
+				pb.couleur = LU_PB_ORANGE;
+			}else{
+				pb.couleur = LU_PB_RED;
+			}
+		}
+	}else{
+		pb.current_value = 1;
+		pb.max_value = 1;
+		pb.couleur = LU_DARK_GREY;
+	}
+
+	fb_progress_bar(pb);
+
+	// On affiche les points
+	sprintf(buf, "  points: %d", game_points);
+	fb_print_string_transparent(LU_BLACK, buf, 3, 25);
+
+	// On affiche le niveau de la vague
+	sprintf(buf, "wave: %d", wave.level+1);
+	fb_print_string_transparent(LU_BLACK, buf, 150, 25);
+}
+
+
+
 static void draw_bitmap(hitbox_t hb) {
 	int i, j;
 	for (i = 0; i < hb.height; i++) {
@@ -515,14 +546,6 @@ static void draw_invader_menu(uint16_t x, uint16_t y){
 	}
 }
 
-/**
- * \brief Résumé
- *
- * \param menu Le param menu .....
- * \author Yannick Lanz
- *
- * Description longue
- */
 static void draw_menu(menu_t menu){
 	// On dessine le tour
 	fb_rect(menu.y, menu.y + menu.height, menu.x, menu.x + menu.width, LU_WHITE);
