@@ -17,5 +17,11 @@ typedef struct{
 //int pca9554_close(struct inode *, struct file *);
 
 // Fonctions prototype pour les accès KERNEL
-ssize_t pca9554_get(pca_io_data_t *io_data);
-ssize_t pca9554_set(pca_io_data_t *io_data);
+extern ssize_t pca9554_get(pca_io_data_t *io_data);
+extern ssize_t pca9554_set(pca_io_data_t *io_data);
+
+extern ssize_t pca9554_en_led(uint8_t led_num);
+extern ssize_t pca9954_dis_led(uint8_t led_num);
+extern ssize_t pca9554_get_switch(uint8_t switch_num, uint8_t *switch_val);
+extern ssize_t pca9554_send(void);
+extern ssize_t pca9554_receive(void);

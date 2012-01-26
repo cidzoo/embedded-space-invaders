@@ -1,30 +1,53 @@
-/*
- * task_fb.c
+/*!
+ * \file task_fb.c
+ * \brief Body pour la gestion de la tâche de gestion du frame buffer
+ * \author Yannick Lanz
+ * \version 0.1
+ * \date 17 janvier 2012
  *
- *  Created on: 17 janv. 2012
- *      Author: redsuser
+ * Fichier de body pour la tâche de gestion du frame buffer.
+ * A chaque refraichissement de l'écran (définit par la période de cette tâche),
+ * récupère les données des invaders, du vaisseau, des bombes et des bullets
+ * puis les affiche à l'écran.
+ * Affiche aussi le header contenant les statistiques (vie, précision).
+ * Cette tâche gère aussi les menus (début, pause, game over) et récupère
+ * les informations du touchscreen (venant de la tâche ship) quand elle en a
+ * besoin (pour les boutons des menus lorsque le jeu est arrêté).
  */
+#include <linux/slab.h>
+#include "rt-app-m.h"
+/* Inclusions pour les tâche (définitions de type aussi) */
 #include "fb_task.h"
-#include "vga_lookup.h"
-#include "lcdlib.h"
-
+#include "hit_task.h"
 #include "invaders_task.h"
 #include "ship_task.h"
-#include "hit_task.h"
-#include "rt-app-m.h"
+/* Inclusions pour les outils */
+#include "lcdlib.h"
 #include "vga_lookup.h"
-#include <linux/slab.h>
 
-// Type pour les menus
+/*!
+ * \struct menu_t
+ * \brief Objet représentant un menu (object graphique)
+ *
+ * menu_t représente un menu et contient une position absolue (x, y),
+ * une taille (largeur, hauteur) ainsi qu'un titre.
+ * Il est utilisé lorsqu'on fait appel à la fonction draw_menu.
+ * Ce type n'est utilisé que dans la fb_task est n'est donc pas définit
+ * dans le header.
+ */
 typedef struct{
-	uint16_t x;
-	uint16_t y;
-	uint16_t width;
-	uint16_t height;
-	char *title;
+	uint16_t x;				/*!< Position en x */
+	uint16_t y;				/*!< Position en y */
+	uint16_t width;			/*!< Largeur */
+	uint16_t height;		/*!< Hauteur */
+	char *title;			/*!< Titre */
 } menu_t;
 
-// Bouton pour commencer
+/**
+ * Variables privées
+ */
+
+//! Var de type button_t pour le bouton de début de partie
 static button_t start_button = {
 	.x = 40,
 	.y = 170,
@@ -33,7 +56,7 @@ static button_t start_button = {
 	.title = "START"
 };
 
-// Bouton pour recommencer dans le menu pause
+//! Var de type button_t pour le bouton de recommencement dans le menu pause
 static button_t restart_break_button = {
 	.x = 40,
 	.y = 170,
@@ -42,16 +65,7 @@ static button_t restart_break_button = {
 	.title = "RESTART"
 };
 
-// Bouton pour recommencer dans le menu game over
-static button_t restart_game_over_button = {
-	.x = 40,
-	.y = 210,
-	.width = 160,
-	.height = 50,
-	.title = "RESTART"
-};
-
-// Bouton pour retourner au jeu
+//! Var de type button_t pour le bouton pour continuer dans le menu pause
 static button_t continue_button = {
 	.x = 125,
 	.y = 170,
@@ -60,7 +74,16 @@ static button_t continue_button = {
 	.title = "CONTINUE"
 };
 
-// Menu de démarrage
+//! Var de type button_t pour le bouton de recommencement après un game over
+static button_t restart_game_over_button = {
+	.x = 40,
+	.y = 210,
+	.width = 160,
+	.height = 50,
+	.title = "RESTART"
+};
+
+//! Var de type menu_t pour le menu de commencement
 static menu_t begin_menu = {
 	.x = 30,
 	.y = 40,
@@ -69,7 +92,7 @@ static menu_t begin_menu = {
 	.title = "SPACE INVADERS"
 };
 
-// Menu de pause
+//! Var de type menu_t pour le menu de pause
 static menu_t pause_menu = {
 	.x = 30,
 	.y = 40,
@@ -78,7 +101,7 @@ static menu_t pause_menu = {
 	.title = "PAUSE"
 };
 
-// Menu de démarrage
+//! Var de type menu_t pour le menu de game over
 static menu_t game_over_menu = {
 	.x = 30,
 	.y = 40,
@@ -87,31 +110,83 @@ static menu_t game_over_menu = {
 	.title = "GAME OVER"
 };
 
-/**
- * Variables privées
- */
+//! Descripteur de la tâche frame buffer
 RT_TASK fb_task_handle;
+//! Flag pour savoir si la tâche fb à été crée avec succès
 static uint8_t fb_task_created = 0;
 
-// Variable locale pour les invaders
-wave_t wave_loc;
-// Variable locale pour les bullets
-bullet_t bullets_loc[NB_MAX_BULLETS];
-spaceship_t ship_loc;
+//! Var pour contenir localement la wave d'invaders (snapshot)
+static wave_t wave_loc;
+//! Var pour contenir localement les bullets (snapshot)
+static bullet_t bullets_loc[NB_MAX_BULLETS];
+//! Var pour contenir localement le vaisseau (snapshot)
+static spaceship_t ship_loc;
+//! Var pour contenir localement les points (snapshot)
 uint32_t game_points_loc;
 
 /**
  * Fonctions privées
  */
+
+/*! \brief Fonction afficher un bitmap ayant les paramètres définis par la hitbox.
+ *  \param hb Var de type hitbox_t contenant les params.
+ *
+ *  Affiche un bitmap selon les paramètres de la hitbox passée en paramètre.
+ *  La hitbox contient la position (x, y), une taille (largeur, hauteur) ainsi
+ *  qu'un pointeur vers un tableau à 2 dimensions contenant le bitmap.
+ */
 static void draw_bitmap(hitbox_t hb);
+
+/*! \brief Fonction afficher l'animation de l'invader en fond du menu.
+ *  \param x Position en x de l'animation
+ *  \param y Position en y de l'animation
+ *
+ *  Affiche l'animation du bitmap invader_menu en x, y.
+ */
 static void draw_invader_menu(uint16_t x, uint16_t y);
+
+/*! \brief Fonction afficher un menu de type menu_t.
+ *  \param menu Var de type menu_t contenant les données du menu à afficher.
+ *
+ *	Affiche un menu selon le paramètre menu passé. Le menu_t contient notament
+ *	la position et le titre du menu.
+ */
 static void draw_menu(menu_t menu);
+
+/*! \brief Fonction afficher le menu de démarrage
+ */
 static void draw_menu_begin(void);
+
+/*! \brief Fonction afficher le menu de pause
+ */
 static void draw_menu_pause(void);
+
+/*! \brief Fonction afficher le menu de fin de jeu
+ */
 static void draw_menu_game_over(void);
+
+/*! \brief Fonction pour checker si une position (x, y) chevauche un bouton.
+ *  \param button Var de type button_t représentant le bouton (et donc sa surface) à tester
+ *  \param x Var pour la position en x
+ *  \param y Var pour la position en y
+ *  \return Resultat du chevauchement
+ *  	\retval 0 La position et le bouton se chevauchent
+ *  	\retval -1 La position et le bouton ne se chevauchent pas
+ *
+ *  Renvoit le résultat du chevauchement entre un bouton et une position (définit par x et y)
+ */
 static int check_button(button_t button, uint16_t x, uint16_t y);
 
+/*! \brief Fonction pour afficher les statistiques de jeu à la position définie par x et y
+ *  \param x Var pour la position en x
+ *  \param y Var pour la position en y
+ */
 static void draw_stats(uint16_t x, uint16_t y);
+
+/*! \brief Fonction pour afficher les statistiques de jeu à la position définie par x et y
+ *  \param x Var pour la position en x
+ *  \param y Var pour la position en y
+ */
 static void draw_credits(uint16_t x, uint16_t y);
 static void draw_rules(uint16_t x, uint16_t y);
 

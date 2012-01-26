@@ -37,10 +37,16 @@ ssize_t pca9554_write(struct file *, const char __user *, size_t, loff_t *);
 ssize_t pca9554_read(struct file *, char __user *, size_t, loff_t *);
 
 // Exportations
-EXPORT_SYMBOL(pca9554_get);
-EXPORT_SYMBOL(pca9554_set);
+EXPORT_SYMBOL(pca9554_en_led);
+EXPORT_SYMBOL(pca9554_dis_led);
+EXPORT_SYMBOL(pca9554_get_switch);
+EXPORT_SYMBOL(pca9554_send);
+EXPORT_SYMBOL(pca9554_receive);
 
 dev_t dev;
+
+static uint8_t mask_led = 0;
+static uint8_t mask_switch = 0;
 
 #define I2C_SLAVE 0x0703 			/* IOCTL CMD value to be passed to xeno_i2c_ioctl */
 
@@ -61,6 +67,38 @@ ssize_t pca9554_set(pca_io_data_t *io_data){
 	struct file tmp_file;
 	tmp_file.private_data = (void *)io_data;
 	return pca9554_write(&tmp_file, NULL, 0, NULL);
+}
+
+ssize_t pca9554_en_led(uint8_t led_num){
+	if(led_num >= MINOR_NUM_LED0 && led_num <= MINOR_NUM_LED3){
+		mask_led |= (1 << led_num);
+		return 0;
+	}
+	return -1;
+}
+
+ssize_t pca9954_dis_led(uint8_t led_num){
+	if(led_num >= MINOR_NUM_LED0 && led_num <= MINOR_NUM_LED3){
+		mask_led &= ~(1 << led_num);
+		return 0;
+	}
+	return -1;
+}
+
+ssize_t pca9554_get_switch(uint8_t switch_num, uint8_t *switch_val){
+	if(switch_num >= MINOR_NUM_SW0 && switch_num <= MINOR_NUM_SW3){
+		switch_val = (mask_switch >> switch_num) & 0x01;
+		return 0;
+	}
+	return -1;
+}
+
+ssize_t pca9554_send(){
+
+}
+
+ssize_t pca9554_receive(){
+
 }
 
 ssize_t pca9554_read(struct file *file, char __user *buff, size_t len, loff_t *off) {
