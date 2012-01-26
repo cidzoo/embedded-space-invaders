@@ -270,10 +270,13 @@ static void fb_task(void *cookie) {
 	rt_task_set_periodic(NULL, TM_NOW, 50 * MS);
 
 	for (;;) {
+		// On attend la prochaine période
 		rt_task_wait_period(NULL);
 
+		// Si flag de level_up (depuis la tache invaders)
 		if(game_level_up){
 			game_level_up = 0;
+			// On re-init la tache de collisions (suppression de tous les bullets, bombs)
 			hit_task_init();
 		}
 
@@ -330,10 +333,12 @@ static void fb_task(void *cookie) {
 							ship_task_init();
 							invaders_task_init();
 
+							// On init les stats
 							game_bullet_kill = 0;
 							game_bullet_used = 0;
 							game_points = 0;
 
+							// On débloque le jeu
 							game_break = 0;
 						}
 					}
@@ -374,6 +379,7 @@ static void fb_task(void *cookie) {
 					ship_task_init();
 					invaders_task_init();
 
+					// On init les stats
 					game_bullet_kill = 0;
 					game_bullet_used = 0;
 					game_points = 0;
