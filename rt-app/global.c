@@ -1,18 +1,19 @@
-/*
- * global.c
+/*!
+ * \file global.c
+ * \brief Fichier (body)
+ * \author Romain Maffina
+ * \version 0.1
+ * \date decembre 2012
  *
- *  Created on: Dec 21, 2011
- *      Author: romain
+ * Fichier (body) pour les define, variables et types persos globaux
  */
 
 #include "global.h"
 #include "hit_task.h"
 #include "invaders_task.h"
 
-
 difficulty_t difficulty = NORMAL;
 
-/* Game over*/
 uint8_t game_over = 0;
 
 uint32_t game_points = 0;

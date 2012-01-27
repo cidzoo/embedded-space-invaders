@@ -1,8 +1,11 @@
-/*
- * hit_task.c
+/*!
+ * \file hit_task.c
+ * \brief Fichier (body) pour la gestion des tirs et de la tâche de gestion des collisions
+ * \author Romain Maffina
+ * \version 0.1
+ * \date decembre 2012
  *
- *  Created on: dec 2011
- *      Author: Romain Maffina
+ * Fichier (body) pour la gestion des tirs et de la tâche de gestion des collisions.
  */
 #include "hit_task.h"
 #include "invaders_task.h"
@@ -13,7 +16,7 @@
 #include "rt-app-m.h"
 
 /**
- * Variables publics (voir .h)
+ * Variables publiques
  */
 weapon_t weapons[NB_WEAPONS] = {
 	{BOMB, ONE, SLOW,
@@ -44,15 +47,11 @@ bullet_t bombs[NB_MAX_BOMBS];
 /**
  * Variables privées
  */
-
 RT_MUTEX hit_task_mutex;
 static uint8_t hit_task_mutex_created = 0;
 
 RT_TASK hit_task_handle;
 static uint8_t hit_task_created = 0;
-
-//flag de collision
-static int impact = 0;
 
 //for rail use
 static int rail_id = -1;
@@ -63,11 +62,40 @@ static int rail_timeout = 0;
  * Prototypes fonctions privées
  */
 
+/*! \brief Fonction permettant de tester la collision entre 2 objets du jeu
+ *  \param a première hitbox_t
+ *  \param b deuxième hitbox_t
+ *  \return un entier qui indique s'il y a eu collision
+ *  \retval 0 il y eu collision
+ *  \retval -1 il n'y a pas eu de collisions
+ */
 static int hit_test(hitbox_t a, hitbox_t b);
-static int add_bullet(bullet_t b);
-static void remove_bullet(bullet_t b, int id);
-static void hit_task(void *cookie);
 
+/*! \brief Fonction permettant d'ajouter une bullet au jeu en cours
+ *  \param b de type bullet_t qui la bullet à ajouter
+ *  \return un entier qui indique si l'opération s'est bien passée ou non
+ *  \retval 0 OK
+ *  \retval -1 KO
+ */
+static int add_bullet(bullet_t b);
+
+/*! \brief Fonction permettant de supprimer une bullet au jeu en cours
+ *  \param b de type bullet_t qui la bullet à supprimer
+ *  \param id de type int qui indique l'index de la bullet à supprimer
+ */
+static void remove_bullet(bullet_t b, int id);
+
+/*! \brief Handler utilisé et représentant la tâche de gestion des collisions
+ *  \param cookie Paramètre factultatif et non utilisé (besion de Xenomai)
+ *
+ *  Cette fonction représente le corps proprement dit de la tâche de gestion
+ *  des collisions. Elle se charge de faire le déplacement des bullets et de
+ *  tester si il y a eu des collisions entre les objets (représentés par des
+ *  objets de type hitbox_t) présents dans la partie.
+ *  Cette fonction ne doit pas être appelée directement mais seulement lors de
+ *  l'init (fb_task_start()) à l'aide de rt_task_create().
+ */
+static void hit_task(void *cookie);
 
 /* Task start */
 int hit_task_start(){
@@ -145,21 +173,21 @@ void hit_task_init(){
 	}
 }
 
-/*****************HIT TASK***********************/
+//!*****************HIT TASK***********************/
 void hit_task(void *cookie){
 
 	invader_t *invader;
 	bullet_t *bullet;
 	int i, j;
 	int16_t y;
-	uint8_t removed;
+	uint8_t removed; //TODO remove this and try
+	uint8_t impact = 0; //!flag de collision pour la tache hit
 
 	(void)cookie;
-	// On définit la période de la tache
+	//! On définit la période de la tache
 	rt_task_set_periodic(NULL, TM_NOW, 50*MS);
 
-
-
+	//! init
 	hit_task_init();
 
 
@@ -167,20 +195,20 @@ void hit_task(void *cookie){
 		rt_task_wait_period(NULL);
 
 		if(!game_break){
-			// On verrouille les bullets
+			//! On verrouille les bullets
 			hit_lock();
-			// On verrouille le vaisseau
+			//! On verrouille le vaisseau
 			ship_lock();
-			// On verrouille les invaders
+			//! On verrouille les invaders
 			invaders_lock();
 
-			//for each bullet
+			//pour chaque bullet on va tester les collisions
 			for (i=0;i<NB_MAX_BULLETS;i++){
 				removed = 0;
 				if(bullets[i].weapon != NULL){
 					impact = 0;
 
-					//current object
+					//!current object
 					bullet = &bullets[i];
 
 					// On déplace la bullet
@@ -204,18 +232,18 @@ void hit_task(void *cookie){
 						}
 					}
 
-					//bullet : hit test with invaders
+					//bullet : hit test avec les invaders
 					for (j=0;j<wave.invaders_count;j++){
-						//test if applicable
 						if(wave.invaders[j].hp > 0){
 
-							//current object
+							//!current object
 							invader = &wave.invaders[j];
 
 							//hit test
 							if(hit_test(invader->hitbox, bullet->hitbox) == 0){
 								impact = 1;
-								//if so : damage the invader
+
+								//applique les dégats à l'invader
 								if(invader->hp >= bullet->weapon->damage){
 									// On met a jour les points de vie de l'invader
 									invader->hp-= bullet->weapon->damage;
@@ -231,33 +259,33 @@ void hit_task(void *cookie){
 								// On met a jour les spef concernant la precision de tir
 								game_bullet_used++;
 								game_bullet_kill++;	// La bullet à touché sa cible
-							}//if positive hit test
+							}//if hit test
 						}
-					}//for each invaders
+					}//pour chaque invader
 
-					//bullet : hit test with bombs
+					//bullet : hit test avec les bombes
 					for(j=0;j<NB_MAX_BOMBS;j++){
 						if(bombs[j].weapon != NULL){
-							//control if the bomb is touched
+							//hit test
 							if(hit_test(bombs[j].hitbox, bullet->hitbox) == 0){
 								impact = 1;
-								//destroy the bomb
+								//détruit la bombe
 								remove_bullet(bombs[j], j);
 							}
 						}
 					}
 
-					//bullet : hit test with other bullets
+					//bullet : hit test avec les autres bullets
 					for(j=0;j<NB_MAX_BULLETS;j++){
 						if( 	(bullets[j].weapon != NULL) &&
-								(&bullets[j] != bullet) &&
-								(bullets[j].weapon->weapon_type != RAIL) &&
-								(bullets[j].weapon->weapon_type != WAVE)
+								(&bullets[j] != bullet) && //Si différent de la bullet actuelle
+								(bullets[j].weapon->weapon_type != RAIL) && //Si ce n'est pas le laser
+								(bullets[j].weapon->weapon_type != WAVE) //Si ce n'est pas l'onde de choc
 								){
-							//control if the bullet is touched
+							//hit test
 							if(hit_test(bullets[j].hitbox, bullet->hitbox) == 0){
 								impact = 1;
-								//destroy the bullet
+								//détruit la bullet
 								if(!removed){
 									remove_bullet(bullets[j], j);
 									removed = 1;
@@ -266,7 +294,7 @@ void hit_task(void *cookie){
 						}
 					}
 
-					//if impact was detected delete the bullet
+					//si un impact a été detecté pour la bullet principale, on la supprime
 					if(		impact &&
 							!(bullet->weapon->weapon_type == WAVE) &&
 							!(bullet->weapon->weapon_type == RAIL) ){
@@ -276,19 +304,19 @@ void hit_task(void *cookie){
 						}
 					}
 
-				}//if not null
-			}//for each bullet
+				}//if non null
+			}//pour chaque bullet pirncipale
 
-			//For each bomb
+			//pour chaque bombe on va tester les collisions
 			for(i=0;i<NB_MAX_BOMBS;i++){
 				if(bombs[i].weapon != NULL){
 
-					// On déplace les bombs
+					// On déplace les bombes
 					bombs[i].hitbox.y += bombs[i].weapon->speed;
 
-					//hit test with ship
+					//hit test avec le vaisseau
 					if(hit_test(ship.hitbox, bombs[i].hitbox) == 0){
-						//if so damage the ship and remove bomb
+						//applique les dommages au vaisseau et supprime la bombe
 						if(ship.hp > 0){
 							ship.hp--;
 							if(ship.hp==0){
@@ -300,7 +328,7 @@ void hit_task(void *cookie){
 				}
 			}
 
-			//invaders : hit test with ship
+			//invaders : hit test avec le vaisseau
 			for (i=0;i<wave.invaders_count;i++){
 				if(wave.invaders[i].hp > 0 &&
 				   hit_test(ship.hitbox, wave.invaders[i].hitbox) == 0){
@@ -308,7 +336,8 @@ void hit_task(void *cookie){
 					game_over = 1;
 				}
 			}
-			//special treatement for rail
+
+			//traitement spécial pour le rail (animation)
 			if(rail_id != -1 && rail_timeout <= 0){
 				remove_bullet(bullets[rail_id],rail_id);
 				rail_id = -1;
@@ -328,24 +357,24 @@ void hit_task(void *cookie){
 
 }//hit_task
 
-/* To be called to fire a weapon */
+
 void hit_task_fire_weapon(hitbox_t shooter, weapontype_t w){
 	uint16_t start_x=0, start_y=0;
 	bullet_t b;
 
-	//Define starting position
+	//Définit la position de départ selon l'emplacement du tireur
 	if(w == BOMB){
-		//Grab the position of the invader's bottom
+		//Position en bas au milieu de l'invader qui tire
 		start_x = shooter.x + shooter.width/2;
 		start_y = shooter.y+shooter.height+1;
 	}
 	else{
-		//Grab the position of the spaceship's gun's
+		//Position en haut au milieu du vaisseau
 		start_x = shooter.x + shooter.width/2;
 		start_y = shooter.y-1;
 	}
 
-	//Fire the weapon
+	//Tir de la bullet
 	switch(w){
 	case BOMB:
 		b.weapon = &weapons[BOMB];
@@ -389,12 +418,11 @@ void hit_task_fire_weapon(hitbox_t shooter, weapontype_t w){
 		break;
 	}
 
-	//add it to the list of current bullets or bombs
+	//ajoute la bullet à la liste des bullets en jeu
 	add_bullet(b);
 
 }//fire_weapon()
 
-/* Detect collision between two hitboxes */
 static int hit_test(hitbox_t a, hitbox_t b){
 
 	if (	(a.x + a.width >= b.x) &&
@@ -407,13 +435,12 @@ static int hit_test(hitbox_t a, hitbox_t b){
 
 }//hit_test()
 
-/* Functions to add a bullet or bomb */
 static int add_bullet(bullet_t b){
 	int i=0;
 
-	//normal bullet
+	//bullet normale
 	if(b.weapon->weapon_type != BOMB){
-		//find the first empty slot and place the bullet there
+		//trouve le premier slot libre et y mettre la bullet
 		for(i=0;i<NB_MAX_BULLETS;i++){
 			if(bullets[i].weapon == NULL){
 				bullets[i] = b;
@@ -424,9 +451,9 @@ static int add_bullet(bullet_t b){
 				return 0;
 			}
 		}
-		//for the bombs
+	//pour les bombes
 	}else{
-		//find the first empty slot and place the bomb there
+		//trouve le premier slot libre et y mettre la bullet
 		for(i=0;i<NB_MAX_BOMBS;i++){
 			if(bombs[i].weapon == NULL){
 				bombs[i] = b;
@@ -437,7 +464,6 @@ static int add_bullet(bullet_t b){
 	return -1;
 }
 
-/* Functions to remove a bullet or bomb */
 static void remove_bullet(bullet_t b, int id){
 	if(b.weapon != NULL){
 		if(b.weapon->weapon_type != BOMB)
@@ -447,7 +473,6 @@ static void remove_bullet(bullet_t b, int id){
 	}
 }
 
-/* mutex lock */
 int hit_lock(){
 	if(hit_task_mutex_created){
 		return rt_mutex_lock(&hit_task_mutex, TM_INFINITE);
@@ -455,7 +480,6 @@ int hit_lock(){
 	return -1;
 }
 
-/* mutex unlock */
 int hit_unlock(){
 	if(hit_task_mutex_created){
 		return rt_mutex_unlock(&hit_task_mutex);

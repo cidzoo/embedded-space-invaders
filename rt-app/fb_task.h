@@ -18,17 +18,17 @@
 
 #include "global.h"
 
-/*! \brief Fonction à appelé au début pour lancer la tâche de gestion du frame buffer
+/*! \brief Fonction à appeler au début pour lancer la tâche de gestion du frame buffer
  * ainsi que la création d'éventuels objets.
  */
 extern int fb_task_start(void);
 
-/*! \brief Fonction à appelé en fin (ou en cas de problème de création) pour détruire
- *  la tâche de gestion du frame buffer (en principe avant la fonction fb_task_cleanup_objects()).
+/*! \brief Fonction à appeler en fin (ou en cas de problème de création) pour détruire
+ *  la tâche de gestion du frame buffer.
  */
 extern void fb_task_cleanup_task(void);
 
-/*! \brief Fonction à appelé en fin (ou en cas de problème de création) pour détruire
+/*! \brief Fonction à appeler en fin (ou en cas de problème de création) pour détruire
  *  les objets de la tâche de gestion du frame buffer (en principe avant la fonction fb_task_cleanup_objects()).
  *  Elle ne fait en principe rien puisqu'il n'y pas d'objet pour le moment dans la tâche fb.
  */
