@@ -102,7 +102,7 @@ ssize_t pca9554_en_led(uint8_t led_num){
 	return -1;
 }
 
-ssize_t pca9954_dis_led(uint8_t led_num){
+ssize_t pca9554_dis_led(uint8_t led_num){
 	if(led_num >= MINOR_NUM_LED0 && led_num <= MINOR_NUM_LED3){
 		mask_led &= ~(1 << led_num);
 		return 0;
@@ -112,7 +112,7 @@ ssize_t pca9954_dis_led(uint8_t led_num){
 
 ssize_t pca9554_get_switch(uint8_t switch_num, uint8_t *switch_val){
 	if(switch_num >= MINOR_NUM_SW0 && switch_num <= MINOR_NUM_SW3){
-		switch_val = (mask_switch >> switch_num) & 0x01;
+		*switch_val = (mask_switch >> switch_num) & 0x01;
 		return 0;
 	}
 	return -1;
@@ -120,13 +120,13 @@ ssize_t pca9554_get_switch(uint8_t switch_num, uint8_t *switch_val){
 
 ssize_t pca9554_send(){
 	struct file tmp_file;
-	tmp_file.private_data = (void *)dummy_data;
+	tmp_file.private_data = (void *)&dummy_data;
 	return pca9554_write(&tmp_file, NULL, 0, NULL);
 }
 
 ssize_t pca9554_receive(){
 	struct file tmp_file;
-	tmp_file.private_data = (void *)dummy_data;
+	tmp_file.private_data = (void *)&dummy_data;
 	return pca9554_read(&tmp_file, NULL, 0, NULL);
 }
 

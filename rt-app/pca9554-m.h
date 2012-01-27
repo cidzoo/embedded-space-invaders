@@ -32,7 +32,7 @@ extern ssize_t pca9554_en_led(uint8_t led_num);
  *
  *  Les leds débutent de bas en haut (le numéros sur la board ne correspondent pas)
  */
-extern ssize_t pca9954_dis_led(uint8_t led_num);
+extern ssize_t pca9554_dis_led(uint8_t led_num);
 
 /*! \brief Fonction pour récupérer la valeur locale des switchs
  *  \param switch_num Numéro de 0 à 3 représentant le switch dont on veut récupérer la valeur

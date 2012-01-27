@@ -83,7 +83,7 @@ void fb_progress_bar(progress_bar_t pb){
 }
 
 void fb_button(button_t button){
-	int title_size = 8*strlen(button.title);
+	int title_size = 8*strlen(button.label);
 	// On dessine le tour
 	fb_rect(button.y, button.y + button.height, button.x, button.x + button.width, LU_GREY);
 	// On dessine le rebord gauche
@@ -93,7 +93,7 @@ void fb_button(button_t button){
 	// On fait le calcul pour le placement du titre
 	if(button.width > title_size && button.height > 10){
 		// On affiche le titre
-		fb_print_string_transparent(LU_GREY, button.title, button.x + (button.width-title_size)/2, button.y + (button.height-8)/2);
+		fb_print_string_transparent(LU_GREY, button.label, button.x + (button.width-title_size)/2, button.y + (button.height-8)/2);
 	}
 }
 
