@@ -95,8 +95,6 @@ static void io_task(void *cookie)
 
 	// Tableau pour mémoriser les valeur des switches en fonctionnement normal
 	char old_val_sw[4], new_val_sw[4];
-	// Tableau pour mémoriser les valeur des switches pendant le mode pause
-	char old_val_sw_break[4], new_val_sw_break[4];
 
 	(void)cookie;
 	// On définit la période de la tache
@@ -179,24 +177,6 @@ static void io_task(void *cookie)
 			}
 			// On envoit les valeur de leds vers le pca9554
 			pca9554_send();
-		}else{
-			// En mode pause
-
-			// On lit les switch
-			pca9554_receive();
-			for(i = 0; i < 4; i++){
-				pca9554_get_switch(i, &new_val_sw_break[i]);
-				if(old_val_sw_break[i] != new_val_sw_break[i]){
-					if(new_val_sw_break[i]){
-						if(i == 0){
-							printk("down\n");
-						}else if(i == 3){
-							printk("up\n");
-						}
-					}
-					old_val_sw_break[i] = new_val_sw_break[i];
-				}
-			}
 		}
     }
 }

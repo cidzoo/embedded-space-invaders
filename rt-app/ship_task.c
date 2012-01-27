@@ -36,7 +36,6 @@ static int ship_x;
  * Fonctions privées
  */
 static void ship_task(void *cookie);
-static void ship_init(void);
 
 int ship_task_start(){
 	int err;
@@ -100,7 +99,7 @@ void ship_task_init(){
 	ship.hitbox.width=32;
 	ship.hitbox.x= 104;
 	ship.hitbox.y= 280;
-	ship.hitbox.bitmap = bmp_ship;
+	ship.hitbox.bitmap = (uint16_t *)bmp_ship;
 
 	ship_acc = 0;
 	ship_dir = 0;
@@ -109,9 +108,6 @@ void ship_task_init(){
 
 static void ship_task(void *cookie){
 
-	//spaceship_t ship_loc;
-
-	uint8_t game_break_loc = 0;
 	uint32_t cpt = 0;
 	uint8_t rebond = 0;
 
@@ -199,20 +195,6 @@ static void ship_task(void *cookie){
 			rebond = 0;
 		}
 	}
-}
-
-/**
- * init the vessel's params
- */
-static void ship_init(){
-	ship_lock();
-	ship.hp = LIFE_SHIP;
-	ship.hitbox.height=32;
-	ship.hitbox.width=32;
-	ship.hitbox.x= 104;
-	ship.hitbox.y= 280;
-	ship.hitbox.bitmap = bmp_ship;
-	ship_unlock();
 }
 
 int ship_lock(){
