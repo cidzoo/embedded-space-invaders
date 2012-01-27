@@ -147,30 +147,30 @@ typedef struct{
 }bullet_t;
 
 //!Variable globale au projet pour choisir la difficulté générale du jeu
-extern difficulty_t difficulty = NORMAL;
+extern difficulty_t difficulty;
 
 //!Variable globale au projet pour indiquer un game over
-extern uint8_t game_over = 0;
+extern uint8_t game_over;
 
 //!Variable globale au projet pour stocker le score actuel du joueur
-extern uint32_t game_points = 0;
+extern uint32_t game_points;
 //!Variable globale au projet pour indiquer le nombre de balles qui ont touché
-extern uint32_t game_bullet_kill = 0;
+extern uint32_t game_bullet_kill;
 //!Variable globale au projet pour indiquer le nombre de balles qui sont sorties de l'écran
-extern uint32_t game_bullet_used = 0;
+extern uint32_t game_bullet_used;
 
 //!Variable globale au projet pour indiquer une pause générale
-extern uint8_t game_break = 1;
+extern uint8_t game_break;
 //!Variable globale au projet pour indiquer que la partie a commencé
-extern uint8_t game_started = 0;
+extern uint8_t game_started;
 //!Variable globale au projet pour indiquer que la vague courante a été détruite entièrement
-extern uint8_t game_level_up = 0;
+extern uint8_t game_level_up;
 
 //!Variable globale au projet pour indiquer que que l'écran a été touché
-extern uint8_t screen_pressed = 0;
+extern uint8_t screen_pressed;
 //!Variable globale au projet pour indiquer la coordonnée x touchée
-extern uint16_t screen_x = 0;
+extern uint16_t screen_x;
 //!Variable globale au projet pour indiquer la coordonnée y touchée
-extern uint16_t screen_y = 0;
+extern uint16_t screen_y;
 
 #endif /* __GLOBAL_H__ */
