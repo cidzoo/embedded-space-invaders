@@ -27,10 +27,7 @@ KDIR	= /home/redsuser/src/linux-2.6.14-imx21-xenomai
 PWD		= $(shell pwd)
 EXTRA_CFLAGS = -Wall -I/home/redsuser/src/linux-2.6.14-imx21-xenomai/include -I/home/redsuser/src/linux-2.6.14-imx21-xenomai/include/xenomai -D__KERNEL__
 
-all: default i2ctest
-
-i2ctest: i2ctest.c
-	$(CC) -static i2ctest.c -o i2ctest
+all: default
 
 default:
 	$(MAKE) -C $(KDIR) M=$(PWD) ARCH=arm CROSS_COMPILE=$(TOOL_PREFIX)-

@@ -81,7 +81,7 @@ static uint8_t mask_led = 0;		/*!< Valeur locale pour mémoriser la valeur des l
 static uint8_t mask_switch = 0;		/*!< Valeur locale pour mémoriser la valeur des switches */
 static uint8_t dummy_data;			/*!< Dummy data pour savoir si l'appel se fait depuis le KERNEL SPACE */
 
-#define I2C_SLAVE 0x0703 			/* IOCTL CMD value to be passed to xeno_i2c_ioctl */
+#define I2C_SLAVE 0x0703 			/*!< IOCTL CMD value to be passed to xeno_i2c_ioctl */
 
 /*! Var définissant les callbacks à appeler pour la lecture et l'écriture du module
  */
@@ -95,7 +95,7 @@ struct file_operations fops = {
 struct cdev *my_dev;
 
 ssize_t pca9554_en_led(uint8_t led_num){
-	if(led_num >= MINOR_NUM_LED0 && led_num <= MINOR_NUM_LED3){
+	if(led_num < 4){
 		mask_led |= (1 << led_num);
 		return 0;
 	}
@@ -103,7 +103,7 @@ ssize_t pca9554_en_led(uint8_t led_num){
 }
 
 ssize_t pca9554_dis_led(uint8_t led_num){
-	if(led_num >= MINOR_NUM_LED0 && led_num <= MINOR_NUM_LED3){
+	if(led_num < 4){
 		mask_led &= ~(1 << led_num);
 		return 0;
 	}
@@ -111,7 +111,7 @@ ssize_t pca9554_dis_led(uint8_t led_num){
 }
 
 ssize_t pca9554_get_switch(uint8_t switch_num, uint8_t *switch_val){
-	if(switch_num >= MINOR_NUM_SW0 && switch_num <= MINOR_NUM_SW3){
+	if(switch_num < 4){
 		*switch_val = (mask_switch >> switch_num) & 0x01;
 		return 0;
 	}
@@ -131,7 +131,8 @@ ssize_t pca9554_receive(){
 }
 
 ssize_t pca9554_read(struct file *file, char __user *buff, size_t len, loff_t *off) {
-	char datas[1];
+	char datas[2];
+	int i;
 
 	if(file->private_data == NULL){
 		// Accès depuis le USER SPACE
@@ -145,8 +146,15 @@ ssize_t pca9554_read(struct file *file, char __user *buff, size_t len, loff_t *o
 	xeno_i2c_write(datas, 1);	// On écrit la valeur de registre
 	xeno_i2c_read(datas, 1);	// On lit le résultat
 
+	datas[1] = 0;
+	// On inversion du niveau + inversion des bits (LSB <==> MSB)
+	for(i = 0; i < 4; i++){
+		datas[1] |= (((~datas[0]) >> (7-i)) & 0x01) << 4;
+		datas[1] = datas[1] >> 1;
+	}
+
 	// Traitement des données
-	mask_switch = ((~datas[0]) >> 4) & 0x0F;
+	mask_switch = datas[1];
 	return 1;
 }
 

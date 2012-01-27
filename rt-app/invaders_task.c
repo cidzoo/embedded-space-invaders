@@ -12,7 +12,6 @@
  * sont morts.
  *
  */
-
 #include <linux/types.h>
 #include "lcdlib.h"
 #include "invaders_task.h"
