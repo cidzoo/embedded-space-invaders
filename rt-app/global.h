@@ -86,7 +86,7 @@ typedef struct{
 
 
 /*!
- * \enum weapon_t
+ * \enum weapontype_t
  * \brief représente les armes disponibles
  */
 typedef enum{BOMB, GUN, RAIL, ROCKET, WAVE} weapontype_t;
@@ -108,11 +108,11 @@ typedef enum{STATIC=0, SLOW=1, MEDIUM=3, FAST=7, SUPERFAST = 10}speed_t;
  * \brief permet de gérer la recharge des armes
  */
 typedef struct{
-	uint16_t max;
-	uint16_t now;
-	uint16_t last;
-	uint16_t time_total;
-	uint16_t time_current;
+	uint16_t max;			/*!< Valeur maximum de charge  */
+	uint16_t now;			/*!< Valeur actuelle de charge */
+	uint16_t last;			/*!< Dernière valeur lors du dernier tir en mode non automatique */
+	uint16_t time_total;	/*!< Valeur courante pour le temps de recharge */
+	uint16_t time_current;	/*!< Valeur maximum pour le temps de recharge */
 } weapon_timing_charge_t;
 
 /*!
@@ -120,9 +120,9 @@ typedef struct{
  * \brief permet de gérer les leds et le clignotement
  */
 typedef struct{
-	uint16_t max;
-	uint16_t ratio;
-	uint16_t now;
+	uint16_t max;			/*!< Valeur maximum pour l'affichage */
+	uint16_t ratio;			/*!< Coheficiant */
+	uint16_t now;			/*!< Valeur courante pour le clignotement */
 }weapon_timing_led_t;
 
 /*!
@@ -130,9 +130,9 @@ typedef struct{
  * \brief représente une arme
  */
 typedef struct{
-	weapontype_t weapon_type;
-	uint8_t damage;
-	speed_t speed;
+	weapontype_t weapon_type;		/*!< Type de l'arme */
+	uint8_t damage;					/*!< Dommage provoqué par l'arme */
+	speed_t speed;					/*!< Vitesse de tir de l'are */
 	weapon_timing_charge_t timing_charge;
 	weapon_timing_led_t timing_led;
 }weapon_t;
@@ -142,8 +142,8 @@ typedef struct{
  * \brief représente une bullet
  */
 typedef struct{
-	weapon_t *weapon;
-	hitbox_t hitbox;
+	weapon_t *weapon;				/*!< Arme */
+	hitbox_t hitbox;				/*!< Zone d'action du projectile */
 }bullet_t;
 
 //!Variable globale au projet pour choisir la difficulté générale du jeu
