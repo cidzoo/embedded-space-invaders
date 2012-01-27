@@ -59,26 +59,26 @@ typedef struct {
 //! Var de type wave_t pour la vague courante des invaders
 extern wave_t wave;
 
-/*! \brief Fonction à appelé au début pour lancer la tâche de gestion des invaders
+/*! \brief Fonction à appeler au début pour lancer la tâche de gestion des invaders
  */
 extern int invaders_task_start(void);
 
-/*! \brief Fonction à appelé en fin (ou en cas de problème de création) pour détruire
- *  la tâche de gestion des invaders (en principe avant la fonction invaders_task_cleanup_objects()).
+/*! \brief Fonction à appeler en fin (ou en cas de problème de création) pour détruire
+ *  la tâche de gestion des invaders.
  */
 extern void invaders_task_cleanup_task(void);
 
-/*! \brief Fonction à appelé en fin (ou en cas de problème de création) pour détruire
+/*! \brief Fonction à appeler en fin (ou en cas de problème de création) pour détruire
  *  les objets de la tâche de gestion des invaders (en principe avant la fonction invaders_task_cleanup_objects()).
  */
 extern void invaders_task_cleanup_objects(void);
 
 
-/*! \brief Fonction à appelé au début de chaque partie pour initialiser la vague et les invaders au premier niveau
+/*! \brief Fonction à appeler au début de chaque partie pour initialiser la vague et les invaders au premier niveau
  */
 extern void invaders_task_init(void);
 
-/*! \brief Fonction à appelé avant d'accéder aux invaders qui va essayé de prendre le mutex
+/*! \brief Fonction à appeler avant d'accéder aux invaders qui va essayé de prendre le mutex
  */
 extern int invaders_lock(void);
 
