@@ -212,7 +212,7 @@ void invaders_update() {
 		wave.invaders[i].hp = 10;
 		wave.invaders[i].hitbox.height = HEIGT_INVADER;
 		wave.invaders[i].hitbox.width = WIDTH_INVADER;
-		wave.invaders[i].hitbox.type = G_INVADER;
+		wave.invaders[i].hitbox.bitmap = (uint16_t *)bmp_invader;
 
 		//Incrément le nombre d'invader de la ligne
 		nb_invaders_per_line[line]++;

@@ -53,7 +53,7 @@ static button_t start_button = {
 	.y = 170,
 	.width = 160,
 	.height = 50,
-	.title = "START"
+	.label = "START"
 };
 
 //! Var de type button_t pour le bouton de recommencement dans le menu pause
@@ -62,7 +62,7 @@ static button_t restart_break_button = {
 	.y = 170,
 	.width = 75,
 	.height = 50,
-	.title = "RESTART"
+	.label = "RESTART"
 };
 
 //! Var de type button_t pour le bouton pour continuer dans le menu pause
@@ -71,7 +71,7 @@ static button_t continue_button = {
 	.y = 170,
 	.width = 75,
 	.height = 50,
-	.title = "CONTINUE"
+	.label = "CONTINUE"
 };
 
 //! Var de type button_t pour le bouton de recommencement après un game over
@@ -80,7 +80,7 @@ static button_t restart_game_over_button = {
 	.y = 210,
 	.width = 160,
 	.height = 50,
-	.title = "RESTART"
+	.label = "RESTART"
 };
 
 //! Var de type menu_t pour le menu de commencement
@@ -263,6 +263,7 @@ void fb_task_cleanup_objects() {
 
 static void fb_task(void *cookie) {
 	uint8_t update = 1;
+	int y, x;
 
 	(void) cookie;
 
@@ -286,7 +287,6 @@ static void fb_task(void *cookie) {
 			// On rafraichit l'ecran avec tous les paramètres des autres taches
 			fb_task_update();
 			// On assombrit l'ecran
-			int y, x;
 			for (y = 0; y <= 319; y++) {
 				for(x = 0; x <= 239; x++){
 					*((unsigned short int*) (fb_mem_rt + 2 * x + y * 480)) &= (RED_SUBPIXEL(0x11) | GREEN_SUBPIXEL(0x11)| BLUE_SUBPIXEL(0x11));
@@ -538,10 +538,10 @@ static void draw_invader_menu(uint16_t x, uint16_t y){
 
 	// On test quel invader on doit dessiner (1 ou 2 ?)
 	if (invader_bmp_select == 0) {	// Image 1
-		hitbox_invader_menu.bitmap = bmp_invader_menu1;
+		hitbox_invader_menu.bitmap = (uint16_t *)bmp_invader_menu1;
 		draw_bitmap(hitbox_invader_menu);
 	} else {						// Image 2
-		hitbox_invader_menu.bitmap = bmp_invader_menu2;
+		hitbox_invader_menu.bitmap = (uint16_t *)bmp_invader_menu2;
 		draw_bitmap(hitbox_invader_menu);
 	}
 	// On incrémente le timer
