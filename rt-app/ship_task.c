@@ -1,8 +1,13 @@
 /*
- * ship_task.c
- *
- *  Created on: 17 janv. 2012
- *      Author: redsuser
+ * fichier ship_task.c
+ * \brief fichier (corps) pour la gestion de la tache spaceship
+ * \author Mohamed Regaya
+ * \version 1.0
+ * \date 12 janvier 2012
+ * 
+ * La t�che periodique space_ship est appelee toutes les 30 MS 
+ * pour mettre a jour la position du vaisseau, sa vitesse et son acceleration
+ *  
  */
 #include <linux/types.h>
 #include "ship_task.h"
@@ -12,13 +17,11 @@
 #include "rt-app-m.h"
 
 
-/**
- * Variables public
- */
+// le vaisseau a manipuler
 spaceship_t ship;
 
 /**
- * Variables privées
+ * Variables privees: thread et mutex et variables (flags) 
  */
 RT_MUTEX ship_task_mutex;
 static uint8_t ship_task_mutex_created = 0;
@@ -33,7 +36,9 @@ static int ship_dir;
 static int ship_x;
 
 /**
- * Fonctions privées
+ * contient le corps proprement dit de la tache vaisseau.
+ * c'est a ce niveau qu'on effectue la mise a jour de l'etat 
+ * du vaisseau (position, vitesse, acceleration)
  */
 static void ship_task(void *cookie);
 
@@ -73,8 +78,11 @@ fail:
 	return -1;
 }
 
+/**
+ *
+ */
 void ship_task_cleanup_task(){
-	// Si tache créée
+	// Si tache cree
 	if(ship_task_created){
 		// On la nettoie
 		printk("rt-app: Task SHIP cleanup task\n");
@@ -83,16 +91,22 @@ void ship_task_cleanup_task(){
 	}
 }
 
+/**
+ *
+ */
 void ship_task_cleanup_objects(){
-	// Si mutex créé
+	// Si mutex cree
 	if(ship_task_mutex_created){
-		//Mise à jour du flag de création et suppresion du mutex
+		//Mise a� jour du flag de creation et suppresion du mutex
 		printk("rt-app: Task SHIP cleanup objects\n");
 		ship_task_mutex_created = 0;
 		rt_mutex_delete(&ship_task_mutex);
 	}
 }
 
+/**
+ *
+ */
 void ship_task_init(){
 	ship.hp = LIFE_SHIP;
 	ship.hitbox.height=32;
@@ -106,6 +120,10 @@ void ship_task_init(){
 	ship_x = 104;
 }
 
+/**
+ *
+ */
+
 static void ship_task(void *cookie){
 
 	uint32_t cpt = 0;
@@ -113,36 +131,27 @@ static void ship_task(void *cookie){
 
 	(void)cookie;
 
-	// On définit la période de la tache
+	// On definit la periode de la tache
 	rt_task_set_periodic(NULL, TM_NOW, 30*MS);
 	ship_lock();
-	//ship_init();
+	
 	ship_task_init();
-	//memcpy(&ship_loc, &ship, sizeof(ship_loc));
-	//x = ship_loc.hitbox.x;
+
 	ship_x = ship.hitbox.x;
 	ship_unlock();
-
-
 
 	for (;;) {
 		rt_task_wait_period(NULL);
 
 		// Lecture de l'etat du touchscreen
 		xeno_ts_read(&sample, 1, O_NONBLOCK);
-
-		//ship_lock();
+		
 		// Tester une pression sur l'ecran
 		if(sample.pressure > 0){
 			if(cpt > 3){
 				if(!rebond){
 					rebond = 1;
-					/*if(sample.y < 100){
-						game_break = !game_break;
-						if(game_break){
-
-						}
-					}*/
+					
 					if(!screen_pressed){
 						screen_pressed = 1;
 						screen_x = sample.x;
@@ -152,8 +161,10 @@ static void ship_task(void *cookie){
 			}else{
 				cpt++;
 			}
+			// la pression se trouve dans la zone du vaisseau
 			if(sample.y >= 200 && !game_break){
-				//if(sample.x < (ship_loc.hitbox.x + ship_loc.hitbox.width/2 - 2)){
+                
+                // pression detecte a gauche du ship
 				if(sample.x < (ship.hitbox.x + ship.hitbox.width/2 - 2)){
 					if(ship_dir == -1){
 						ship_acc += 1;
@@ -162,7 +173,7 @@ static void ship_task(void *cookie){
 					}
 					ship_dir = -1;
 					ship_x -= ship_acc;
-				//}else if(sample.x > (ship_loc.hitbox.x + ship_loc.hitbox.width/2 + 2)){
+                // pression detecte a droite du ship
 				}else if(sample.x > (ship.hitbox.x + ship.hitbox.width/2 + 2)){
 					if(ship_dir == 1){
 						ship_acc += 1;
@@ -172,22 +183,20 @@ static void ship_task(void *cookie){
 					ship_dir = 1;
 					ship_x += ship_acc;
 				}
+                // correction lorsque ship atteint les bords 
 				if(ship_x < 0){
 					ship_x = 0;
 					ship_acc = 0;
 					ship_dir = 0;
-				//}else if(x > LCD_MAX_X-1 - ship_loc.hitbox.width){
+
 				}else if(ship_x > LCD_MAX_X-1 - ship.hitbox.width){
-					//x = LCD_MAX_X - 1 - ship_loc.hitbox.width;
+					
 					ship_x = LCD_MAX_X - 1 - ship.hitbox.width;
 					ship_acc = 0;
 					ship_dir = 0;
 				}
-				//ship_unlock();
 
-				//ship_loc.hitbox.x = x;
 				ship.hitbox.x = ship_x;
-				//memcpy(&ship, &ship_loc, sizeof(ship_loc));
 				ship_unlock();
 			}
 		}else{
@@ -197,6 +206,9 @@ static void ship_task(void *cookie){
 	}
 }
 
+/**
+ * verouiller le mutex
+ */
 int ship_lock(){
 	if(ship_task_mutex_created){
 		return rt_mutex_lock(&ship_task_mutex, TM_INFINITE);
@@ -204,6 +216,9 @@ int ship_lock(){
 	return -1;
 }
 
+/**
+ * severouiller le mutex
+ */
 int ship_unlock(){
 	if(ship_task_mutex_created){
 		rt_mutex_unlock(&ship_task_mutex);
