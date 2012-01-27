@@ -37,10 +37,6 @@ static int ship_x;
  */
 static void ship_task(void *cookie);
 static void ship_init(void);
-//static void ship_move(int x);
-//static void ship_display (void);
-//static int ship_comp_to_zone_vess(void);
-
 
 int ship_task_start(){
 	int err;
@@ -79,18 +75,23 @@ fail:
 }
 
 void ship_task_cleanup_task(){
+	// Si tache créée
 	if(ship_task_created){
+		// On la nettoie
+		printk("rt-app: Task SHIP cleanup task\n");
 		ship_task_created = 0;
 		rt_task_delete(&ship_task_handle);
 	}
 }
 
 void ship_task_cleanup_objects(){
-	rt_mutex_delete(&ship_task_mutex);
-	/*if(ship_task_mutex_created){
+	// Si mutex créé
+	if(ship_task_mutex_created){
+		//Mise à jour du flag de création et suppresion du mutex
+		printk("rt-app: Task SHIP cleanup objects\n");
 		ship_task_mutex_created = 0;
 		rt_mutex_delete(&ship_task_mutex);
-	}*/
+	}
 }
 
 void ship_task_init(){
