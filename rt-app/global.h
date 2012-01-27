@@ -1,11 +1,9 @@
 /*!
  * \file global.h
- * \brief Fichier (header)
+ * \brief Fichier (header) pour les define, variables et types persos globaux
  * \author Romain Maffina
  * \version 0.1
  * \date decembre 2012
- *
- * Fichier (header) pour les define, variables et types persos globaux
  */
 
 #ifndef __GLOBAL_H__

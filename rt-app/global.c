@@ -1,11 +1,9 @@
 /*!
  * \file global.c
- * \brief Fichier (body)
+ * \brief Fichier (body) pour les define, variables et types persos globaux
  * \author Romain Maffina
  * \version 0.1
  * \date decembre 2012
- *
- * Fichier (body) pour les define, variables et types persos globaux
  */
 
 #include "global.h"
