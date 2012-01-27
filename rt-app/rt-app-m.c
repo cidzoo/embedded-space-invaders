@@ -1,22 +1,49 @@
 /* Documentation tag for Doxygen
  */
 
-/*! \mainpage PLEGAT Documentation
+/*! \mainpage Informations générales
  *
  * \section intro_sec Introduction
+ * Ceci est un Space Invaders sous la forme d'une application temps-réel soft tournant sur un
+ * Linux/Xenomai embarqué
+ * sur une plateforme à base de micro-contrôleur Freescale i.MX21 avec processeur ARM9. <br>
+ * Cette dernière dispose d'un écran tactile et d'une carte d'interface
+ * comprenant différents composants comme boutons-poussoir, LEDs. oscillateur, etc.
  *
- * This is the Plegat documentation.
+ * Contexte 	: Laboratoire d'informatique embarquée (IEM) à la HEIG-VD d'Yverdon-les-Bains <br>
+ *
+ * Auteurs		: Michel Favaretto, Yannick Lanz, Romain Maffina, Mohamed Regaya <br>
+ * Professeur 	: Daniel Rossier <br>
+ * Assistant 	: Lionel Sambuc <br>
  *
  * \section install_sec Installation
+ * Pré-requis : Utiliser les plateformes embarqués EMB ainsi que les postes de travail de
+ * l'institut ReDS.
+ * - Démarrer le poste sous Linux
+ * - Connecter la carte avec le câble Ethernet ainsi que le câble série et l'alimenter
+ * - Générer les deux modules rt-app.ko ainsi que pca9554.ko
+ * - Les copier dans le dossier "share_freescale" présent sur le bureau de redsuser
+ * - Démarrer minicom dans un terminal et lancer le script startlinux
+ * - Une fois le linux démarré saisir les commandes suivantes :
+ * 		- cd var/
+ * 		- tftp -g -r pca9554.ko 10.0.0.1
+ * 		- tftp -g -r rt-app.ko 10.0.0.1
  *
- * \subsection tools_subsec Tools required:
+ * \subsection running Lancer l'application
+ * Pré-requis : Avoir suivi les instructions de la section "Installation"
+ * - Dans le linux embarqué saisir les commandes suivantes :
+ * 		- insmod pca9554.ko
+ * 		- insmod rt-app.ko
  *
- * \subsection running Running the program
- * In a command window, etc etc...
+ * Attention il est important de faire les commandes dans cet ordre (rt-app.ko est dépendant de pca9554.ko)!
  *
- * \section copyright Copyright and License
- * This license applies to etc etc...
+ * \subsection stopping Arrêter l'application
+ * Pré-requis : Avoir suivi les instructions de la section "Lancer l'application"
+ * - Dans le linux embarqué saisir les commandes suivantes :
+ * 		- rmmod rt-app.ko
+ * 		- rmmod pca9554.ko
  *
+ * Attention il est important de faire les commandes dans cet ordre (rt-app.ko est dépendant de pca9554.ko)!
  */
 
 /*!
